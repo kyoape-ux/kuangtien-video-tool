@@ -42,6 +42,46 @@ main{max-width:980px;margin:24px auto 0;padding:0 16px}
 .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
 .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:40px}
+
+/* ─── 緊湊模式（compact） + 浮動 modal ─── */
+.tools-grid.compact-mode{grid-template-columns:repeat(auto-fill,minmax(208px,1fr));gap:12px}
+.tools-grid.compact-mode .tool-card{min-height:148px;cursor:pointer;padding:18px 16px;display:flex;flex-direction:column;gap:0}
+.tools-grid.compact-mode .tool-card:hover{transform:translateY(-4px);border-color:var(--border2);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.tools-grid.compact-mode .tool-card .tool-icon{margin-bottom:10px}
+.tools-grid.compact-mode .tool-card .tool-name{font-size:14.5px;font-weight:600;margin-bottom:4px;color:#fff}
+.tools-grid.compact-mode .tool-card .tool-desc{font-size:12.5px;line-height:1.55;color:var(--text3);margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* 緊湊狀態：只露頭 3 個（input file 是 hidden，也保留以防意外） */
+.tools-grid.compact-mode .tool-card:not(.is-open) > *:not(.tool-icon):not(.tool-name):not(.tool-desc):not(input[type=file]):not(.modal-close-btn){display:none!important}
+
+/* 點開後：卡片變成浮動 modal */
+.tools-grid.compact-mode .tool-card.is-open{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:540px;max-width:94vw;max-height:88vh;overflow-y:auto;overflow-x:hidden;z-index:1000;cursor:default;padding:28px 26px;box-shadow:0 32px 80px rgba(0,0,0,.55);border-color:var(--border2)}
+.tools-grid.compact-mode .tool-card.is-open:hover{transform:translate(-50%,-50%);box-shadow:0 32px 80px rgba(0,0,0,.55)}
+.tools-grid.compact-mode .tool-card.is-open .tool-icon{margin-bottom:14px}
+.tools-grid.compact-mode .tool-card.is-open .tool-name{font-size:18px;margin-bottom:6px}
+.tools-grid.compact-mode .tool-card.is-open .tool-desc{font-size:13.5px;-webkit-line-clamp:unset;display:block;margin-bottom:12px}
+.tools-grid.compact-mode .tool-card.is-open::-webkit-scrollbar{width:8px}
+.tools-grid.compact-mode .tool-card.is-open::-webkit-scrollbar-track{background:transparent}
+.tools-grid.compact-mode .tool-card.is-open::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px}
+.tools-grid.compact-mode .tool-card.is-open::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.2)}
+
+/* 關閉按鈕（只在 open 時顯示） */
+.modal-close-btn{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:10;transition:.15s;padding:0}
+.modal-close-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+.tools-grid.compact-mode .tool-card.is-open .modal-close-btn{display:flex}
+
+/* 暗化遮罩 */
+.card-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:999;opacity:0;pointer-events:none;transition:opacity .2s}
+.card-modal-backdrop.show{opacity:1;pointer-events:all}
+
+/* 錄製中、處理中：防止關閉時的視覺提示（透過 cursor + 微微閃動） */
+.tools-grid.compact-mode .tool-card.is-open.recording .modal-close-btn,
+.tools-grid.compact-mode .tool-card.is-open.processing .modal-close-btn{opacity:.4;cursor:not-allowed}
+
+/* 響應式：手機螢幕一排 2 個 */
+@media (max-width: 640px) {
+  .tools-grid.compact-mode{grid-template-columns:repeat(2, 1fr)}
+  .tools-grid.compact-mode .tool-card.is-open{width:96vw;max-height:92vh;padding:22px 18px}
+}
 .tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 20px;transition:.22s;position:relative;overflow:hidden}
 .tool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--radius) var(--radius) 0 0}
 .tool-card:hover{transform:translateY(-2px);border-color:var(--border2)}
@@ -4076,15 +4116,81 @@ window.dispatchEvent(new Event('transcription-ready'));
   document.querySelectorAll('.tool-card[data-tool="audioRecord"]').forEach(setupAudioRecordCard);
   document.querySelectorAll('.tool-card[data-tool="transcribe"]').forEach(setupTranscribeCard);
 
-  // Guide pills → scroll to card
+  // ── 緊湊模式：點擊卡片浮動展開 ──
+  (function setupCompactMode() {
+    var grids = document.querySelectorAll('.tools-grid');
+    if (!grids.length) return;
+    grids.forEach(function(g) { g.classList.add('compact-mode'); });
+
+    var backdrop = document.createElement('div');
+    backdrop.className = 'card-modal-backdrop';
+    document.body.appendChild(backdrop);
+
+    function canClose(card) {
+      if (!card) return true;
+      // 錄製中、處理中時不允許關閉，避免使用者誤關丟失進度
+      if (card.classList.contains('recording')) return false;
+      if (card.classList.contains('processing')) return false;
+      return true;
+    }
+    function closeAll() {
+      var openCard = document.querySelector('.tool-card.is-open');
+      if (!canClose(openCard)) return;
+      if (openCard) openCard.classList.remove('is-open');
+      backdrop.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function openCard(card) {
+      // 若已有 open 的、可關才關
+      var current = document.querySelector('.tool-card.is-open');
+      if (current && current !== card) {
+        if (!canClose(current)) return;
+        current.classList.remove('is-open');
+      }
+      card.classList.add('is-open');
+      backdrop.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    window.__openToolCard = openCard;   // 給 guide pills 用
+
+    // 每張卡加關閉按鈕 + 攔截點擊（capture phase）
+    document.querySelectorAll('.tool-card[data-tool]').forEach(function(card) {
+      if (!card.querySelector('.modal-close-btn')) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'modal-close-btn';
+        btn.setAttribute('aria-label', '關閉');
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-x"/></svg>';
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          closeAll();
+        });
+        card.appendChild(btn);
+      }
+      // capture-phase：緊湊狀態下任何點擊都展開（並擋掉內部 handler）
+      card.addEventListener('click', function(e) {
+        if (card.classList.contains('is-open')) return;
+        e.stopPropagation();
+        openCard(card);
+      }, true);
+    });
+
+    backdrop.addEventListener('click', closeAll);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeAll();
+    });
+  })();
+
+  // Guide pills → scroll & 自動展開卡片
   document.querySelectorAll('.guide-pill[data-guide]').forEach(function(pill) {
     pill.addEventListener('click', function() {
       var toolId = pill.dataset.guide;
       var card = document.querySelector('.tool-card[data-tool="' + toolId + '"]');
-      if (card) {
+      if (!card) return;
+      if (typeof window.__openToolCard === 'function') {
+        window.__openToolCard(card);
+      } else {
         card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        card.style.boxShadow = '0 0 0 2px rgba(255,255,255,.25), 0 0 32px rgba(255,255,255,.08)';
-        setTimeout(function() { card.style.boxShadow = ''; }, 1500);
       }
     });
   });
