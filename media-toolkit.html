@@ -220,7 +220,22 @@ footer a{color:var(--indigo2);text-decoration:none}
 .c-red::before{background:linear-gradient(90deg,#b91c1c,#ef4444)}.c-red:hover{box-shadow:0 0 24px rgba(239,68,68,.18)}.c-red .tool-icon{background:rgba(239,68,68,.15)}.c-red .tool-btn{background:rgba(239,68,68,.12);color:#f87171}.c-red .progress-bar{background:linear-gradient(90deg,#b91c1c,#ef4444)}.c-red .dl-btn{background:linear-gradient(135deg,#b91c1c,#ef4444)}.c-red .fmt{background:rgba(239,68,68,.1);color:#f87171;border-color:rgba(239,68,68,.2)}
 
 /* ── c-blue （音訊錄製）── */
-.c-blue::before{background:linear-gradient(90deg,#1d4ed8,#3b82f6)}.c-blue:hover{box-shadow:0 0 24px rgba(59,130,246,.18)}.c-blue .tool-icon{background:rgba(59,130,246,.15)}.c-blue .tool-btn{background:rgba(59,130,246,.12);color:#60a5fa}.c-blue .progress-bar{background:linear-gradient(90deg,#1d4ed8,#3b82f6)}.c-blue .dl-btn{background:linear-gradient(135deg,#1d4ed8,#3b82f6)}.c-blue .fmt{background:rgba(59,130,246,.1);color:#60a5fa;border-color:rgba(59,130,246,.2)}
+.c-blue::before{background:linear-gradient(90deg,#1d4ed8,#3b82f6)}.c-blue:hover{box-shadow:0 0 24px rgba(59,130,246,.18)}.c-blue .tool-icon{background:rgba(59,130,246,.15)}.c-blue .tool-btn{background:rgba(59,130,246,.12);color:#60a5fa}.c-blue .progress-bar{background:linear-gradient(90deg,#1d4ed8,#3b82f6)}.c-blue .dl-btn{background:linear-gradient(135deg,#1d4ed8,#3b82f6)}.c-blue .fmt{background:rgba(59,130,246,.1);color:#60a5fa;border-color:rgba(59,130,246,.2)}.c-blue .drop-area{border-color:rgba(59,130,246,.35)}.c-blue .drop-area:hover,.c-blue .drop-area.drag-over{border-color:#3b82f6;background:rgba(59,130,246,.07)}
+
+/* ── c-purple （音訊轉文字）── */
+.c-purple::before{background:linear-gradient(90deg,#7e22ce,#a855f7)}.c-purple:hover{box-shadow:0 0 24px rgba(168,85,247,.18)}.c-purple .tool-icon{background:rgba(168,85,247,.15)}.c-purple .tool-btn{background:rgba(168,85,247,.12);color:#c084fc}.c-purple .progress-bar{background:linear-gradient(90deg,#7e22ce,#a855f7)}.c-purple .dl-btn{background:linear-gradient(135deg,#7e22ce,#a855f7)}.c-purple .fmt{background:rgba(168,85,247,.1);color:#c084fc;border-color:rgba(168,85,247,.2)}.c-purple .drop-area{border-color:rgba(168,85,247,.35)}.c-purple .drop-area:hover,.c-purple .drop-area.drag-over{border-color:#a855f7;background:rgba(168,85,247,.07)}
+
+/* ── 轉文字結果區 ── */
+.tr-result{display:none;margin-top:10px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px;max-height:260px;overflow-y:auto;font-size:13px;line-height:1.7;color:var(--text2);white-space:pre-wrap;word-break:break-word}
+.tool-card.done .tr-result{display:block}
+.tr-result-actions{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}
+.tool-card.done .tr-result-actions{display:flex}
+.tr-action-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;padding:6px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.tr-action-btn:hover{background:rgba(255,255,255,.1)}
+.tr-meta{display:none;font-size:11.5px;color:var(--text3);margin-top:6px}
+.tool-card.done .tr-meta{display:block}
+.tr-info{font-size:11.5px;line-height:1.55;color:#a5b4fc;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.18);border-radius:8px;padding:8px 10px;margin-top:8px;display:flex;gap:6px}
+.tr-info::before{content:'ℹ️';flex-shrink:0}
 
 /* ── 錄製工具共用 UI ── */
 .rec-opts{display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px;margin:8px 0 4px}
@@ -655,6 +670,8 @@ if (!self.crossOriginIsolated) {
   <symbol id="ico-stop-sq" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor"/></symbol>
   <symbol id="ico-screen-rec" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><circle cx="12" cy="10" r="2.2" fill="currentColor" stroke="none"/></symbol>
   <symbol id="ico-system-audio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></symbol>
+  <symbol id="ico-transcribe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></symbol>
+  <symbol id="ico-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
 </svg>
 
 <header>
@@ -723,6 +740,7 @@ if (!self.crossOriginIsolated) {
       <a class="guide-pill" data-guide="toAudio"><span class="gp-dot gp-indigo"></span>影片轉音樂</a>
       <a class="guide-pill" data-guide="audioConvert"><span class="gp-dot gp-violet"></span>音訊轉換</a>
       <a class="guide-pill" data-guide="audioTrim"><span class="gp-dot" style="background:#eab308"></span>音訊裁切</a>
+      <a class="guide-pill" data-guide="transcribe"><span class="gp-dot" style="background:#a855f7"></span>音訊轉文字</a>
     </div>
   </div>
 
@@ -1317,6 +1335,53 @@ if (!self.crossOriginIsolated) {
       </div>
     </div>
 
+    <!-- 音訊轉文字（Whisper） -->
+    <div class="tool-card c-purple" data-tool="transcribe">
+      <input type="file" hidden accept="audio/*,video/*,.mp3,.wav,.aac,.flac,.ogg,.m4a,.opus,.mp4,.mov,.webm,.mkv">
+      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-transcribe"/></svg></div>
+      <div class="tool-name">音訊轉文字</div>
+      <div class="tool-desc">用 Whisper 模型把音訊或影片轉成文字／字幕檔，完全在本機跑、不上傳雲端。</div>
+      <select class="fmt-select tr-model">
+        <option value="Xenova/whisper-base" selected>base 模型（142MB，速度快、推薦）</option>
+        <option value="Xenova/whisper-small">small 模型（466MB，更準確）</option>
+        <option value="Xenova/whisper-tiny">tiny 模型（75MB，最快、準確度低）</option>
+      </select>
+      <select class="fmt-select tr-lang">
+        <option value="chinese" selected>中文</option>
+        <option value="english">英文</option>
+        <option value="japanese">日文</option>
+        <option value="auto">自動偵測</option>
+      </select>
+      <select class="fmt-select tr-fmt">
+        <option value="txt" selected>純文字（.txt）</option>
+        <option value="srt">SRT 字幕檔（含時間軸）</option>
+        <option value="vtt">VTT 字幕檔（網頁用）</option>
+      </select>
+      <div class="drop-area">
+        <div class="drop-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-folder"/></svg></div>
+        <div class="drop-area-text">拖曳音訊或影片到這裡</div>
+        <div class="drop-area-sub">支援 MP3、WAV、M4A、MP4、MOV、WebM 等</div>
+      </div>
+      <div class="file-info">
+        <span class="file-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-file"/></svg></span>
+        <span class="file-info-name"></span><span class="file-info-size"></span>
+        <button class="file-clear"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-x"/></svg></button>
+      </div>
+      <div class="tr-info">首次使用會下載模型（約 75–466MB，依選擇而定），下載後自動快取於瀏覽器，下次不用再下載。</div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">處理中...</div></div>
+      <div class="error-msg"></div>
+      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-bolt"/></svg>開始轉文字</button>
+      <div class="tr-result"></div>
+      <div class="tr-meta"></div>
+      <div class="tr-result-actions">
+        <button class="tr-action-btn tr-copy-btn"><svg width="12" height="12" viewBox="0 0 24 24"><use href="#ico-copy"/></svg>複製文字</button>
+      </div>
+      <div class="download-wrap">
+        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載文字檔</button>
+        <button class="reset-btn">再次轉文字</button>
+      </div>
+    </div>
+
   </div>
 
   <div class="section-title">錄製工具</div>
@@ -1722,6 +1787,88 @@ if (!self.crossOriginIsolated) {
 </div>
 
 <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+
+<!-- ── Whisper（Transformers.js）── -->
+<script type="module">
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+env.allowLocalModels = false;
+env.useBrowserCache = true;
+
+var transcribers = {};   // 快取已載入的模型
+var currentLoading = null;
+
+async function getTranscriber(modelId, onProgress) {
+  if (transcribers[modelId]) return transcribers[modelId];
+  if (currentLoading) await currentLoading;
+  currentLoading = (async function() {
+    var fileProgress = {};
+    var pipe = await pipeline('automatic-speech-recognition', modelId, {
+      quantized: true,
+      progress_callback: function(p) {
+        if (!onProgress) return;
+        if (p.status === 'progress' && p.file) {
+          fileProgress[p.file] = p.progress || 0;
+          var arr = Object.values(fileProgress);
+          var avg = arr.reduce(function(a,b){return a+b;},0) / arr.length;
+          onProgress({ phase: 'download', percent: avg, file: p.file });
+        } else if (p.status === 'ready') {
+          onProgress({ phase: 'ready', percent: 100 });
+        } else if (p.status === 'initiate') {
+          onProgress({ phase: 'download', percent: 0, file: p.file });
+        } else if (p.status === 'download') {
+          onProgress({ phase: 'download', percent: 0, file: p.file });
+        } else if (p.status === 'done') {
+          if (p.file) fileProgress[p.file] = 100;
+        }
+      }
+    });
+    transcribers[modelId] = pipe;
+    return pipe;
+  })();
+  try { return await currentLoading; } finally { currentLoading = null; }
+}
+
+async function fileToAudio(file) {
+  // 用 16kHz 解碼（Whisper 需求）
+  var AC = window.AudioContext || window.webkitAudioContext;
+  var audioCtx = new AC({ sampleRate: 16000 });
+  var ab = await file.arrayBuffer();
+  var audioBuffer = await audioCtx.decodeAudioData(ab);
+  try { audioCtx.close(); } catch(e){}
+  var n = audioBuffer.numberOfChannels;
+  if (n === 1) return audioBuffer.getChannelData(0);
+  // 混成單聲道
+  var len = audioBuffer.length;
+  var out = new Float32Array(len);
+  for (var ch = 0; ch < n; ch++) {
+    var data = audioBuffer.getChannelData(ch);
+    for (var i = 0; i < len; i++) out[i] += data[i] / n;
+  }
+  return out;
+}
+
+window.runTranscription = async function(file, opts, onProgress) {
+  var pipe = await getTranscriber(opts.model, onProgress);
+  if (onProgress) onProgress({ phase: 'decoding', percent: 0 });
+  var audio = await fileToAudio(file);
+  if (onProgress) onProgress({ phase: 'transcribing', percent: 10 });
+
+  var transcribeOpts = {
+    chunk_length_s: 30,
+    stride_length_s: 5,
+    return_timestamps: opts.format !== 'txt',
+    task: 'transcribe'
+  };
+  if (opts.language && opts.language !== 'auto') transcribeOpts.language = opts.language;
+
+  var result = await pipe(audio, transcribeOpts);
+  if (onProgress) onProgress({ phase: 'transcribing', percent: 100 });
+  return result;  // { text, chunks: [{text, timestamp:[s,e]}] }
+};
+
+window.transcriptionReady = true;
+window.dispatchEvent(new Event('transcription-ready'));
+</script>
 <script>
 (function() {
   var _FF = FFmpeg;
@@ -3607,6 +3754,175 @@ if (!self.crossOriginIsolated) {
     resetBtn.addEventListener('click', resetAll);
   }
 
+  // ── Transcribe (Whisper) Card ────────────────────────────
+  function setupTranscribeCard(card) {
+    var input    = card.querySelector('input[type=file]');
+    var dropArea = card.querySelector('.drop-area');
+    var nameEl   = card.querySelector('.file-info-name');
+    var sizeEl   = card.querySelector('.file-info-size');
+    var clearBtn = card.querySelector('.file-clear');
+    var bar      = card.querySelector('.progress-bar');
+    var progText = card.querySelector('.progress-text');
+    var errEl    = card.querySelector('.error-msg');
+    var startBtn = card.querySelector('.start-btn');
+    var resultEl = card.querySelector('.tr-result');
+    var metaEl   = card.querySelector('.tr-meta');
+    var copyBtn  = card.querySelector('.tr-copy-btn');
+    var dlBtn    = card.querySelector('.dl-btn');
+    var resetBtn = card.querySelector('.reset-btn');
+    var modelSel = card.querySelector('.tr-model');
+    var langSel  = card.querySelector('.tr-lang');
+    var fmtSel   = card.querySelector('.tr-fmt');
+
+    var currentFile = null;
+    var currentText = '';
+    var currentFmt  = 'txt';
+
+    function pad(n,w){ w=w||2; var s=String(n); while(s.length<w) s='0'+s; return s; }
+    function fmtSrtTime(s) {
+      if (s == null || isNaN(s)) s = 0;
+      var h = Math.floor(s/3600);
+      var m = Math.floor((s%3600)/60);
+      var sec = Math.floor(s%60);
+      var ms = Math.round((s - Math.floor(s))*1000);
+      return pad(h)+':'+pad(m)+':'+pad(sec)+','+pad(ms,3);
+    }
+    function fmtVttTime(s) { return fmtSrtTime(s).replace(',', '.'); }
+    function basename(name) { return name.replace(/\.[^.]+$/, ''); }
+
+    function chunksToSrt(chunks) {
+      var lines = [];
+      chunks.forEach(function(c, i) {
+        var t = c.timestamp || [0, 0];
+        lines.push((i+1) + '\n' + fmtSrtTime(t[0]) + ' --> ' + fmtSrtTime(t[1]) + '\n' + (c.text||'').trim());
+      });
+      return lines.join('\n\n');
+    }
+    function chunksToVtt(chunks) {
+      var lines = ['WEBVTT', ''];
+      chunks.forEach(function(c) {
+        var t = c.timestamp || [0, 0];
+        lines.push(fmtVttTime(t[0]) + ' --> ' + fmtVttTime(t[1]));
+        lines.push((c.text||'').trim());
+        lines.push('');
+      });
+      return lines.join('\n');
+    }
+
+    function setFile(f) {
+      currentFile = f;
+      nameEl.textContent = f.name;
+      sizeEl.textContent = ' · ' + fmtBytes(f.size);
+      card.classList.add('has-file');
+      card.classList.remove('done','has-error');
+      errEl.textContent = '';
+    }
+    function reset() {
+      currentFile = null;
+      currentText = '';
+      input.value = '';
+      card.classList.remove('has-file','processing','done','has-error');
+      bar.style.width = '0%';
+      progText.textContent = '處理中...';
+      resultEl.textContent = '';
+      metaEl.textContent = '';
+      errEl.textContent = '';
+    }
+
+    dropArea.addEventListener('click', function() { input.click(); });
+    dropArea.addEventListener('dragover', function(e) { e.preventDefault(); dropArea.classList.add('drag-over'); });
+    dropArea.addEventListener('dragleave', function() { dropArea.classList.remove('drag-over'); });
+    dropArea.addEventListener('drop', function(e) {
+      e.preventDefault(); dropArea.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+    });
+    input.addEventListener('change', function() { if (input.files[0]) setFile(input.files[0]); });
+    clearBtn.addEventListener('click', reset);
+    resetBtn.addEventListener('click', reset);
+
+    copyBtn.addEventListener('click', function() {
+      if (!currentText) return;
+      navigator.clipboard.writeText(currentText).then(function() {
+        copyBtn.textContent = '已複製 ✓';
+        setTimeout(function() {
+          copyBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24"><use href="#ico-copy"/></svg>複製文字';
+        }, 1500);
+      });
+    });
+
+    startBtn.addEventListener('click', async function() {
+      if (!currentFile) return;
+      if (!window.runTranscription) {
+        errEl.textContent = 'Whisper 模組尚未載入完成，請稍後再試';
+        return;
+      }
+      errEl.textContent = '';
+      card.classList.add('processing');
+      bar.style.width = '2%';
+      progText.textContent = '準備中...';
+
+      var model = modelSel.value;
+      var language = langSel.value;
+      var fmt = fmtSel.value;
+      currentFmt = fmt;
+      var startTime = Date.now();
+
+      try {
+        var result = await window.runTranscription(currentFile, {
+          model: model, language: language, format: fmt
+        }, function(p) {
+          if (p.phase === 'download') {
+            bar.style.width = (3 + Math.round(p.percent * 0.55)) + '%';   // 3%~58%
+            progText.textContent = '下載模型中... ' + Math.round(p.percent) + '%';
+          } else if (p.phase === 'ready' || p.phase === 'decoding') {
+            bar.style.width = '60%';
+            progText.textContent = '解碼音訊...';
+          } else if (p.phase === 'transcribing') {
+            bar.style.width = (60 + Math.round(p.percent * 0.38)) + '%';  // 60%~98%
+            progText.textContent = '辨識文字中...';
+          }
+        });
+
+        bar.style.width = '100%';
+        await sleep(200);
+
+        var txt = '';
+        if (fmt === 'srt') txt = chunksToSrt(result.chunks || []);
+        else if (fmt === 'vtt') txt = chunksToVtt(result.chunks || []);
+        else txt = (result.text || '').trim();
+
+        currentText = txt;
+        resultEl.textContent = txt;
+        var dur = ((Date.now() - startTime) / 1000).toFixed(1);
+        metaEl.textContent = '處理時間 ' + dur + ' 秒 · 模型 ' + model.replace('Xenova/', '') + ' · ' + (txt.length) + ' 字';
+
+        dlBtn.onclick = function() {
+          var mime = fmt === 'srt' ? 'application/x-subrip'
+                   : fmt === 'vtt' ? 'text/vtt'
+                   : 'text/plain';
+          var blob = new Blob([txt], { type: mime + ';charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = basename(currentFile.name) + '.' + fmt;
+          a.click();
+          setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+        };
+        // 下載按鈕文字依格式調整
+        var dlLabel = fmt === 'srt' ? '下載 SRT 字幕' : fmt === 'vtt' ? '下載 VTT 字幕' : '下載文字檔';
+        dlBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>' + dlLabel;
+
+        card.classList.remove('processing');
+        card.classList.add('done');
+      } catch(e) {
+        card.classList.remove('processing');
+        card.classList.add('has-error');
+        bar.style.width = '0%';
+        errEl.textContent = '轉文字失敗：' + (e.message || e);
+      }
+    });
+  }
+
   window.showPanel = function(id, btn) {
     document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
     document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
@@ -3618,7 +3934,7 @@ if (!self.crossOriginIsolated) {
     }
   };
 
-  document.querySelectorAll('.tool-card[data-tool]:not([data-tool="merge"]):not([data-tool="watermark"]):not([data-tool="faceBlur"]):not([data-tool="bgm"]):not([data-tool="subtitle"]):not([data-tool="snapshot"]):not([data-tool="audioTrim"]):not([data-tool="screenRecord"]):not([data-tool="audioRecord"])').forEach(setupCard);
+  document.querySelectorAll('.tool-card[data-tool]:not([data-tool="merge"]):not([data-tool="watermark"]):not([data-tool="faceBlur"]):not([data-tool="bgm"]):not([data-tool="subtitle"]):not([data-tool="snapshot"]):not([data-tool="audioTrim"]):not([data-tool="screenRecord"]):not([data-tool="audioRecord"]):not([data-tool="transcribe"])').forEach(setupCard);
   document.querySelectorAll('.tool-card[data-tool="watermark"]').forEach(setupWatermarkCard);
   document.querySelectorAll('.tool-card[data-tool="merge"]').forEach(setupMergeCard);
   document.querySelectorAll('.tool-card[data-tool="faceBlur"]').forEach(setupFaceBlurCard);
@@ -3628,6 +3944,7 @@ if (!self.crossOriginIsolated) {
   document.querySelectorAll('.tool-card[data-tool="audioTrim"]').forEach(setupAudioTrimCard);
   document.querySelectorAll('.tool-card[data-tool="screenRecord"]').forEach(setupScreenRecordCard);
   document.querySelectorAll('.tool-card[data-tool="audioRecord"]').forEach(setupAudioRecordCard);
+  document.querySelectorAll('.tool-card[data-tool="transcribe"]').forEach(setupTranscribeCard);
 
   // Guide pills → scroll to card
   document.querySelectorAll('.guide-pill[data-guide]').forEach(function(pill) {
