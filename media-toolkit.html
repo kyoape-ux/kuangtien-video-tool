@@ -752,7 +752,7 @@ if (!self.crossOriginIsolated) {
       </div>
     </div>
     <div class="header-tags">
-      <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-tool"/></svg>影音轉檔工具</span>
+      <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-tool"/></svg>影音工具</span>
       <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-film"/></svg>影音資源庫</span>
       <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-monitor"/></svg>剪輯軟體推薦</span>
     </div>
@@ -762,7 +762,7 @@ if (!self.crossOriginIsolated) {
 <div class="nav-wrap">
   <div class="nav">
     <button class="nav-btn active" onclick="showPanel('tools',this)">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-tool"/></svg>轉檔工具
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-tool"/></svg>影音工具
     </button>
     <button class="nav-btn" onclick="showPanel('res',this)">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-film"/></svg>影音資源庫
@@ -5586,6 +5586,17 @@ window.addEventListener('resize', function() {
   _eqTimer = setTimeout(window.eqSwCards, 120);
 });
 </script>
+
+<style>
+.site-footer{margin-top:64px;padding:24px 20px 32px;border-top:1px solid var(--border);color:var(--text-muted,#90A89E);font-size:12px;text-align:center;line-height:1.7}
+.site-footer .ver{display:inline-block;padding:3px 10px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:999px;color:#c084fc;font-weight:600;letter-spacing:.5px;margin-right:6px;font-family:'Inter','JetBrains Mono',monospace}
+.site-footer .ver-date{color:var(--text3)}
+.site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
+</style>
+<footer class="site-footer">
+  <span class="ver">v1.4.0</span><span class="ver-date">更新於 2026-06-16</span>
+  <div class="ver-org">光田綜合醫院 · 行銷部　影音工具站</div>
+</footer>
 
 </body>
 </html>
