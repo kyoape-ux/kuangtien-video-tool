@@ -726,84 +726,6 @@ if (!self.crossOriginIsolated) {
     </div>
   </div>
 
-  <div class="section-title">錄製工具</div>
-  <div class="tools-grid">
-
-    <!-- 螢幕錄影＋聲音 -->
-    <div class="tool-card c-red" data-tool="screenRecord">
-      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-screen-rec"/></svg></div>
-      <div class="tool-name">螢幕錄影＋聲音</div>
-      <div class="tool-desc">錄製簡報、網頁操作畫面與聲音。可同時錄麥克風與分頁音訊。</div>
-      <div class="rec-opts">
-        <label class="rec-opt-row"><input type="checkbox" class="rec-opt-mic" checked>包含麥克風（你說話的聲音）</label>
-        <label class="rec-opt-row"><input type="checkbox" class="rec-opt-tab" checked>包含分頁／系統音訊（簡報、影片聲）</label>
-      </div>
-      <div class="rec-fmt-row">
-        <span>輸出格式</span>
-        <select class="fmt-select rec-fmt">
-          <option value="webm" selected>WebM（瀏覽器原生，最快）</option>
-          <option value="mp4">MP4（最相容，需轉換較久）</option>
-        </select>
-      </div>
-      <div class="rec-warn">分享分頁音訊需在分享視窗選「Chrome 分頁」並勾選「分享分頁音訊」。macOS 無法直接錄整個系統聲音。</div>
-      <div class="error-msg"></div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">處理中...</div></div>
-      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24"><use href="#ico-rec-dot"/></svg>開始錄製</button>
-      <div class="rec-status">
-        <div class="rec-pulse"></div>
-        <div class="rec-status-label">錄製中</div>
-        <div class="rec-time">00:00</div>
-      </div>
-      <div class="rec-controls" style="display:none">
-        <button class="tool-btn rec-btn-pause" data-action="pause">暫停</button>
-        <button class="tool-btn rec-btn-stop" data-action="stop"><svg width="13" height="13"><use href="#ico-stop-sq"/></svg>停止</button>
-      </div>
-      <div class="rec-preview"></div>
-      <div class="download-wrap">
-        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載影片</button>
-        <button class="reset-btn">再次錄製</button>
-      </div>
-    </div>
-
-    <!-- 電腦音訊錄製 -->
-    <div class="tool-card c-blue" data-tool="audioRecord">
-      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-mic"/></svg></div>
-      <div class="tool-name">電腦音訊錄製</div>
-      <div class="tool-desc">純錄聲音不錄畫面，適合錄製廣播、線上節目、講話旁白等。</div>
-      <div class="rec-mode-tabs">
-        <button class="rec-mode-btn active" data-mode="mic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-mic"/></svg>麥克風</button>
-        <button class="rec-mode-btn" data-mode="tab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-system-audio"/></svg>電腦聲音（分頁）</button>
-      </div>
-      <div class="rec-fmt-row">
-        <span>輸出格式</span>
-        <select class="fmt-select rec-fmt">
-          <option value="webm" selected>WebM/Opus（原生，最快）</option>
-          <option value="mp3">MP3（最相容，需轉換）</option>
-          <option value="wav">WAV（無損，需轉換）</option>
-        </select>
-      </div>
-      <div class="rec-warn rec-warn-tab" style="display:none">錄製電腦聲音時，需在分享視窗選「Chrome 分頁」（例如：播廣播的分頁）並勾「分享分頁音訊」。錄製過程畫面分享不會儲存。</div>
-      <div class="error-msg"></div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">處理中...</div></div>
-      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24"><use href="#ico-rec-dot"/></svg>開始錄製</button>
-      <div class="rec-status">
-        <div class="rec-pulse"></div>
-        <div class="rec-status-label">錄製中</div>
-        <div class="rec-time">00:00</div>
-      </div>
-      <div class="rec-controls" style="display:none">
-        <button class="tool-btn rec-btn-pause" data-action="pause">暫停</button>
-        <button class="tool-btn rec-btn-stop" data-action="stop"><svg width="13" height="13"><use href="#ico-stop-sq"/></svg>停止</button>
-      </div>
-      <div class="rec-preview"></div>
-      <div class="download-wrap">
-        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載音訊</button>
-        <button class="reset-btn">再次錄製</button>
-      </div>
-    </div>
-
-  </div>
-
   <div class="section-title">影片工具</div>
   <div class="tools-grid">
 
@@ -1392,6 +1314,84 @@ if (!self.crossOriginIsolated) {
       <div class="download-wrap">
         <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載音訊片段</button>
         <button class="reset-btn">再次裁切</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">錄製工具</div>
+  <div class="tools-grid">
+
+    <!-- 螢幕錄影＋聲音 -->
+    <div class="tool-card c-red" data-tool="screenRecord">
+      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-screen-rec"/></svg></div>
+      <div class="tool-name">螢幕錄影＋聲音</div>
+      <div class="tool-desc">錄製簡報、網頁操作畫面與聲音。可同時錄麥克風與分頁音訊。</div>
+      <div class="rec-opts">
+        <label class="rec-opt-row"><input type="checkbox" class="rec-opt-mic" checked>包含麥克風（你說話的聲音）</label>
+        <label class="rec-opt-row"><input type="checkbox" class="rec-opt-tab" checked>包含分頁／系統音訊（簡報、影片聲）</label>
+      </div>
+      <div class="rec-fmt-row">
+        <span>輸出格式</span>
+        <select class="fmt-select rec-fmt">
+          <option value="webm" selected>WebM（瀏覽器原生，最快）</option>
+          <option value="mp4">MP4（最相容，需轉換較久）</option>
+        </select>
+      </div>
+      <div class="rec-warn">分享分頁音訊需在分享視窗選「Chrome 分頁」並勾選「分享分頁音訊」。macOS 無法直接錄整個系統聲音。</div>
+      <div class="error-msg"></div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">處理中...</div></div>
+      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24"><use href="#ico-rec-dot"/></svg>開始錄製</button>
+      <div class="rec-status">
+        <div class="rec-pulse"></div>
+        <div class="rec-status-label">錄製中</div>
+        <div class="rec-time">00:00</div>
+      </div>
+      <div class="rec-controls" style="display:none">
+        <button class="tool-btn rec-btn-pause" data-action="pause">暫停</button>
+        <button class="tool-btn rec-btn-stop" data-action="stop"><svg width="13" height="13"><use href="#ico-stop-sq"/></svg>停止</button>
+      </div>
+      <div class="rec-preview"></div>
+      <div class="download-wrap">
+        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載影片</button>
+        <button class="reset-btn">再次錄製</button>
+      </div>
+    </div>
+
+    <!-- 電腦音訊錄製 -->
+    <div class="tool-card c-blue" data-tool="audioRecord">
+      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-mic"/></svg></div>
+      <div class="tool-name">電腦音訊錄製</div>
+      <div class="tool-desc">純錄聲音不錄畫面，適合錄製廣播、線上節目、講話旁白等。</div>
+      <div class="rec-mode-tabs">
+        <button class="rec-mode-btn active" data-mode="mic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-mic"/></svg>麥克風</button>
+        <button class="rec-mode-btn" data-mode="tab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-system-audio"/></svg>電腦聲音（分頁）</button>
+      </div>
+      <div class="rec-fmt-row">
+        <span>輸出格式</span>
+        <select class="fmt-select rec-fmt">
+          <option value="webm" selected>WebM/Opus（原生，最快）</option>
+          <option value="mp3">MP3（最相容，需轉換）</option>
+          <option value="wav">WAV（無損，需轉換）</option>
+        </select>
+      </div>
+      <div class="rec-warn rec-warn-tab" style="display:none">錄製電腦聲音時，需在分享視窗選「Chrome 分頁」（例如：播廣播的分頁）並勾「分享分頁音訊」。錄製過程畫面分享不會儲存。</div>
+      <div class="error-msg"></div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">處理中...</div></div>
+      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24"><use href="#ico-rec-dot"/></svg>開始錄製</button>
+      <div class="rec-status">
+        <div class="rec-pulse"></div>
+        <div class="rec-status-label">錄製中</div>
+        <div class="rec-time">00:00</div>
+      </div>
+      <div class="rec-controls" style="display:none">
+        <button class="tool-btn rec-btn-pause" data-action="pause">暫停</button>
+        <button class="tool-btn rec-btn-stop" data-action="stop"><svg width="13" height="13"><use href="#ico-stop-sq"/></svg>停止</button>
+      </div>
+      <div class="rec-preview"></div>
+      <div class="download-wrap">
+        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載音訊</button>
+        <button class="reset-btn">再次錄製</button>
       </div>
     </div>
 
