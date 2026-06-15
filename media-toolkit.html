@@ -216,6 +216,48 @@ footer a{color:var(--indigo2);text-decoration:none}
 /* ── c-yellow ── */
 .c-yellow::before{background:linear-gradient(90deg,#ca8a04,#eab308)}.c-yellow:hover{box-shadow:0 0 24px rgba(234,179,8,.15)}.c-yellow .tool-icon{background:rgba(234,179,8,.15)}.c-yellow .tool-btn{background:rgba(234,179,8,.12);color:#facc15}.c-yellow .progress-bar{background:linear-gradient(90deg,#ca8a04,#eab308)}.c-yellow .dl-btn{background:linear-gradient(135deg,#ca8a04,#eab308)}.c-yellow .fmt{background:rgba(234,179,8,.1);color:#facc15;border-color:rgba(234,179,8,.2)}.c-yellow .drop-area{border-color:rgba(234,179,8,.35)}.c-yellow .drop-area:hover,.c-yellow .drop-area.drag-over{border-color:#eab308;background:rgba(234,179,8,.07)}
 
+/* ── c-red （螢幕錄影）── */
+.c-red::before{background:linear-gradient(90deg,#b91c1c,#ef4444)}.c-red:hover{box-shadow:0 0 24px rgba(239,68,68,.18)}.c-red .tool-icon{background:rgba(239,68,68,.15)}.c-red .tool-btn{background:rgba(239,68,68,.12);color:#f87171}.c-red .progress-bar{background:linear-gradient(90deg,#b91c1c,#ef4444)}.c-red .dl-btn{background:linear-gradient(135deg,#b91c1c,#ef4444)}.c-red .fmt{background:rgba(239,68,68,.1);color:#f87171;border-color:rgba(239,68,68,.2)}
+
+/* ── c-blue （音訊錄製）── */
+.c-blue::before{background:linear-gradient(90deg,#1d4ed8,#3b82f6)}.c-blue:hover{box-shadow:0 0 24px rgba(59,130,246,.18)}.c-blue .tool-icon{background:rgba(59,130,246,.15)}.c-blue .tool-btn{background:rgba(59,130,246,.12);color:#60a5fa}.c-blue .progress-bar{background:linear-gradient(90deg,#1d4ed8,#3b82f6)}.c-blue .dl-btn{background:linear-gradient(135deg,#1d4ed8,#3b82f6)}.c-blue .fmt{background:rgba(59,130,246,.1);color:#60a5fa;border-color:rgba(59,130,246,.2)}
+
+/* ── 錄製工具共用 UI ── */
+.rec-opts{display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px;margin:8px 0 4px}
+.rec-opt-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2);cursor:pointer;user-select:none}
+.rec-opt-row input[type=checkbox]{width:16px;height:16px;accent-color:#ef4444;cursor:pointer}
+.c-blue .rec-opt-row input[type=checkbox]{accent-color:#3b82f6}
+.rec-mode-tabs{display:flex;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:8px}
+.rec-mode-btn{flex:1;padding:8px 10px;background:transparent;border:none;border-radius:7px;color:var(--text3);font-size:12.5px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.18s}
+.rec-mode-btn.active{background:rgba(59,130,246,.18);color:#bfdbfe}
+.c-red .rec-mode-btn.active{background:rgba(239,68,68,.18);color:#fecaca}
+.rec-fmt-row{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--text3);margin-top:6px}
+.rec-fmt-row select{flex:1}
+.rec-warn{font-size:11.5px;line-height:1.55;color:#fbbf24;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.18);border-radius:8px;padding:8px 10px;margin-top:8px;display:flex;gap:6px}
+.rec-warn::before{content:'⚠';flex-shrink:0}
+.rec-controls{display:flex;gap:8px;margin-top:10px}
+.rec-controls .tool-btn{flex:1}
+.rec-btn-stop{background:rgba(239,68,68,.15)!important;color:#fca5a5!important}
+.rec-btn-pause{background:rgba(255,255,255,.06)!important;color:var(--text2)!important;flex:0 0 auto!important;padding:0 14px!important}
+.rec-status{display:none;align-items:center;gap:10px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.22);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px;color:#fecaca}
+.tool-card.recording .rec-status{display:flex}
+.tool-card.recording .start-btn{display:none}
+.tool-card.recording .rec-opts,.tool-card.recording .rec-mode-tabs,.tool-card.recording .rec-fmt-row,.tool-card.recording .rec-warn{display:none}
+.tool-card.done .rec-opts,.tool-card.done .rec-mode-tabs,.tool-card.done .rec-fmt-row,.tool-card.done .rec-warn,.tool-card.done .rec-controls{display:none}
+.rec-pulse{width:10px;height:10px;border-radius:50%;background:#ef4444;animation:recpulse 1s infinite ease-in-out;flex-shrink:0}
+@keyframes recpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+.rec-time{font-family:'JetBrains Mono','Menlo',monospace;font-weight:600;font-size:14px;color:#fff;letter-spacing:1px}
+.rec-status-label{flex:1;font-size:12px;color:#fca5a5}
+.rec-preview{display:none;margin-top:10px;border-radius:10px;overflow:hidden;background:#000}
+.tool-card.done .rec-preview{display:block}
+.rec-preview video,.rec-preview audio{width:100%;display:block}
+.rec-preview audio{background:rgba(255,255,255,.03)}
+.rec-convert-row{display:none;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--text3)}
+.tool-card.done .rec-convert-row{display:flex}
+.rec-convert-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;color:var(--text2);font-size:12px;padding:6px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.rec-convert-btn:hover{background:rgba(255,255,255,.1)}
+.rec-convert-btn:disabled{opacity:.5;cursor:not-allowed}
+
 /* ── audio trim card ── */
 .atrim-open-btn{display:none!important;background:rgba(234,179,8,.15);color:#facc15;margin-bottom:10px}
 .tool-card.has-file .atrim-open-btn{display:flex!important}
@@ -609,6 +651,10 @@ if (!self.crossOriginIsolated) {
   <symbol id="ico-subtitle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="14" x2="10" y2="14"/><line x1="12" y1="14" x2="18" y2="14"/><line x1="6" y1="17" x2="14" y2="17"/></symbol>
   <symbol id="ico-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
   <symbol id="ico-audiocut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2"/><path d="M7 8v8"/><path d="M11 5v14"/><path d="M15 8v8"/><path d="M19 10v4"/><circle cx="6" cy="6" r="2" stroke-width="1.5"/><circle cx="6" cy="18" r="2" stroke-width="1.5"/><line x1="18" y1="4" x2="8" y2="15"/></symbol>
+  <symbol id="ico-rec-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"/></symbol>
+  <symbol id="ico-stop-sq" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor"/></symbol>
+  <symbol id="ico-screen-rec" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><circle cx="12" cy="10" r="2.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ico-system-audio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></symbol>
 </svg>
 
 <header>
@@ -661,6 +707,8 @@ if (!self.crossOriginIsolated) {
       使用指南 — 點擊快速跳轉至該工具
     </div>
     <div class="guide-scroll">
+      <a class="guide-pill" data-guide="screenRecord"><span class="gp-dot" style="background:#ef4444"></span>螢幕錄影</a>
+      <a class="guide-pill" data-guide="audioRecord"><span class="gp-dot" style="background:#3b82f6"></span>電腦音訊錄製</a>
       <a class="guide-pill" data-guide="compress"><span class="gp-dot gp-emerald"></span>影片壓縮</a>
       <a class="guide-pill" data-guide="convert"><span class="gp-dot gp-amber"></span>格式轉換</a>
       <a class="guide-pill" data-guide="trim"><span class="gp-dot gp-sky"></span>影片裁剪</a>
@@ -676,6 +724,84 @@ if (!self.crossOriginIsolated) {
       <a class="guide-pill" data-guide="audioConvert"><span class="gp-dot gp-violet"></span>音訊轉換</a>
       <a class="guide-pill" data-guide="audioTrim"><span class="gp-dot" style="background:#eab308"></span>音訊裁切</a>
     </div>
+  </div>
+
+  <div class="section-title">錄製工具</div>
+  <div class="tools-grid">
+
+    <!-- 螢幕錄影＋聲音 -->
+    <div class="tool-card c-red" data-tool="screenRecord">
+      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-screen-rec"/></svg></div>
+      <div class="tool-name">螢幕錄影＋聲音</div>
+      <div class="tool-desc">錄製簡報、網頁操作畫面與聲音。可同時錄麥克風與分頁音訊。</div>
+      <div class="rec-opts">
+        <label class="rec-opt-row"><input type="checkbox" class="rec-opt-mic" checked>包含麥克風（你說話的聲音）</label>
+        <label class="rec-opt-row"><input type="checkbox" class="rec-opt-tab" checked>包含分頁／系統音訊（簡報、影片聲）</label>
+      </div>
+      <div class="rec-fmt-row">
+        <span>輸出格式</span>
+        <select class="fmt-select rec-fmt">
+          <option value="webm" selected>WebM（瀏覽器原生，最快）</option>
+          <option value="mp4">MP4（最相容，需轉換較久）</option>
+        </select>
+      </div>
+      <div class="rec-warn">分享分頁音訊需在分享視窗選「Chrome 分頁」並勾選「分享分頁音訊」。macOS 無法直接錄整個系統聲音。</div>
+      <div class="error-msg"></div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">處理中...</div></div>
+      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24"><use href="#ico-rec-dot"/></svg>開始錄製</button>
+      <div class="rec-status">
+        <div class="rec-pulse"></div>
+        <div class="rec-status-label">錄製中</div>
+        <div class="rec-time">00:00</div>
+      </div>
+      <div class="rec-controls" style="display:none">
+        <button class="tool-btn rec-btn-pause" data-action="pause">暫停</button>
+        <button class="tool-btn rec-btn-stop" data-action="stop"><svg width="13" height="13"><use href="#ico-stop-sq"/></svg>停止</button>
+      </div>
+      <div class="rec-preview"></div>
+      <div class="download-wrap">
+        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載影片</button>
+        <button class="reset-btn">再次錄製</button>
+      </div>
+    </div>
+
+    <!-- 電腦音訊錄製 -->
+    <div class="tool-card c-blue" data-tool="audioRecord">
+      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-mic"/></svg></div>
+      <div class="tool-name">電腦音訊錄製</div>
+      <div class="tool-desc">純錄聲音不錄畫面，適合錄製廣播、線上節目、講話旁白等。</div>
+      <div class="rec-mode-tabs">
+        <button class="rec-mode-btn active" data-mode="mic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-mic"/></svg>麥克風</button>
+        <button class="rec-mode-btn" data-mode="tab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-system-audio"/></svg>電腦聲音（分頁）</button>
+      </div>
+      <div class="rec-fmt-row">
+        <span>輸出格式</span>
+        <select class="fmt-select rec-fmt">
+          <option value="webm" selected>WebM/Opus（原生，最快）</option>
+          <option value="mp3">MP3（最相容，需轉換）</option>
+          <option value="wav">WAV（無損，需轉換）</option>
+        </select>
+      </div>
+      <div class="rec-warn rec-warn-tab" style="display:none">錄製電腦聲音時，需在分享視窗選「Chrome 分頁」（例如：播廣播的分頁）並勾「分享分頁音訊」。錄製過程畫面分享不會儲存。</div>
+      <div class="error-msg"></div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">處理中...</div></div>
+      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24"><use href="#ico-rec-dot"/></svg>開始錄製</button>
+      <div class="rec-status">
+        <div class="rec-pulse"></div>
+        <div class="rec-status-label">錄製中</div>
+        <div class="rec-time">00:00</div>
+      </div>
+      <div class="rec-controls" style="display:none">
+        <button class="tool-btn rec-btn-pause" data-action="pause">暫停</button>
+        <button class="tool-btn rec-btn-stop" data-action="stop"><svg width="13" height="13"><use href="#ico-stop-sq"/></svg>停止</button>
+      </div>
+      <div class="rec-preview"></div>
+      <div class="download-wrap">
+        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載音訊</button>
+        <button class="reset-btn">再次錄製</button>
+      </div>
+    </div>
+
   </div>
 
   <div class="section-title">影片工具</div>
@@ -3126,6 +3252,361 @@ if (!self.crossOriginIsolated) {
     });
   }
 
+  // ── Screen Recording Card ─────────────────────────────────
+  function setupScreenRecordCard(card) {
+    var startBtn = card.querySelector('.start-btn');
+    var pauseBtn = card.querySelector('[data-action=pause]');
+    var stopBtn  = card.querySelector('[data-action=stop]');
+    var controls = card.querySelector('.rec-controls');
+    var statusLabel = card.querySelector('.rec-status-label');
+    var timeEl   = card.querySelector('.rec-time');
+    var pulse    = card.querySelector('.rec-pulse');
+    var preview  = card.querySelector('.rec-preview');
+    var dlBtn    = card.querySelector('.dl-btn');
+    var resetBtn = card.querySelector('.reset-btn');
+    var errEl    = card.querySelector('.error-msg');
+    var bar      = card.querySelector('.progress-bar');
+    var progText = card.querySelector('.progress-text');
+    var fmtSel   = card.querySelector('.rec-fmt');
+    var optMic   = card.querySelector('.rec-opt-mic');
+    var optTab   = card.querySelector('.rec-opt-tab');
+
+    var recorder=null, chunks=[], displayStream=null, micStream=null, audioCtx=null;
+    var startTime=0, pausedDur=0, pausedAt=0, timerId=null;
+    var recordedBlob=null, recordedUrl=null;
+
+    function pad(n){ return n<10?'0'+n:''+n; }
+    function fmtSec(s){ var m=Math.floor(s/60), ss=Math.floor(s%60); return pad(m)+':'+pad(ss); }
+    function tsStr(){ var d=new Date(); return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds()); }
+
+    function pickMime(){
+      var types=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+      for (var i=0;i<types.length;i++) if (MediaRecorder.isTypeSupported(types[i])) return types[i];
+      return '';
+    }
+    function cleanup(){
+      if (displayStream){ displayStream.getTracks().forEach(function(t){ t.stop(); }); displayStream=null; }
+      if (micStream){ micStream.getTracks().forEach(function(t){ t.stop(); }); micStream=null; }
+      if (audioCtx){ try{ audioCtx.close(); }catch(e){} audioCtx=null; }
+    }
+    function updateTimer(){ timeEl.textContent = fmtSec((Date.now()-startTime-pausedDur)/1000); }
+
+    function resetAll(){
+      cleanup();
+      if (recorder && recorder.state!=='inactive'){ try{ recorder.stop(); }catch(e){} }
+      recorder=null; chunks=[]; pausedDur=0;
+      if (timerId){ clearInterval(timerId); timerId=null; }
+      if (recordedUrl){ URL.revokeObjectURL(recordedUrl); recordedUrl=null; }
+      recordedBlob=null;
+      preview.innerHTML='';
+      timeEl.textContent='00:00';
+      bar.style.width='0%';
+      card.classList.remove('recording','done','processing','has-error');
+      controls.style.display='none';
+      pauseBtn.textContent='暫停';
+      statusLabel.textContent='錄製中';
+      pulse.style.animationPlayState='running';
+      errEl.textContent='';
+    }
+
+    function stopRec(){
+      if (recorder && recorder.state!=='inactive') recorder.stop();
+      if (timerId){ clearInterval(timerId); timerId=null; }
+    }
+
+    function addDownloadHandler(){
+      var wantMp4 = fmtSel.value==='mp4';
+      if (wantMp4){
+        dlBtn.onclick = async function(){
+          if (ffRunning) return;
+          ffRunning=true;
+          card.classList.add('processing');
+          bar.style.width='5%';
+          progText.textContent='轉成 MP4...';
+          currentBar=bar; currentProgressEl=progText; currentProgressBase='轉成 MP4...';
+          try {
+            await ensureFF();
+            bar.style.width='15%';
+            ff.FS('writeFile','in.webm', await fetchFile(recordedBlob));
+            await ff.run('-i','in.webm','-c:v','libx264','-preset','ultrafast','-crf','23','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','out.mp4');
+            var data = ff.FS('readFile','out.mp4');
+            fsClean('in.webm','out.mp4');
+            var blob = new Blob([data.buffer], { type:'video/mp4' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a'); a.href=url; a.download='screen_recording_'+tsStr()+'.mp4'; a.click();
+            setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+            bar.style.width='100%';
+          } catch(e){
+            errEl.textContent='轉檔失敗：'+(e.message||e);
+            if (e.message && e.message.indexOf('one command at a time')>=0) ffReady=false;
+          } finally {
+            card.classList.remove('processing');
+            ffRunning=false; currentBar=null; currentProgressEl=null; currentProgressBase='';
+            progText.textContent='處理中...';
+          }
+        };
+      } else {
+        dlBtn.onclick = function(){
+          var a=document.createElement('a'); a.href=recordedUrl; a.download='screen_recording_'+tsStr()+'.webm'; a.click();
+        };
+      }
+    }
+
+    startBtn.addEventListener('click', async function(){
+      errEl.textContent='';
+      try {
+        var mimeType = pickMime();
+        if (!mimeType) throw new Error('瀏覽器不支援錄影 (MediaRecorder)');
+
+        displayStream = await navigator.mediaDevices.getDisplayMedia({
+          video: { frameRate: 30 },
+          audio: optTab.checked
+        });
+        if (!displayStream) return;
+        displayStream.getVideoTracks()[0].onended = function(){ stopRec(); };
+
+        var displayAudio = displayStream.getAudioTracks();
+        if (optMic.checked){
+          try { micStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+          catch(e){ micStream=null; }
+        }
+
+        var audioTracks = [];
+        if (displayAudio.length>0 && micStream){
+          audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+          var dest = audioCtx.createMediaStreamDestination();
+          try { audioCtx.createMediaStreamSource(displayStream).connect(dest); } catch(e){}
+          try { audioCtx.createMediaStreamSource(micStream).connect(dest); } catch(e){}
+          audioTracks = dest.stream.getAudioTracks();
+        } else if (displayAudio.length>0){
+          audioTracks = displayAudio;
+        } else if (micStream){
+          audioTracks = micStream.getAudioTracks();
+        }
+
+        var finalStream = new MediaStream(displayStream.getVideoTracks().concat(audioTracks));
+
+        chunks=[];
+        recorder = new MediaRecorder(finalStream, { mimeType: mimeType });
+        recorder.ondataavailable = function(e){ if (e.data && e.data.size>0) chunks.push(e.data); };
+        recorder.onstop = function(){
+          recordedBlob = new Blob(chunks, { type: mimeType });
+          recordedUrl  = URL.createObjectURL(recordedBlob);
+          var vid = document.createElement('video');
+          vid.src = recordedUrl; vid.controls = true; vid.preload='metadata';
+          preview.innerHTML=''; preview.appendChild(vid);
+          addDownloadHandler();
+          card.classList.remove('recording');
+          controls.style.display='none';
+          card.classList.add('done');
+          cleanup();
+        };
+        recorder.start(1000);
+        startTime = Date.now(); pausedDur = 0;
+        card.classList.add('recording');
+        controls.style.display='flex';
+        timeEl.textContent='00:00';
+        timerId = setInterval(updateTimer, 250);
+      } catch(e){
+        cleanup();
+        if (e.name!=='NotAllowedError' && e.name!=='AbortError'){
+          errEl.textContent='錄製失敗：'+(e.message||e);
+        }
+      }
+    });
+
+    pauseBtn.addEventListener('click', function(){
+      if (!recorder) return;
+      if (recorder.state==='recording'){
+        recorder.pause(); pausedAt=Date.now();
+        pauseBtn.textContent='繼續'; pulse.style.animationPlayState='paused';
+        statusLabel.textContent='已暫停';
+      } else if (recorder.state==='paused'){
+        pausedDur += Date.now()-pausedAt;
+        recorder.resume();
+        pauseBtn.textContent='暫停'; pulse.style.animationPlayState='running';
+        statusLabel.textContent='錄製中';
+      }
+    });
+    stopBtn.addEventListener('click', stopRec);
+    resetBtn.addEventListener('click', resetAll);
+  }
+
+  // ── Audio Recording Card ──────────────────────────────────
+  function setupAudioRecordCard(card) {
+    var startBtn = card.querySelector('.start-btn');
+    var pauseBtn = card.querySelector('[data-action=pause]');
+    var stopBtn  = card.querySelector('[data-action=stop]');
+    var controls = card.querySelector('.rec-controls');
+    var statusLabel = card.querySelector('.rec-status-label');
+    var timeEl   = card.querySelector('.rec-time');
+    var pulse    = card.querySelector('.rec-pulse');
+    var preview  = card.querySelector('.rec-preview');
+    var dlBtn    = card.querySelector('.dl-btn');
+    var resetBtn = card.querySelector('.reset-btn');
+    var errEl    = card.querySelector('.error-msg');
+    var bar      = card.querySelector('.progress-bar');
+    var progText = card.querySelector('.progress-text');
+    var fmtSel   = card.querySelector('.rec-fmt');
+    var modeBtns = card.querySelectorAll('.rec-mode-btn');
+    var tabWarn  = card.querySelector('.rec-warn-tab');
+
+    var mode='mic';
+    var recorder=null, chunks=[], stream=null;
+    var startTime=0, pausedDur=0, pausedAt=0, timerId=null;
+    var recordedBlob=null, recordedUrl=null;
+
+    function pad(n){ return n<10?'0'+n:''+n; }
+    function fmtSec(s){ var m=Math.floor(s/60), ss=Math.floor(s%60); return pad(m)+':'+pad(ss); }
+    function tsStr(){ var d=new Date(); return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds()); }
+    function pickMime(){
+      var types=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'];
+      for (var i=0;i<types.length;i++) if (MediaRecorder.isTypeSupported(types[i])) return types[i];
+      return '';
+    }
+    function cleanup(){ if (stream){ stream.getTracks().forEach(function(t){ t.stop(); }); stream=null; } }
+    function updateTimer(){ timeEl.textContent = fmtSec((Date.now()-startTime-pausedDur)/1000); }
+    function stopRec(){
+      if (recorder && recorder.state!=='inactive') recorder.stop();
+      if (timerId){ clearInterval(timerId); timerId=null; }
+    }
+
+    modeBtns.forEach(function(b){
+      b.addEventListener('click', function(){
+        modeBtns.forEach(function(x){ x.classList.remove('active'); });
+        b.classList.add('active');
+        mode = b.dataset.mode;
+        tabWarn.style.display = (mode==='tab') ? 'flex' : 'none';
+      });
+    });
+
+    function resetAll(){
+      cleanup();
+      if (recorder && recorder.state!=='inactive'){ try{ recorder.stop(); }catch(e){} }
+      recorder=null; chunks=[]; pausedDur=0;
+      if (timerId){ clearInterval(timerId); timerId=null; }
+      if (recordedUrl){ URL.revokeObjectURL(recordedUrl); recordedUrl=null; }
+      recordedBlob=null;
+      preview.innerHTML='';
+      timeEl.textContent='00:00';
+      bar.style.width='0%';
+      card.classList.remove('recording','done','processing','has-error');
+      controls.style.display='none';
+      pauseBtn.textContent='暫停';
+      statusLabel.textContent='錄製中';
+      pulse.style.animationPlayState='running';
+      errEl.textContent='';
+    }
+
+    function addDownloadHandler(){
+      var fmt = fmtSel.value;
+      if (fmt==='webm'){
+        dlBtn.onclick = function(){
+          var a=document.createElement('a'); a.href=recordedUrl; a.download='audio_recording_'+tsStr()+'.webm'; a.click();
+        };
+      } else {
+        dlBtn.onclick = async function(){
+          if (ffRunning) return;
+          ffRunning=true;
+          card.classList.add('processing');
+          bar.style.width='5%';
+          progText.textContent='轉成 '+fmt.toUpperCase()+'...';
+          currentBar=bar; currentProgressEl=progText; currentProgressBase='轉成 '+fmt.toUpperCase()+'...';
+          try {
+            await ensureFF();
+            bar.style.width='15%';
+            ff.FS('writeFile','in.webm', await fetchFile(recordedBlob));
+            var args=['-i','in.webm','-vn'];
+            if (fmt==='mp3') args.push('-acodec','libmp3lame','-ab','192k','out.mp3');
+            else args.push('-acodec','pcm_s16le','out.wav');
+            await ff.run.apply(ff, args);
+            var outName='out.'+fmt;
+            var data = ff.FS('readFile', outName);
+            fsClean('in.webm', outName);
+            var blob = new Blob([data.buffer], { type: MIME[fmt]||'application/octet-stream' });
+            var url = URL.createObjectURL(blob);
+            var a=document.createElement('a'); a.href=url; a.download='audio_recording_'+tsStr()+'.'+fmt; a.click();
+            setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+            bar.style.width='100%';
+          } catch(e){
+            errEl.textContent='轉檔失敗：'+(e.message||e);
+            if (e.message && e.message.indexOf('one command at a time')>=0) ffReady=false;
+          } finally {
+            card.classList.remove('processing');
+            ffRunning=false; currentBar=null; currentProgressEl=null; currentProgressBase='';
+            progText.textContent='處理中...';
+          }
+        };
+      }
+    }
+
+    startBtn.addEventListener('click', async function(){
+      errEl.textContent='';
+      try {
+        var mimeType = pickMime();
+        if (!mimeType) throw new Error('瀏覽器不支援錄音 (MediaRecorder)');
+        var audioTracks;
+        if (mode==='mic'){
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioTracks = stream.getAudioTracks();
+        } else {
+          stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+          audioTracks = stream.getAudioTracks();
+          if (audioTracks.length===0){
+            cleanup();
+            throw new Error('未抓到分頁聲音 — 請在分享視窗勾選「分享分頁音訊」');
+          }
+          // 不需要影像軌
+          stream.getVideoTracks().forEach(function(t){ t.stop(); });
+          audioTracks[0].onended = function(){ stopRec(); };
+        }
+        var audioOnly = new MediaStream(audioTracks);
+        chunks=[];
+        recorder = new MediaRecorder(audioOnly, { mimeType: mimeType });
+        recorder.ondataavailable = function(e){ if (e.data && e.data.size>0) chunks.push(e.data); };
+        recorder.onstop = function(){
+          recordedBlob = new Blob(chunks, { type: mimeType });
+          recordedUrl  = URL.createObjectURL(recordedBlob);
+          var au = document.createElement('audio');
+          au.src = recordedUrl; au.controls = true;
+          preview.innerHTML=''; preview.appendChild(au);
+          addDownloadHandler();
+          card.classList.remove('recording');
+          controls.style.display='none';
+          card.classList.add('done');
+          cleanup();
+        };
+        recorder.start(1000);
+        startTime = Date.now(); pausedDur = 0;
+        card.classList.add('recording');
+        controls.style.display='flex';
+        timeEl.textContent='00:00';
+        timerId = setInterval(updateTimer, 250);
+      } catch(e){
+        cleanup();
+        if (e.name!=='NotAllowedError' && e.name!=='AbortError'){
+          errEl.textContent='錄製失敗：'+(e.message||e);
+        }
+      }
+    });
+
+    pauseBtn.addEventListener('click', function(){
+      if (!recorder) return;
+      if (recorder.state==='recording'){
+        recorder.pause(); pausedAt=Date.now();
+        pauseBtn.textContent='繼續'; pulse.style.animationPlayState='paused';
+        statusLabel.textContent='已暫停';
+      } else if (recorder.state==='paused'){
+        pausedDur += Date.now()-pausedAt;
+        recorder.resume();
+        pauseBtn.textContent='暫停'; pulse.style.animationPlayState='running';
+        statusLabel.textContent='錄製中';
+      }
+    });
+    stopBtn.addEventListener('click', stopRec);
+    resetBtn.addEventListener('click', resetAll);
+  }
+
   window.showPanel = function(id, btn) {
     document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
     document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
@@ -3137,7 +3618,7 @@ if (!self.crossOriginIsolated) {
     }
   };
 
-  document.querySelectorAll('.tool-card[data-tool]:not([data-tool="merge"]):not([data-tool="watermark"]):not([data-tool="faceBlur"]):not([data-tool="bgm"]):not([data-tool="subtitle"]):not([data-tool="snapshot"]):not([data-tool="audioTrim"])').forEach(setupCard);
+  document.querySelectorAll('.tool-card[data-tool]:not([data-tool="merge"]):not([data-tool="watermark"]):not([data-tool="faceBlur"]):not([data-tool="bgm"]):not([data-tool="subtitle"]):not([data-tool="snapshot"]):not([data-tool="audioTrim"]):not([data-tool="screenRecord"]):not([data-tool="audioRecord"])').forEach(setupCard);
   document.querySelectorAll('.tool-card[data-tool="watermark"]').forEach(setupWatermarkCard);
   document.querySelectorAll('.tool-card[data-tool="merge"]').forEach(setupMergeCard);
   document.querySelectorAll('.tool-card[data-tool="faceBlur"]').forEach(setupFaceBlurCard);
@@ -3145,6 +3626,8 @@ if (!self.crossOriginIsolated) {
   document.querySelectorAll('.tool-card[data-tool="subtitle"]').forEach(setupSubtitleCard);
   document.querySelectorAll('.tool-card[data-tool="snapshot"]').forEach(setupSnapshotCard);
   document.querySelectorAll('.tool-card[data-tool="audioTrim"]').forEach(setupAudioTrimCard);
+  document.querySelectorAll('.tool-card[data-tool="screenRecord"]').forEach(setupScreenRecordCard);
+  document.querySelectorAll('.tool-card[data-tool="audioRecord"]').forEach(setupAudioRecordCard);
 
   // Guide pills → scroll to card
   document.querySelectorAll('.guide-pill[data-guide]').forEach(function(pill) {
