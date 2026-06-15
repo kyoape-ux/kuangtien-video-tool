@@ -3793,11 +3793,31 @@ window.dispatchEvent(new Event('transcription-ready'));
     function fmtVttTime(s) { return fmtSrtTime(s).replace(',', '.'); }
     function basename(name) { return name.replace(/\.[^.]+$/, ''); }
 
+    // 半形標點轉全形（僅對含中文的文字處理；保留數字內的 .,:）
+    function toFullWidthPunct(text) {
+      if (!text) return text;
+      if (!/[一-鿿]/.test(text)) return text;  // 純英文不轉
+      // 三個以上連續 . 改為中文省略號
+      text = text.replace(/\.{3,}/g, '…');
+      var map = { ',':'，', '.':'。', '!':'！', '?':'？', ':':'：', ';':'；' };
+      return text.replace(/[,.!?:;]/g, function(m, offset, str) {
+        var prev = str[offset - 1] || '';
+        var next = str[offset + 1] || '';
+        // 數字內的小數點、千分位：1.5、3,000
+        if ((m === '.' || m === ',') && /\d/.test(prev) && /\d/.test(next)) return m;
+        // 時間、網址、檔名等：10:30、http://、a.txt
+        if (m === ':' && /[a-zA-Z0-9]/.test(prev) && /[a-zA-Z0-9/]/.test(next)) return m;
+        if (m === '.' && /[a-zA-Z0-9]/.test(prev) && /[a-zA-Z]/.test(next)) return m;
+        return map[m];
+      });
+    }
+
     function chunksToSrt(chunks) {
       var lines = [];
       chunks.forEach(function(c, i) {
         var t = c.timestamp || [0, 0];
-        lines.push((i+1) + '\n' + fmtSrtTime(t[0]) + ' --> ' + fmtSrtTime(t[1]) + '\n' + (c.text||'').trim());
+        var text = toFullWidthPunct((c.text||'').trim());
+        lines.push((i+1) + '\n' + fmtSrtTime(t[0]) + ' --> ' + fmtSrtTime(t[1]) + '\n' + text);
       });
       return lines.join('\n\n');
     }
@@ -3806,7 +3826,7 @@ window.dispatchEvent(new Event('transcription-ready'));
       chunks.forEach(function(c) {
         var t = c.timestamp || [0, 0];
         lines.push(fmtVttTime(t[0]) + ' --> ' + fmtVttTime(t[1]));
-        lines.push((c.text||'').trim());
+        lines.push(toFullWidthPunct((c.text||'').trim()));
         lines.push('');
       });
       return lines.join('\n');
@@ -3901,7 +3921,7 @@ window.dispatchEvent(new Event('transcription-ready'));
         var txt = '';
         if (fmt === 'srt') txt = chunksToSrt(result.chunks || []);
         else if (fmt === 'vtt') txt = chunksToVtt(result.chunks || []);
-        else txt = (result.text || '').trim();
+        else txt = toFullWidthPunct((result.text || '').trim());
 
         currentText = txt;
         resultEl.textContent = txt;
