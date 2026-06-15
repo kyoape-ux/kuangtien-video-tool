@@ -227,12 +227,13 @@ footer a{color:var(--indigo2);text-decoration:none}
 
 /* ── 轉文字結果區 ── */
 .tr-result{display:none;margin-top:10px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px;max-height:260px;overflow-y:auto;font-size:13px;line-height:1.7;color:var(--text2);white-space:pre-wrap;word-break:break-word}
-.tool-card.done .tr-result{display:block}
+.tool-card.done .tr-result.show{display:block}
 .tr-result-actions{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}
 .tool-card.done .tr-result-actions{display:flex}
-.tr-action-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;padding:6px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.tr-action-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;padding:6px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:.15s}
 .tr-action-btn:hover{background:rgba(255,255,255,.1)}
-.tr-meta{display:none;font-size:11.5px;color:var(--text3);margin-top:6px}
+.tr-action-btn.active{background:rgba(168,85,247,.18);border-color:rgba(168,85,247,.35);color:#d8b4fe}
+.tr-meta{display:none;font-size:11.5px;color:var(--text3);margin-top:8px;padding:8px 12px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid var(--border)}
 .tool-card.done .tr-meta{display:block}
 .tr-info{font-size:11.5px;line-height:1.55;color:#a5b4fc;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.18);border-radius:8px;padding:8px 10px;margin-top:8px;display:flex;gap:6px}
 .tr-info::before{content:'ℹ️';flex-shrink:0}
@@ -1371,11 +1372,12 @@ if (!self.crossOriginIsolated) {
       <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">處理中...</div></div>
       <div class="error-msg"></div>
       <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-bolt"/></svg>開始轉文字</button>
-      <div class="tr-result"></div>
       <div class="tr-meta"></div>
       <div class="tr-result-actions">
+        <button class="tr-action-btn tr-preview-btn">預覽文字 ▼</button>
         <button class="tr-action-btn tr-copy-btn"><svg width="12" height="12" viewBox="0 0 24 24"><use href="#ico-copy"/></svg>複製文字</button>
       </div>
+      <div class="tr-result"></div>
       <div class="download-wrap">
         <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載文字檔</button>
         <button class="reset-btn">再次轉文字</button>
@@ -3768,6 +3770,7 @@ window.dispatchEvent(new Event('transcription-ready'));
     var resultEl = card.querySelector('.tr-result');
     var metaEl   = card.querySelector('.tr-meta');
     var copyBtn  = card.querySelector('.tr-copy-btn');
+    var previewBtn = card.querySelector('.tr-preview-btn');
     var dlBtn    = card.querySelector('.dl-btn');
     var resetBtn = card.querySelector('.reset-btn');
     var modelSel = card.querySelector('.tr-model');
@@ -3825,9 +3828,18 @@ window.dispatchEvent(new Event('transcription-ready'));
       bar.style.width = '0%';
       progText.textContent = '處理中...';
       resultEl.textContent = '';
+      resultEl.classList.remove('show');
+      previewBtn.textContent = '預覽文字 ▼';
+      previewBtn.classList.remove('active');
       metaEl.textContent = '';
       errEl.textContent = '';
     }
+
+    previewBtn.addEventListener('click', function() {
+      var showing = resultEl.classList.toggle('show');
+      previewBtn.classList.toggle('active', showing);
+      previewBtn.textContent = showing ? '收起預覽 ▲' : '預覽文字 ▼';
+    });
 
     dropArea.addEventListener('click', function() { input.click(); });
     dropArea.addEventListener('dragover', function(e) { e.preventDefault(); dropArea.classList.add('drag-over'); });
