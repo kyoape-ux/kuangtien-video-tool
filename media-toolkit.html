@@ -1862,7 +1862,12 @@ window.runTranscription = async function(file, opts, onProgress) {
     chunk_length_s: 30,
     stride_length_s: 5,
     return_timestamps: opts.format !== 'txt',
-    task: 'transcribe'
+    task: 'transcribe',
+    // 抑制重複跳針
+    no_repeat_ngram_size: 4,
+    repetition_penalty: 1.2,
+    // 不條件化前段內容（避免錯誤滾雪球）
+    condition_on_previous_text: false
   };
   if (opts.language && opts.language !== 'auto') transcribeOpts.language = opts.language;
 
@@ -3796,6 +3801,79 @@ window.dispatchEvent(new Event('transcription-ready'));
     function fmtVttTime(s) { return fmtSrtTime(s).replace(',', '.'); }
     function basename(name) { return name.replace(/\.[^.]+$/, ''); }
 
+    // ── 去除 Whisper 跳針 ──
+    // 規則：往回看 3 句，若 (1) 完全相同 (2) 短句被任一前句完整包含 (3) bigram 相似度 > 0.55
+    // 三條件之一成立 → 視為重複移除（保留較長者）
+    function _bigrams(s) {
+      var set = new Set();
+      for (var i = 0; i < s.length - 1; i++) set.add(s.slice(i, i + 2));
+      return set;
+    }
+    function _sim(a, b) {
+      if (!a || !b) return 0;
+      var A = _bigrams(a), B = _bigrams(b);
+      if (A.size === 0 || B.size === 0) return 0;
+      var inter = 0;
+      A.forEach(function(x) { if (B.has(x)) inter++; });
+      return inter / (A.size + B.size - inter);
+    }
+    function _stripEnd(s) { return s.replace(/[。！？\.!\?]+$/, ''); }
+
+    function _checkDup(curBody, prevBody) {
+      // exact
+      if (curBody === prevBody) return 'dup';
+      // short fully contained in long
+      if (curBody.length >= 3 && curBody.length <= prevBody.length && prevBody.indexOf(curBody) >= 0) return 'dup';
+      // long contains a short prev → replace prev
+      if (prevBody.length >= 3 && prevBody.length < curBody.length && curBody.indexOf(prevBody) >= 0) return 'replace';
+      // bigram 相似度高（兩句都要夠長才比，避免短句誤判）
+      if (curBody.length >= 6 && prevBody.length >= 6 && _sim(curBody, prevBody) > 0.55) {
+        return curBody.length > prevBody.length ? 'replace' : 'dup';
+      }
+      return null;
+    }
+
+    function dedupeText(text) {
+      if (!text) return text;
+      var pieces = text.split(/(?<=[。！？\.!\?])\s*/);
+      var out = [];
+      for (var i = 0; i < pieces.length; i++) {
+        var cur = pieces[i].trim();
+        if (!cur) continue;
+        var curBody = _stripEnd(cur);
+        if (curBody.length < 2) continue;
+        var keep = true;
+        var lookBack = Math.min(3, out.length);
+        for (var k = out.length - lookBack; k < out.length; k++) {
+          var verdict = _checkDup(curBody, _stripEnd(out[k]));
+          if (verdict === 'dup') { keep = false; break; }
+          if (verdict === 'replace') { out[k] = cur; keep = false; break; }
+        }
+        if (keep) out.push(cur);
+      }
+      return out.join('');
+    }
+
+    function dedupeChunks(chunks) {
+      if (!chunks || chunks.length < 2) return chunks;
+      var out = [chunks[0]];
+      for (var i = 1; i < chunks.length; i++) {
+        var cur = (chunks[i].text || '').trim();
+        if (!cur) continue;
+        var curBody = _stripEnd(cur);
+        if (curBody.length < 2) continue;
+        var keep = true;
+        var lookBack = Math.min(3, out.length);
+        for (var k = out.length - lookBack; k < out.length; k++) {
+          var verdict = _checkDup(curBody, _stripEnd((out[k].text || '').trim()));
+          if (verdict === 'dup') { keep = false; break; }
+          if (verdict === 'replace') { out[k] = chunks[i]; keep = false; break; }
+        }
+        if (keep) out.push(chunks[i]);
+      }
+      return out;
+    }
+
     // 簡體 → 繁體（含台灣用語：视频→影片、信息→資訊…）
     var _opencc = null;
     function getOpenCC() {
@@ -3939,9 +4017,9 @@ window.dispatchEvent(new Event('transcription-ready'));
         await sleep(200);
 
         var txt = '';
-        if (fmt === 'srt') txt = chunksToSrt(result.chunks || []);
-        else if (fmt === 'vtt') txt = chunksToVtt(result.chunks || []);
-        else txt = toFullWidthPunct(toTraditional((result.text || '').trim()));
+        if (fmt === 'srt') txt = chunksToSrt(dedupeChunks(result.chunks || []));
+        else if (fmt === 'vtt') txt = chunksToVtt(dedupeChunks(result.chunks || []));
+        else txt = toFullWidthPunct(toTraditional(dedupeText((result.text || '').trim())));
 
         currentText = txt;
         resultEl.textContent = txt;
