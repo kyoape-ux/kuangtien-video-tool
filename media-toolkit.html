@@ -1790,6 +1790,9 @@ if (!self.crossOriginIsolated) {
 
 <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 
+<!-- ── 簡體→繁體（含台灣用語）── -->
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
+
 <!-- ── Whisper（Transformers.js）── -->
 <script type="module">
 import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
@@ -3793,6 +3796,23 @@ window.dispatchEvent(new Event('transcription-ready'));
     function fmtVttTime(s) { return fmtSrtTime(s).replace(',', '.'); }
     function basename(name) { return name.replace(/\.[^.]+$/, ''); }
 
+    // 簡體 → 繁體（含台灣用語：视频→影片、信息→資訊…）
+    var _opencc = null;
+    function getOpenCC() {
+      if (_opencc) return _opencc;
+      if (typeof OpenCC === 'undefined') return null;
+      try { _opencc = OpenCC.Converter({ from: 'cn', to: 'twp' }); }
+      catch(e) { _opencc = null; }
+      return _opencc;
+    }
+    function toTraditional(text) {
+      if (!text) return text;
+      if (!/[一-鿿]/.test(text)) return text;
+      var conv = getOpenCC();
+      if (!conv) return text;
+      try { return conv(text); } catch(e) { return text; }
+    }
+
     // 半形標點轉全形（僅對含中文的文字處理；保留數字內的 .,:）
     function toFullWidthPunct(text) {
       if (!text) return text;
@@ -3816,7 +3836,7 @@ window.dispatchEvent(new Event('transcription-ready'));
       var lines = [];
       chunks.forEach(function(c, i) {
         var t = c.timestamp || [0, 0];
-        var text = toFullWidthPunct((c.text||'').trim());
+        var text = toFullWidthPunct(toTraditional((c.text||'').trim()));
         lines.push((i+1) + '\n' + fmtSrtTime(t[0]) + ' --> ' + fmtSrtTime(t[1]) + '\n' + text);
       });
       return lines.join('\n\n');
@@ -3826,7 +3846,7 @@ window.dispatchEvent(new Event('transcription-ready'));
       chunks.forEach(function(c) {
         var t = c.timestamp || [0, 0];
         lines.push(fmtVttTime(t[0]) + ' --> ' + fmtVttTime(t[1]));
-        lines.push(toFullWidthPunct((c.text||'').trim()));
+        lines.push(toFullWidthPunct(toTraditional((c.text||'').trim())));
         lines.push('');
       });
       return lines.join('\n');
@@ -3921,7 +3941,7 @@ window.dispatchEvent(new Event('transcription-ready'));
         var txt = '';
         if (fmt === 'srt') txt = chunksToSrt(result.chunks || []);
         else if (fmt === 'vtt') txt = chunksToVtt(result.chunks || []);
-        else txt = toFullWidthPunct((result.text || '').trim());
+        else txt = toFullWidthPunct(toTraditional((result.text || '').trim()));
 
         currentText = txt;
         resultEl.textContent = txt;
