@@ -83,6 +83,17 @@ main{max-width:980px;margin:24px auto 0;padding:0 16px}
   .tools-grid.compact-mode .tool-card.is-open{width:96vw;max-height:92vh;padding:22px 18px}
 }
 
+/* ─── 工具串接 bar（處理完顯示「→ 送到下個工具」） ─── */
+.chain-bar{display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)}
+.tool-card.done .chain-bar{display:block}
+.chain-label{font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.chain-label::before{content:'';width:14px;height:1px;background:var(--border2)}
+.chain-btn-row{display:flex;gap:6px;flex-wrap:wrap}
+.chain-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 11px 7px 9px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12.5px;font-weight:500;cursor:pointer;transition:.15s;font-family:inherit}
+.chain-btn:hover{background:rgba(255,255,255,.08);border-color:var(--border2);color:#fff;transform:translateY(-1px)}
+.chain-btn .chain-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.chain-btn .chain-arrow{opacity:.5;margin-left:1px;font-size:11px}
+
 /* ─── 全頁拖檔提示遮罩 ─── */
 .drop-overlay{position:fixed;inset:24px;background:rgba(99,102,241,.08);border:3px dashed rgba(168,85,247,.6);border-radius:18px;display:none;align-items:center;justify-content:center;z-index:1500;pointer-events:none;backdrop-filter:blur(2px)}
 .drop-overlay.show{display:flex}
@@ -2321,6 +2332,9 @@ window.dispatchEvent(new Event('transcription-ready'));
         dlBtn.onclick = function() {
           var a = document.createElement('a'); a.href = url; a.download = result.filename; a.click();
         };
+        // 工具串接：儲存產出、加 chain bar
+        card._chainOutput = { blob: blob, filename: result.filename };
+        if (window.__addChainBar) window.__addChainBar(card, toolId, function(){ return card._chainOutput; });
       } catch(err) {
         console.error(err);
         card.classList.remove('processing');
@@ -2457,10 +2471,12 @@ window.dispatchEvent(new Event('transcription-ready'));
         var blob = new Blob([data.buffer], { type: 'video/mp4' });
         var url = URL.createObjectURL(blob);
         blobMap.set(card, url);
+        var outFname = basename(file.name) + '_watermark.mp4';
         dlBtn.onclick = function() {
-          var a = document.createElement('a'); a.href = url;
-          a.download = basename(file.name) + '_watermark.mp4'; a.click();
+          var a = document.createElement('a'); a.href = url; a.download = outFname; a.click();
         };
+        card._chainOutput = { blob: blob, filename: outFname };
+        if (window.__addChainBar) window.__addChainBar(card, 'watermark', function(){ return card._chainOutput; });
       } catch(err) {
         console.error(err);
         card.classList.remove('processing'); card.classList.add('has-file','has-error');
@@ -2588,6 +2604,8 @@ window.dispatchEvent(new Event('transcription-ready'));
         var blob = new Blob([result.data.buffer], { type: 'video/' + result.ext });
         var url = URL.createObjectURL(blob);
         dlBtn.onclick = function(){ var a = document.createElement('a'); a.href=url; a.download=result.filename; a.click(); };
+        card._chainOutput = { blob: blob, filename: result.filename };
+        if (window.__addChainBar) window.__addChainBar(card, 'merge', function(){ return card._chainOutput; });
       } catch(err) {
         console.error(err); card.classList.remove('processing'); card.classList.add('has-error');
         bar.style.width = '0%'; errEl.textContent = '合併失敗：' + (err.message || '格式不相容或記憶體不足');
@@ -2848,8 +2866,11 @@ window.dispatchEvent(new Event('transcription-ready'));
         card.classList.remove('processing'); card.classList.add('done');
         var blob = new Blob([outData.buffer], { type:'video/mp4' });
         var url = URL.createObjectURL(blob);
+        var outFname = basename(file.name) + '_blurred.mp4';
         blobMap.set(card, url);
-        dlBtn.onclick = function() { var a=document.createElement('a'); a.href=url; a.download=basename(file.name)+'_blurred.mp4'; a.click(); };
+        dlBtn.onclick = function() { var a=document.createElement('a'); a.href=url; a.download=outFname; a.click(); };
+        card._chainOutput = { blob: blob, filename: outFname };
+        if (window.__addChainBar) window.__addChainBar(card, 'faceBlur', function(){ return card._chainOutput; });
       } catch(err) {
         console.error(err);
         card.classList.remove('processing'); card.classList.add('has-file','has-error');
@@ -2972,8 +2993,11 @@ window.dispatchEvent(new Event('transcription-ready'));
         card.classList.remove('processing'); card.classList.add('done');
         var blob = new Blob([data.buffer], { type: 'video/mp4' });
         var url = URL.createObjectURL(blob);
+        var outFname = basename(file.name) + '_bgm.mp4';
         blobMap.set(card, url);
-        dlBtn.onclick = function() { var a = document.createElement('a'); a.href = url; a.download = basename(file.name) + '_bgm.mp4'; a.click(); };
+        dlBtn.onclick = function() { var a = document.createElement('a'); a.href = url; a.download = outFname; a.click(); };
+        card._chainOutput = { blob: blob, filename: outFname };
+        if (window.__addChainBar) window.__addChainBar(card, 'bgm', function(){ return card._chainOutput; });
       } catch(err) {
         console.error(err);
         card.classList.remove('processing'); card.classList.add('has-file', 'has-error');
@@ -3256,8 +3280,11 @@ window.dispatchEvent(new Event('transcription-ready'));
         card.classList.remove('processing'); card.classList.add('done');
         var blob = new Blob([outData.buffer], { type: 'video/mp4' });
         var url = URL.createObjectURL(blob);
+        var outFname = basename(file.name) + '_subtitled.mp4';
         blobMap.set(card, url);
-        dlBtn.onclick = function() { var a = document.createElement('a'); a.href = url; a.download = basename(file.name) + '_subtitled.mp4'; a.click(); };
+        dlBtn.onclick = function() { var a = document.createElement('a'); a.href = url; a.download = outFname; a.click(); };
+        card._chainOutput = { blob: blob, filename: outFname };
+        if (window.__addChainBar) window.__addChainBar(card, 'subtitle', function(){ return card._chainOutput; });
 
       } catch(err) {
         console.error(err);
@@ -3459,6 +3486,8 @@ window.dispatchEvent(new Event('transcription-ready'));
         };
         card.classList.remove('processing');
         card.classList.add('done');
+        card._chainOutput = { blob: blob, filename: result.filename };
+        if (window.__addChainBar) window.__addChainBar(card, 'audioTrim', function(){ return card._chainOutput; });
       } catch(e) {
         card.classList.remove('processing');
         card.classList.add('has-error');
@@ -3622,6 +3651,9 @@ window.dispatchEvent(new Event('transcription-ready'));
           controls.style.display='none';
           card.classList.add('done');
           cleanup();
+          // 串接：把錄影結果存起來給下個工具用
+          card._chainOutput = { blob: recordedBlob, filename: 'screen_' + tsStr() + '.webm' };
+          if (window.__addChainBar) window.__addChainBar(card, 'screenRecord', function(){ return card._chainOutput; });
         };
         recorder.start(1000);
         startTime = Date.now(); pausedDur = 0;
@@ -3797,6 +3829,8 @@ window.dispatchEvent(new Event('transcription-ready'));
           controls.style.display='none';
           card.classList.add('done');
           cleanup();
+          card._chainOutput = { blob: recordedBlob, filename: 'audio_' + tsStr() + '.webm' };
+          if (window.__addChainBar) window.__addChainBar(card, 'audioRecord', function(){ return card._chainOutput; });
         };
         recorder.start(1000);
         startTime = Date.now(); pausedDur = 0;
@@ -4109,6 +4143,16 @@ window.dispatchEvent(new Event('transcription-ready'));
 
         card.classList.remove('processing');
         card.classList.add('done');
+
+        // 串接：把文字轉成 blob 給下個工具（SRT/VTT 可直接送到字幕燒錄）
+        var trMime = fmt === 'srt' ? 'application/x-subrip' : fmt === 'vtt' ? 'text/vtt' : 'text/plain';
+        var trBlob = new Blob([txt], { type: trMime + ';charset=utf-8' });
+        var trFname = basename(currentFile.name) + '.' + fmt;
+        card._chainOutput = { blob: trBlob, filename: trFname };
+        // 純文字格式沒有下游工具，跳過；SRT/VTT 才顯示「→ 字幕燒錄」
+        if ((fmt === 'srt' || fmt === 'vtt') && window.__addChainBar) {
+          window.__addChainBar(card, 'transcribe', function(){ return card._chainOutput; });
+        }
       } catch(e) {
         card.classList.remove('processing');
         card.classList.add('has-error');
@@ -4140,6 +4184,105 @@ window.dispatchEvent(new Event('transcription-ready'));
   document.querySelectorAll('.tool-card[data-tool="screenRecord"]').forEach(setupScreenRecordCard);
   document.querySelectorAll('.tool-card[data-tool="audioRecord"]').forEach(setupAudioRecordCard);
   document.querySelectorAll('.tool-card[data-tool="transcribe"]').forEach(setupTranscribeCard);
+
+  // ── 工具串接系統：處理完一鍵送到下個工具 ──
+  // CHAIN_MAP 定義每個工具的「下游候選」（依使用頻率排序，最多 4 個）
+  var CHAIN_MAP = {
+    screenRecord: ['transcribe', 'trim', 'compress', 'faceBlur'],
+    audioRecord:  ['transcribe', 'audioTrim', 'audioConvert'],
+    transcribe:   ['subtitle'],
+    trim:         ['compress', 'faceBlur', 'subtitle', 'transcribe'],
+    toAudio:      ['transcribe', 'audioTrim', 'audioConvert'],
+    compress:     ['trim', 'faceBlur'],
+    convert:      ['trim', 'compress', 'faceBlur'],
+    faceBlur:     ['compress', 'trim', 'subtitle'],
+    watermark:    ['compress', 'trim'],
+    mute:         ['bgm', 'subtitle'],
+    bgm:          ['compress', 'subtitle'],
+    speed:        ['compress', 'trim'],
+    subtitle:     ['compress'],
+    audioConvert: ['transcribe', 'audioTrim'],
+    audioTrim:    ['transcribe', 'audioConvert'],
+    merge:        ['compress', 'trim', 'faceBlur']
+  };
+
+  var CHAIN_COLOR = {
+    'c-emerald':'#10b981','c-amber':'#f59e0b','c-sky':'#0ea5e9','c-teal':'#14b8a6',
+    'c-rose':'#f43f5e','c-orange':'#f97316','c-pink':'#ec4899','c-lime':'#84cc16',
+    'c-cyan':'#22d3ee','c-fuchsia':'#d946ef','c-indigo':'#6366f1','c-violet':'#8b5cf6',
+    'c-yellow':'#eab308','c-red':'#ef4444','c-blue':'#3b82f6','c-purple':'#a855f7'
+  };
+  function _chainColor(card){
+    var cs = card.className.split(' ');
+    for (var i=0; i<cs.length; i++) if (cs[i].indexOf('c-')===0) return CHAIN_COLOR[cs[i]] || '#888';
+    return '#888';
+  }
+
+  // 把 blob + filename 自動塞給目標工具並開 modal
+  window.__sendToTool = function(toolName, blob, filename) {
+    var target = document.querySelector('.tool-card[data-tool="' + toolName + '"]');
+    if (!target || !blob) return;
+    var ext = ((filename||'').split('.').pop() || '').toLowerCase();
+    // 智慧選 input：subtitle 的 SRT 要進專屬 srt input
+    var input = null;
+    if (toolName === 'subtitle' && (ext === 'srt' || ext === 'vtt' || ext === 'txt')) {
+      input = target.querySelector('.sub-srt-input');
+    } else {
+      // 主檔（影片/音訊）→ 第一個 hidden file input（排除特殊用途的）
+      input = target.querySelector('input[type=file]:not(.sub-srt-input):not(.wm-logo-input)');
+      if (!input) input = target.querySelector('input[type=file]');
+    }
+    if (input) {
+      try {
+        var file = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      } catch(e) { console.warn('chain transfer failed', e); }
+    }
+    document.querySelectorAll('.tool-card.is-open').forEach(function(c){
+      if (c !== target) c.classList.remove('is-open');
+    });
+    if (window.__openToolCard) window.__openToolCard(target);
+  };
+
+  // 在卡片下方建立 chain-bar；onGetOutput() 回傳 { blob, filename }
+  window.__addChainBar = function(card, sourceTool, onGetOutput) {
+    if (card._chainBarAdded) return;
+    var targets = CHAIN_MAP[sourceTool];
+    if (!targets || !targets.length) return;
+    var dlWrap = card.querySelector('.download-wrap');
+    if (!dlWrap) return;
+    var bar = document.createElement('div');
+    bar.className = 'chain-bar';
+    bar.innerHTML = '<div class="chain-label">送到下個工具</div>';
+    var row = document.createElement('div');
+    row.className = 'chain-btn-row';
+    targets.forEach(function(tn) {
+      var tcard = document.querySelector('.tool-card[data-tool="' + tn + '"]');
+      if (!tcard) return;
+      var name = tcard.querySelector('.tool-name').textContent.trim();
+      var color = _chainColor(tcard);
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chain-btn';
+      btn.innerHTML = '<span class="chain-dot" style="background:' + color + '"></span>' +
+                      '<span>' + name + '</span>' +
+                      '<span class="chain-arrow">→</span>';
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var out = onGetOutput();
+        if (!out || !out.blob) return;
+        window.__sendToTool(tn, out.blob, out.filename || ('output_' + Date.now()));
+      });
+      row.appendChild(btn);
+    });
+    bar.appendChild(row);
+    // 插入到 download-wrap 後面（在 reset 按鈕之前）
+    dlWrap.parentNode.insertBefore(bar, dlWrap.nextSibling);
+    card._chainBarAdded = true;
+  };
 
   // ── 緊湊模式：點擊卡片浮動展開 ──
   (function setupCompactMode() {
@@ -5594,7 +5737,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.4.1</span><span class="ver-date">更新於 2026-06-16</span>
+  <span class="ver">v1.5.0</span><span class="ver-date">更新於 2026-06-16</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
