@@ -301,6 +301,12 @@ footer a{color:var(--indigo2);text-decoration:none}
 /* ── c-blue （音訊錄製）── */
 .c-blue::before{background:linear-gradient(90deg,#1d4ed8,#3b82f6)}.c-blue:hover{box-shadow:0 0 24px rgba(59,130,246,.18)}.c-blue .tool-icon{background:rgba(59,130,246,.15)}.c-blue .tool-btn{background:rgba(59,130,246,.12);color:#60a5fa}.c-blue .progress-bar{background:linear-gradient(90deg,#1d4ed8,#3b82f6)}.c-blue .dl-btn{background:linear-gradient(135deg,#1d4ed8,#3b82f6)}.c-blue .fmt{background:rgba(59,130,246,.1);color:#60a5fa;border-color:rgba(59,130,246,.2)}.c-blue .drop-area{border-color:rgba(59,130,246,.35)}.c-blue .drop-area:hover,.c-blue .drop-area.drag-over{border-color:#3b82f6;background:rgba(59,130,246,.07)}
 
+/* ── c-mint （影片降噪）── */
+.c-mint::before{background:linear-gradient(90deg,#15803d,#22c55e)}.c-mint:hover{box-shadow:0 0 24px rgba(34,197,94,.18)}.c-mint .tool-icon{background:rgba(34,197,94,.15)}.c-mint .tool-btn{background:rgba(34,197,94,.12);color:#4ade80}.c-mint .progress-bar{background:linear-gradient(90deg,#15803d,#22c55e)}.c-mint .dl-btn{background:linear-gradient(135deg,#15803d,#22c55e)}.c-mint .fmt{background:rgba(34,197,94,.1);color:#4ade80;border-color:rgba(34,197,94,.2)}.c-mint .drop-area{border-color:rgba(34,197,94,.35)}.c-mint .drop-area:hover,.c-mint .drop-area.drag-over{border-color:#22c55e;background:rgba(34,197,94,.07)}
+
+/* ── c-aqua （音訊降噪）── */
+.c-aqua::before{background:linear-gradient(90deg,#0e7490,#0891b2)}.c-aqua:hover{box-shadow:0 0 24px rgba(8,145,178,.18)}.c-aqua .tool-icon{background:rgba(8,145,178,.15)}.c-aqua .tool-btn{background:rgba(8,145,178,.12);color:#22d3ee}.c-aqua .progress-bar{background:linear-gradient(90deg,#0e7490,#0891b2)}.c-aqua .dl-btn{background:linear-gradient(135deg,#0e7490,#0891b2)}.c-aqua .fmt{background:rgba(8,145,178,.1);color:#22d3ee;border-color:rgba(8,145,178,.2)}.c-aqua .drop-area{border-color:rgba(8,145,178,.35)}.c-aqua .drop-area:hover,.c-aqua .drop-area.drag-over{border-color:#0891b2;background:rgba(8,145,178,.07)}
+
 /* ── c-purple （音訊轉文字）── */
 .c-purple::before{background:linear-gradient(90deg,#7e22ce,#a855f7)}.c-purple:hover{box-shadow:0 0 24px rgba(168,85,247,.18)}.c-purple .tool-icon{background:rgba(168,85,247,.15)}.c-purple .tool-btn{background:rgba(168,85,247,.12);color:#c084fc}.c-purple .progress-bar{background:linear-gradient(90deg,#7e22ce,#a855f7)}.c-purple .dl-btn{background:linear-gradient(135deg,#7e22ce,#a855f7)}.c-purple .fmt{background:rgba(168,85,247,.1);color:#c084fc;border-color:rgba(168,85,247,.2)}.c-purple .drop-area{border-color:rgba(168,85,247,.35)}.c-purple .drop-area:hover,.c-purple .drop-area.drag-over{border-color:#a855f7;background:rgba(168,85,247,.07)}
 
@@ -752,6 +758,8 @@ if (!self.crossOriginIsolated) {
   <symbol id="ico-system-audio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="0.8" fill="currentColor"/></symbol>
   <symbol id="ico-transcribe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></symbol>
   <symbol id="ico-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="ico-denoise-audio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2"/><path d="M7 9v6"/><path d="M11 6v12"/><path d="M15 9v6"/><path d="M19 11v2"/><path d="M21 3l.5 1.5L23 5l-1.5.5L21 7l-.5-1.5L19 5l1.5-.5z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ico-denoise-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M2 9h4M8 9h2M12 9h6M2 13h6M10 13h4M16 13h4"/><path d="M21 3l.5 1.5L23 5l-1.5.5L21 7l-.5-1.5L19 5l1.5-.5z" fill="currentColor" stroke="none"/></symbol>
 </svg>
 
 <header>
@@ -821,6 +829,8 @@ if (!self.crossOriginIsolated) {
       <a class="guide-pill" data-guide="audioConvert"><span class="gp-dot gp-violet"></span>音訊轉換</a>
       <a class="guide-pill" data-guide="audioTrim"><span class="gp-dot" style="background:#eab308"></span>音訊裁切</a>
       <a class="guide-pill" data-guide="transcribe"><span class="gp-dot" style="background:#a855f7"></span>音訊轉文字</a>
+      <a class="guide-pill" data-guide="videoDenoise"><span class="gp-dot" style="background:#22c55e"></span>影片降噪</a>
+      <a class="guide-pill" data-guide="audioDenoise"><span class="gp-dot" style="background:#0891b2"></span>音訊降噪</a>
     </div>
   </div>
 
@@ -1316,6 +1326,36 @@ if (!self.crossOriginIsolated) {
       </div>
     </div>
 
+    <!-- 影片降噪 -->
+    <div class="tool-card c-mint" data-tool="videoDenoise">
+      <input type="file" hidden accept="video/*,.mkv,.avi,.webm,.flv,.ts">
+      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-denoise-video"/></svg></div>
+      <div class="tool-name">影片降噪</div>
+      <div class="tool-desc">用 hqdn3d 三維降噪去除影片畫面中的雜訊、顆粒感、暗部噪點。</div>
+      <select class="fmt-select" name="vdnLevel">
+        <option value="light" selected>輕度降噪（保留細節）</option>
+        <option value="medium">中度降噪（推薦）</option>
+        <option value="strong">強力降噪（畫面會略糊）</option>
+      </select>
+      <div class="drop-area">
+        <div class="drop-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-folder"/></svg></div>
+        <div class="drop-area-text">拖曳影片到這裡，或點擊選取</div>
+        <div class="drop-area-sub">支援 MP4、MOV、AVI、MKV、WebM</div>
+      </div>
+      <div class="file-info">
+        <span class="file-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-file"/></svg></span>
+        <span class="file-info-name"></span><span class="file-info-size"></span>
+        <button class="file-clear"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-x"/></svg></button>
+      </div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">降噪處理中...</div></div>
+      <div class="error-msg"></div>
+      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-bolt"/></svg>開始降噪</button>
+      <div class="download-wrap">
+        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載降噪後影片</button>
+        <button class="reset-btn">再次降噪</button>
+      </div>
+    </div>
+
   </div>
 
   <div class="section-title">音訊工具</div>
@@ -1462,6 +1502,42 @@ if (!self.crossOriginIsolated) {
       <div class="download-wrap">
         <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載文字檔</button>
         <button class="reset-btn">再次轉文字</button>
+      </div>
+    </div>
+
+    <!-- 音訊降噪 -->
+    <div class="tool-card c-aqua" data-tool="audioDenoise">
+      <input type="file" hidden accept="audio/*,.mp3,.wav,.aac,.flac,.ogg,.m4a,.opus,.webm">
+      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-denoise-audio"/></svg></div>
+      <div class="tool-name">音訊降噪</div>
+      <div class="tool-desc">用 anlmdn 自適應降噪 + 頻段過濾，去除醫院環境噪音、設備嗡嗡聲、冷氣聲。</div>
+      <select class="fmt-select" name="adnLevel">
+        <option value="light" selected>輕度降噪（保留人聲細節）</option>
+        <option value="medium">中度降噪（推薦）</option>
+        <option value="strong">強力降噪（人聲可能略悶）</option>
+      </select>
+      <select class="fmt-select" name="adnFmt">
+        <option value="mp3" selected>輸出 MP3（相容性高）</option>
+        <option value="wav">輸出 WAV（無損）</option>
+        <option value="aac">輸出 AAC</option>
+        <option value="ogg">輸出 OGG</option>
+      </select>
+      <div class="drop-area">
+        <div class="drop-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-folder"/></svg></div>
+        <div class="drop-area-text">拖曳音訊到這裡，或點擊選取</div>
+        <div class="drop-area-sub">支援 MP3、WAV、AAC、FLAC、OGG、M4A、WebM</div>
+      </div>
+      <div class="file-info">
+        <span class="file-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-file"/></svg></span>
+        <span class="file-info-name"></span><span class="file-info-size"></span>
+        <button class="file-clear"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-x"/></svg></button>
+      </div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">降噪處理中...</div></div>
+      <div class="error-msg"></div>
+      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-bolt"/></svg>開始降噪</button>
+      <div class="download-wrap">
+        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載降噪後音訊</button>
+        <button class="reset-btn">再次降噪</button>
       </div>
     </div>
 
@@ -2183,6 +2259,52 @@ window.dispatchEvent(new Event('transcription-ready'));
       fsClean(inN, outN);
       return { data: data, ext: ofmt, filename: basename(file.name) + '.' + ofmt };
     },
+    // ── 影片降噪（hqdn3d 高品質 3D 降噪）──
+    videoDenoise: async function(file, card) {
+      var lvl = card.querySelector('select[name=vdnLevel]').value;
+      var filter = lvl === 'light'  ? 'hqdn3d=2:1.5:4:3'
+                 : lvl === 'medium' ? 'hqdn3d=4:3:6:4.5'
+                 :                    'hqdn3d=7:5:9:7';
+      var inN = 'in.' + getExt(file.name), outN = 'out.mp4';
+      ff.FS('writeFile', inN, await fetchFile(file));
+      await ff.run(
+        '-i', inN,
+        '-vf', filter,
+        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+        '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac', '-b:a', '128k',
+        '-max_muxing_queue_size', '1024', outN
+      );
+      var data = ff.FS('readFile', outN);
+      fsClean(inN, outN);
+      return { data: data, ext: 'mp4', filename: basename(file.name) + '_denoised.mp4' };
+    },
+    // ── 音訊降噪（anlmdn + 頻段過濾）──
+    audioDenoise: async function(file, card) {
+      var lvl = card.querySelector('select[name=adnLevel]').value;
+      var ofmt = card.querySelector('select[name=adnFmt]').value;
+      // anlmdn 參數越大，降噪越強，但人聲也越悶
+      var filters;
+      if (lvl === 'light') {
+        filters = 'highpass=f=80,lowpass=f=14000,anlmdn=s=0.001:p=0.0006:r=0.001';
+      } else if (lvl === 'medium') {
+        filters = 'highpass=f=100,lowpass=f=13000,anlmdn=s=0.002:p=0.002:r=0.002';
+      } else {
+        filters = 'highpass=f=150,lowpass=f=11000,anlmdn=s=0.004:p=0.004:r=0.004';
+      }
+      var inN = 'in.' + getExt(file.name), outN = 'out.' + ofmt;
+      ff.FS('writeFile', inN, await fetchFile(file));
+      var args = ['-i', inN, '-af', filters, '-vn'];
+      if (ofmt === 'mp3') args.push('-acodec', 'libmp3lame', '-ab', '192k');
+      else if (ofmt === 'wav') args.push('-acodec', 'pcm_s16le');
+      else if (ofmt === 'aac') args.push('-acodec', 'aac', '-ab', '192k');
+      else args.push('-acodec', 'libvorbis', '-aq', '4');
+      args.push(outN);
+      await ff.run.apply(ff, args);
+      var data = ff.FS('readFile', outN);
+      fsClean(inN, outN);
+      return { data: data, ext: ofmt, filename: basename(file.name) + '_denoised.' + ofmt };
+    },
     audioTrim: async function(file, card) {
       var startT = parseFloat(card.dataset.atrimStart) || 0;
       var endT = parseFloat(card.dataset.atrimEnd) || 0;
@@ -2198,10 +2320,10 @@ window.dispatchEvent(new Event('transcription-ready'));
       // Build audio filter chain
       var filters = [];
       if (volDb !== 0) filters.push('volume=' + volDb + 'dB');
-      // highpass+lowpass are universally supported in ffmpeg.wasm
-      if (denoise === 'light') filters.push('highpass=f=80','lowpass=f=14000');
-      else if (denoise === 'medium') filters.push('highpass=f=120','lowpass=f=12000');
-      else if (denoise === 'strong') filters.push('highpass=f=200','lowpass=f=10000');
+      // highpass + lowpass + anlmdn (升級版降噪)
+      if (denoise === 'light') filters.push('highpass=f=80','lowpass=f=14000','anlmdn=s=0.001:p=0.0006:r=0.001');
+      else if (denoise === 'medium') filters.push('highpass=f=100','lowpass=f=13000','anlmdn=s=0.002:p=0.002:r=0.002');
+      else if (denoise === 'strong') filters.push('highpass=f=150','lowpass=f=11000','anlmdn=s=0.004:p=0.004:r=0.004');
       var args = ['-ss', String(startT), '-i', inN, '-t', String(dur)];
       if (filters.length > 0) args.push('-af', filters.join(','));
       if (ofmt === 'mp3') args.push('-acodec', 'libmp3lame', '-ab', '192k', '-q:a', '0');
@@ -4373,16 +4495,19 @@ window.dispatchEvent(new Event('transcription-ready'));
     bgm:          ['compress', 'subtitle'],
     speed:        ['compress', 'trim'],
     subtitle:     ['compress'],
-    audioConvert: ['transcribe', 'audioTrim'],
-    audioTrim:    ['transcribe', 'audioConvert'],
-    merge:        ['compress', 'trim', 'faceBlur']
+    audioConvert: ['transcribe', 'audioTrim', 'audioDenoise'],
+    audioTrim:    ['transcribe', 'audioConvert', 'audioDenoise'],
+    merge:        ['compress', 'trim', 'faceBlur'],
+    videoDenoise: ['compress', 'trim', 'faceBlur'],
+    audioDenoise: ['transcribe', 'audioTrim', 'audioConvert']
   };
 
   var CHAIN_COLOR = {
     'c-emerald':'#10b981','c-amber':'#f59e0b','c-sky':'#0ea5e9','c-teal':'#14b8a6',
     'c-rose':'#f43f5e','c-orange':'#f97316','c-pink':'#ec4899','c-lime':'#84cc16',
     'c-cyan':'#22d3ee','c-fuchsia':'#d946ef','c-indigo':'#6366f1','c-violet':'#8b5cf6',
-    'c-yellow':'#eab308','c-red':'#ef4444','c-blue':'#3b82f6','c-purple':'#a855f7'
+    'c-yellow':'#eab308','c-red':'#ef4444','c-blue':'#3b82f6','c-purple':'#a855f7',
+    'c-mint':'#22c55e','c-aqua':'#0891b2'
   };
   function _chainColor(card){
     var cs = card.className.split(' ');
@@ -4554,7 +4679,8 @@ window.dispatchEvent(new Event('transcription-ready'));
       'c-emerald':'#10b981','c-amber':'#f59e0b','c-sky':'#0ea5e9','c-teal':'#14b8a6',
       'c-rose':'#f43f5e','c-orange':'#f97316','c-pink':'#ec4899','c-lime':'#84cc16',
       'c-cyan':'#22d3ee','c-fuchsia':'#d946ef','c-indigo':'#6366f1','c-violet':'#8b5cf6',
-      'c-yellow':'#eab308','c-red':'#ef4444','c-blue':'#3b82f6','c-purple':'#a855f7'
+      'c-yellow':'#eab308','c-red':'#ef4444','c-blue':'#3b82f6','c-purple':'#a855f7',
+      'c-mint':'#22c55e','c-aqua':'#0891b2'
     };
 
     function fmtBytes(b){ if(b<1024)return b+' B'; if(b<1048576)return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
@@ -5927,7 +6053,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.7.0</span><span class="ver-date">更新於 2026-06-16</span>
+  <span class="ver">v1.8.0</span><span class="ver-date">更新於 2026-06-16</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
