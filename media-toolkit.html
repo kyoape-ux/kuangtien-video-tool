@@ -807,7 +807,7 @@ if (!self.crossOriginIsolated) {
       <a class="guide-pill" data-guide="convert"><span class="gp-dot gp-amber"></span>格式轉換</a>
       <a class="guide-pill" data-guide="trim"><span class="gp-dot gp-sky"></span>影片裁剪</a>
       <a class="guide-pill" data-guide="merge"><span class="gp-dot gp-teal"></span>影片合併</a>
-      <a class="guide-pill" data-guide="faceBlur"><span class="gp-dot gp-rose"></span>人臉模糊</a>
+      <a class="guide-pill" data-guide="faceBlur"><span class="gp-dot gp-rose"></span>區域模糊</a>
       <a class="guide-pill" data-guide="watermark"><span class="gp-dot gp-orange"></span>壓製浮水印</a>
       <a class="guide-pill" data-guide="mute"><span class="gp-dot gp-rose"></span>移除聲音</a>
       <a class="guide-pill" data-guide="bgm"><span class="gp-dot gp-pink"></span>背景音樂</a>
@@ -983,7 +983,7 @@ if (!self.crossOriginIsolated) {
       </div>
     </div>
 
-    <!-- 人臉模糊處理 -->
+    <!-- 區域模糊（人臉／病歷號／姓名／文字皆可） -->
     <div class="tool-card c-rose" data-tool="faceBlur">
       <input type="file" hidden accept="video/*,.mkv,.avi,.webm">
       <div class="tool-icon">
@@ -993,8 +993,8 @@ if (!self.crossOriginIsolated) {
           <line x1="1" y1="1" x2="23" y2="23"/>
         </svg>
       </div>
-      <div class="tool-name">人臉模糊處理</div>
-      <div class="tool-desc">可分段定位人臉，不同片段設定不同模糊位置，自動追蹤保護隱私。</div>
+      <div class="tool-name">區域模糊</div>
+      <div class="tool-desc">人臉、病歷號、姓名、敏感文字 — 任何區域都能打馬賽克。橢圓給人臉、矩形給文字。</div>
 
       <div class="fb-limits">
         <div class="fb-limit"><svg class="fb-limit-ico-ok" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><div class="fb-limit-label"><strong>解析度</strong>1080p 以下</div></div>
@@ -1014,7 +1014,7 @@ if (!self.crossOriginIsolated) {
         <button class="file-clear"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-x"/></svg></button>
       </div>
 
-      <button class="tool-btn fb-open-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-sliders"/></svg>開啟人臉定位</button>
+      <button class="tool-btn fb-open-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-sliders"/></svg>開啟區域定位</button>
       <div class="fb-kf-chip"><span class="fb-kf-lbl">定位點</span><span class="fb-kf-val">尚未設定</span></div>
 
       <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">處理中，請稍候...</div></div>
@@ -1719,7 +1719,7 @@ if (!self.crossOriginIsolated) {
     <div class="fb-mhd">
       <div class="fb-mhd-left">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--rose2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-        <span class="fb-mhd-title">人臉定位分段</span>
+        <span class="fb-mhd-title">區域定位分段</span>
         <span class="fb-mhd-fname" id="fbFname"></span>
       </div>
       <button class="fb-m-close" id="fbCloseBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-x"/></svg></button>
@@ -1727,7 +1727,7 @@ if (!self.crossOriginIsolated) {
     <div class="fb-m-body">
       <div class="fb-m-canvas-wrap" id="fbCanvasWrap">
         <canvas class="fb-m-canvas" id="fbCanvas"></canvas>
-        <div class="fb-m-hint" id="fbHint">拖曳框選臉部位置，或點「自動偵測」</div>
+        <div class="fb-m-hint" id="fbHint">拖曳框選要遮的區域（人臉、病歷號、姓名…），或點「自動偵測人臉」</div>
       </div>
       <div class="fb-m-ctrl">
         <button class="fb-m-pp" id="fbPP" title="播放/暫停"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-play"/></svg></button>
@@ -1747,8 +1747,9 @@ if (!self.crossOriginIsolated) {
             <option value="60">60</option>
           </select>
         </div>
-        <button class="fb-m-detect" id="fbDetect"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>自動偵測</button>
+        <button class="fb-m-detect" id="fbDetect"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>自動偵測人臉</button>
         <button class="fb-m-add" id="fbAddKf"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>新增定位點</button>
+        <button class="fb-m-add" id="fbApplyAll" title="位置整片固定（病歷號、姓名標籤適用）"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M5 5h14"/><path d="M5 19h14"/></svg>整段套用</button>
       </div>
       <div class="fb-m-settings">
         <div class="fb-m-srow">
@@ -5675,7 +5676,7 @@ window.dispatchEvent(new Event('transcription-ready'));
       hint.textContent = '偵測失敗：' + (err.message || err);
     }
     detectBtn.disabled = false;
-    detectBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>自動偵測';
+    detectBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>自動偵測人臉';
     if (!playing) drawFrame();
   });
 
@@ -5710,7 +5711,7 @@ window.dispatchEvent(new Event('transcription-ready'));
   }
 
   addKfBtn.addEventListener('click', function() {
-    if (!curBbox) { hint.textContent = '請先框選或偵測人臉位置'; return; }
+    if (!curBbox) { hint.textContent = '請先框選要遮的區域，或點「自動偵測人臉」'; return; }
     if (!vid) return;
     var t = vid.currentTime;
     var replaced = false;
@@ -5725,6 +5726,24 @@ window.dispatchEvent(new Event('transcription-ready'));
     renderKfMarkers();
     if (!playing) drawFrame();
   });
+
+  // 整段套用：用當前框框，在 t=0 與 t=duration 各放一個 keyframe → 整支影片同位置
+  var applyAllBtn = document.getElementById('fbApplyAll');
+  if (applyAllBtn) {
+    applyAllBtn.addEventListener('click', function() {
+      if (!curBbox) { hint.textContent = '請先框選要整段套用的區域（例：病歷號右上角）'; return; }
+      if (!vid || !vid.duration) return;
+      keyframes.length = 0; // 清掉舊的
+      var bb = { x: curBbox.x, y: curBbox.y, w: curBbox.w, h: curBbox.h };
+      keyframes.push({ t: 0, bbox: bb });
+      keyframes.push({ t: Math.max(0.5, vid.duration - 0.01), bbox: { x: bb.x, y: bb.y, w: bb.w, h: bb.h } });
+      curBbox = null;
+      hint.textContent = '✓ 整段套用完成 — 影片全程在此位置打馬賽克';
+      renderKfList();
+      renderKfMarkers();
+      if (!playing) drawFrame();
+    });
+  }
 
   // ── Open modal ──
   window.openFbModal = function(file, card, cardVideoEl) {
@@ -5743,7 +5762,7 @@ window.dispatchEvent(new Event('transcription-ready'));
     if (vid.src && vid.src.startsWith('blob:')) URL.revokeObjectURL(vid.src);
     vid.src = URL.createObjectURL(file);
     fnameEl.textContent = file.name;
-    hint.textContent = '拖曳框選區域，或點「自動偵測」';
+    hint.textContent = '拖曳框選要遮的區域（人臉、病歷號、姓名…），或點「自動偵測人臉」';
     timeEl.textContent = '0:00 / 0:00';
     seekEl.value = 0;
     renderKfList();
@@ -5833,7 +5852,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.6.0</span><span class="ver-date">更新於 2026-06-16</span>
+  <span class="ver">v1.6.1</span><span class="ver-date">更新於 2026-06-16</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
