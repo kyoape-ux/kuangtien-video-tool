@@ -1473,6 +1473,7 @@ if (!self.crossOriginIsolated) {
       <div class="rec-opts">
         <label class="rec-opt-row"><input type="checkbox" class="rec-opt-mic" checked>包含麥克風（你說話的聲音）</label>
         <label class="rec-opt-row"><input type="checkbox" class="rec-opt-tab" checked>包含分頁／系統音訊（簡報、影片聲）</label>
+        <label class="rec-opt-row"><input type="checkbox" class="rec-opt-pip">嵌入講者鏡頭（右下角 PIP）</label>
       </div>
       <div class="rec-fmt-row">
         <span>輸出格式</span>
@@ -3521,8 +3522,10 @@ window.dispatchEvent(new Event('transcription-ready'));
     var fmtSel   = card.querySelector('.rec-fmt');
     var optMic   = card.querySelector('.rec-opt-mic');
     var optTab   = card.querySelector('.rec-opt-tab');
+    var optPip   = card.querySelector('.rec-opt-pip');
 
-    var recorder=null, chunks=[], displayStream=null, micStream=null, audioCtx=null;
+    var recorder=null, chunks=[], displayStream=null, micStream=null, webcamStream=null, audioCtx=null;
+    var pipRafId=null, pipCanvasStream=null;
     var startTime=0, pausedDur=0, pausedAt=0, timerId=null;
     var recordedBlob=null, recordedUrl=null;
 
@@ -3538,7 +3541,78 @@ window.dispatchEvent(new Event('transcription-ready'));
     function cleanup(){
       if (displayStream){ displayStream.getTracks().forEach(function(t){ t.stop(); }); displayStream=null; }
       if (micStream){ micStream.getTracks().forEach(function(t){ t.stop(); }); micStream=null; }
+      if (webcamStream){ webcamStream.getTracks().forEach(function(t){ t.stop(); }); webcamStream=null; }
+      if (pipRafId){ cancelAnimationFrame(pipRafId); pipRafId=null; }
+      if (pipCanvasStream){ pipCanvasStream.getTracks().forEach(function(t){ t.stop(); }); pipCanvasStream=null; }
       if (audioCtx){ try{ audioCtx.close(); }catch(e){} audioCtx=null; }
+    }
+
+    // 把 display + webcam 合成為一個 canvas video stream
+    async function buildPipStream(displayS, webcamS) {
+      var dVid = document.createElement('video');
+      dVid.srcObject = displayS; dVid.muted = true; dVid.playsInline = true;
+      var wVid = document.createElement('video');
+      wVid.srcObject = webcamS; wVid.muted = true; wVid.playsInline = true;
+      await Promise.all([dVid.play(), wVid.play()]);
+      // 等 metadata 載入
+      if (!dVid.videoWidth) await new Promise(function(r){ dVid.onloadedmetadata = r; });
+      if (!wVid.videoWidth) await new Promise(function(r){ wVid.onloadedmetadata = r; });
+
+      var dw = dVid.videoWidth || 1280;
+      var dh = dVid.videoHeight || 720;
+      var canvas = document.createElement('canvas');
+      canvas.width = dw;
+      canvas.height = dh;
+      var ctx = canvas.getContext('2d');
+
+      // PIP：顯示器高度的 22%，保留 webcam 原比例
+      var pipH = Math.round(dh * 0.22);
+      var pipW = Math.round(pipH * ((wVid.videoWidth || 4) / (wVid.videoHeight || 3)));
+      var margin = Math.round(dh * 0.025);
+      var pipX = dw - pipW - margin;
+      var pipY = dh - pipH - margin;
+      var radius = Math.round(pipH * 0.06);
+
+      function drawRoundedRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      function draw() {
+        try {
+          ctx.drawImage(dVid, 0, 0, dw, dh);
+          // PIP 投影（圓角裁切）
+          ctx.save();
+          drawRoundedRect(pipX, pipY, pipW, pipH, radius);
+          // 半透明陰影底
+          ctx.shadowColor = 'rgba(0,0,0,.5)';
+          ctx.shadowBlur = 14;
+          ctx.shadowOffsetY = 4;
+          ctx.fillStyle = '#000';
+          ctx.fill();
+          ctx.shadowColor = 'transparent';
+          ctx.clip();
+          ctx.drawImage(wVid, pipX, pipY, pipW, pipH);
+          ctx.restore();
+          // 細白邊框
+          ctx.save();
+          drawRoundedRect(pipX, pipY, pipW, pipH, radius);
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = 'rgba(255,255,255,.6)';
+          ctx.stroke();
+          ctx.restore();
+        } catch(e) { /* video 可能尚未 ready */ }
+        pipRafId = requestAnimationFrame(draw);
+      }
+      draw();
+
+      pipCanvasStream = canvas.captureStream(30);
+      return pipCanvasStream;
     }
     function updateTimer(){ timeEl.textContent = fmtSec((Date.now()-startTime-pausedDur)/1000); }
 
@@ -3616,6 +3690,19 @@ window.dispatchEvent(new Event('transcription-ready'));
         if (!displayStream) return;
         displayStream.getVideoTracks()[0].onended = function(){ stopRec(); };
 
+        // 取 webcam（如果使用者要 PIP）
+        if (optPip && optPip.checked){
+          try {
+            webcamStream = await navigator.mediaDevices.getUserMedia({
+              video: { width: { ideal: 640 }, height: { ideal: 480 } },
+              audio: false
+            });
+          } catch(e){
+            webcamStream = null;
+            errEl.textContent = '無法取得攝影機，已關閉 PIP（' + (e.message || e.name) + '）';
+          }
+        }
+
         var displayAudio = displayStream.getAudioTracks();
         if (optMic.checked){
           try { micStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
@@ -3635,7 +3722,16 @@ window.dispatchEvent(new Event('transcription-ready'));
           audioTracks = micStream.getAudioTracks();
         }
 
-        var finalStream = new MediaStream(displayStream.getVideoTracks().concat(audioTracks));
+        // 視訊源：有 PIP 就用 canvas 合成，否則直接用 display
+        var videoTracks;
+        if (webcamStream){
+          var compositeStream = await buildPipStream(displayStream, webcamStream);
+          videoTracks = compositeStream.getVideoTracks();
+        } else {
+          videoTracks = displayStream.getVideoTracks();
+        }
+
+        var finalStream = new MediaStream(videoTracks.concat(audioTracks));
 
         chunks=[];
         recorder = new MediaRecorder(finalStream, { mimeType: mimeType });
@@ -5737,7 +5833,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.5.0</span><span class="ver-date">更新於 2026-06-16</span>
+  <span class="ver">v1.6.0</span><span class="ver-date">更新於 2026-06-16</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
