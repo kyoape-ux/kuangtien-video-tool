@@ -83,6 +83,9 @@ main{max-width:980px;margin:24px auto 0;padding:0 16px}
   .tools-grid.compact-mode .tool-card.is-open{width:96vw;max-height:92vh;padding:22px 18px}
 }
 
+/* ─── 影片壓縮：LINE 模式提示 ─── */
+.line-hint{font-size:11.5px;line-height:1.55;color:#34d399;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.22);border-radius:8px;padding:8px 10px;margin-top:6px}
+
 /* ─── 工具串接 bar（處理完顯示「→ 送到下個工具」） ─── */
 .chain-bar{display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)}
 .tool-card.done .chain-bar{display:block}
@@ -834,7 +837,9 @@ if (!self.crossOriginIsolated) {
         <option value="high">高畫質（輕度壓縮）</option>
         <option value="standard" selected>標準（均衡推薦）</option>
         <option value="small">小檔案（大幅縮小）</option>
+        <option value="line">LINE 傳送（200MB / 5 分鐘以內）</option>
       </select>
+      <div class="line-hint" style="display:none">📱 LINE 上限 200MB · 5 分鐘以內。超過 5 分鐘將自動裁切為前 5 分鐘。</div>
       <div class="drop-area">
         <div class="drop-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-folder"/></svg></div>
         <div class="drop-area-text">拖曳影片到這裡，或點擊選取</div>
@@ -2043,9 +2048,43 @@ window.dispatchEvent(new Event('transcription-ready'));
     },
     compress: async function(file, card) {
       var q = card.querySelector('select[name=quality]').value;
-      var crf = q === 'high' ? '20' : q === 'standard' ? '28' : '36';
       var inN = 'in.' + getExt(file.name), outN = 'out.mp4';
       ff.FS('writeFile', inN, await fetchFile(file));
+
+      if (q === 'line') {
+        // LINE 模式：目標 195MB（5MB 安全餘量），最長 5 分鐘
+        var dur = await new Promise(function(r){
+          var v = document.createElement('video');
+          v.preload = 'metadata'; v.muted = true;
+          v.onloadedmetadata = function(){ var d = v.duration; URL.revokeObjectURL(v.src); r(isNaN(d)||!isFinite(d)?300:d); };
+          v.onerror = function(){ r(300); };
+          v.src = URL.createObjectURL(file);
+        });
+        var effDur = Math.min(dur, 300);
+        var targetBits = 195 * 1024 * 1024 * 8;          // 1635 Mbit
+        var audioBitsTotal = 128 * 1000 * effDur;        // 128kbps × 秒數
+        var videoBits = targetBits - audioBitsTotal;
+        var videoKbps = Math.max(600, Math.min(Math.floor(videoBits / effDur / 1000), 8000));
+        var args = ['-i', inN];
+        if (dur > 300) args.push('-t', '300');            // 裁切前 5 分鐘
+        args = args.concat([
+          '-c:v', 'libx264',
+          '-b:v', videoKbps + 'k',
+          '-maxrate', Math.floor(videoKbps * 1.5) + 'k',
+          '-bufsize', (videoKbps * 2) + 'k',
+          '-preset', 'ultrafast',
+          '-pix_fmt', 'yuv420p',
+          '-c:a', 'aac', '-b:a', '128k',
+          '-max_muxing_queue_size', '1024', outN
+        ]);
+        await ff.run.apply(ff, args);
+        var data = ff.FS('readFile', outN);
+        fsClean(inN, outN);
+        var suffix = dur > 300 ? '_LINE_5min' : '_LINE';
+        return { data: data, ext: 'mp4', filename: basename(file.name) + suffix + '.mp4' };
+      }
+
+      var crf = q === 'high' ? '20' : q === 'standard' ? '28' : '36';
       await ff.run('-i', inN, '-vcodec', 'libx264', '-crf', crf, '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', '-acodec', 'aac', '-b:a', '128k', '-max_muxing_queue_size', '1024', outN);
       var data = ff.FS('readFile', outN);
       fsClean(inN, outN);
@@ -4282,6 +4321,42 @@ window.dispatchEvent(new Event('transcription-ready'));
   document.querySelectorAll('.tool-card[data-tool="audioRecord"]').forEach(setupAudioRecordCard);
   document.querySelectorAll('.tool-card[data-tool="transcribe"]').forEach(setupTranscribeCard);
 
+  // ── 影片壓縮：LINE 模式提示動態顯示 ──
+  document.querySelectorAll('.tool-card[data-tool="compress"]').forEach(function(card) {
+    var sel = card.querySelector('select[name=quality]');
+    var hint = card.querySelector('.line-hint');
+    var input = card.querySelector('input[type=file]');
+    if (!sel || !hint) return;
+
+    function getDuration(f) {
+      return new Promise(function(r){
+        var v = document.createElement('video');
+        v.preload = 'metadata'; v.muted = true;
+        v.onloadedmetadata = function(){ var d = v.duration; URL.revokeObjectURL(v.src); r(isNaN(d)||!isFinite(d)?0:d); };
+        v.onerror = function(){ r(0); };
+        v.src = URL.createObjectURL(f);
+      });
+    }
+
+    async function refreshHint() {
+      if (sel.value !== 'line') { hint.style.display = 'none'; return; }
+      hint.style.display = 'block';
+      var defText = '📱 LINE 上限 200MB · 5 分鐘以內。超過 5 分鐘將自動裁切為前 5 分鐘。';
+      var f = input && input.files && input.files[0];
+      if (!f) { hint.textContent = defText; return; }
+      var d = await getDuration(f);
+      if (d > 300) {
+        var min = Math.floor(d / 60), sec = Math.round(d % 60);
+        hint.textContent = '⚠️ 此影片 ' + min + ' 分 ' + sec + ' 秒，超過 5 分鐘 — 將自動裁切前 5 分鐘輸出。';
+      } else {
+        hint.textContent = defText;
+      }
+    }
+
+    sel.addEventListener('change', refreshHint);
+    if (input) input.addEventListener('change', refreshHint);
+  });
+
   // ── 工具串接系統：處理完一鍵送到下個工具 ──
   // CHAIN_MAP 定義每個工具的「下游候選」（依使用頻率排序，最多 4 個）
   var CHAIN_MAP = {
@@ -5852,7 +5927,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.6.1</span><span class="ver-date">更新於 2026-06-16</span>
+  <span class="ver">v1.7.0</span><span class="ver-date">更新於 2026-06-16</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
