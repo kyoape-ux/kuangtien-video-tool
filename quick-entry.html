@@ -337,6 +337,57 @@ body {
   color: var(--text-muted); font-size: 14px; line-height: 2;
 }
 
+/* ── 本週概況 ── */
+.week-section { margin-bottom: 16px; }
+.week-section-label {
+  font-size: 12px; font-weight: 700; color: var(--text-sub);
+  letter-spacing: 0.05em; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.week-section-label .dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.dot-green  { background: var(--ci-green); }
+.dot-blue   { background: var(--ci-blue); }
+.dot-yellow { background: var(--yellow); }
+.dot-brand  { background: var(--brand); }
+
+.week-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Noto Sans TC', sans-serif;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  resize: none;
+  line-height: 1.7;
+  transition: border-color 0.15s;
+  min-height: 80px;
+}
+.week-textarea:focus { border-color: var(--brand); }
+.week-textarea::placeholder { color: var(--text-muted); }
+
+.week-saved {
+  font-size: 11px; color: var(--text-muted);
+  text-align: right; margin-top: 4px; height: 14px;
+}
+
+.pm-link-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--brand-bg);
+  border: 1.5px solid var(--brand-bd);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--brand);
+  font-size: 14px; font-weight: 600;
+  margin-top: 8px;
+}
+.pm-link-btn svg { opacity: 0.6; }
+
 /* ── 待提交佇列 badge ── */
 .queue-badge {
   display: none;
@@ -356,37 +407,73 @@ body {
 <div class="header">
   <div class="header-icon">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 5v14M5 12h14"/>
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
     </svg>
   </div>
   <div>
-    <div class="header-title">快速新增</div>
-    <div class="header-sub">視覺多媒體設計組</div>
+    <div class="header-title">視多組工作本</div>
+    <div class="header-sub" id="header-week"></div>
   </div>
   <span class="queue-badge" id="queueBadge">離線</span>
 </div>
 
-<div class="tab-bar">
-  <div class="tab active" data-tab="design" onclick="switchTab('design')">
+<div class="tab-bar" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+  <div class="tab active" data-tab="week" onclick="switchTab('week')" style="white-space:nowrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    本週概況
+  </div>
+  <div class="tab" data-tab="design" onclick="switchTab('design')" style="white-space:nowrap">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
     美編代辦
   </div>
-  <div class="tab" data-tab="video" onclick="switchTab('video')">
+  <div class="tab" data-tab="video" onclick="switchTab('video')" style="white-space:nowrap">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
     多媒體
   </div>
-  <div class="tab" data-tab="idea" onclick="switchTab('idea')">
+  <div class="tab" data-tab="idea" onclick="switchTab('idea')" style="white-space:nowrap">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
     發想記錄
   </div>
-  <div class="tab" data-tab="log" onclick="switchTab('log')">
+  <div class="tab" data-tab="log" onclick="switchTab('log')" style="white-space:nowrap">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
     記錄
   </div>
 </div>
 
+<!-- ── 本週概況 ── -->
+<div class="page active" id="page-week">
+  <div class="week-section">
+    <div class="week-section-label"><span class="dot dot-green"></span>本週要事</div>
+    <textarea class="week-textarea" id="w-main" rows="4"
+      placeholder="這週組裡在推進的重要事項…&#10;例：連莊合作今週完成剪輯&#10;空間形象照攝確認拍攝日"></textarea>
+    <div class="week-saved" id="w-main-saved"></div>
+  </div>
+  <div class="week-section">
+    <div class="week-section-label"><span class="dot dot-yellow"></span>待辦 / 待跟進</div>
+    <textarea class="week-textarea" id="w-todo" rows="3"
+      placeholder="還沒開始但要記住的事…&#10;例：達文西影片要催宣靜進度&#10;運動醫學短片素材確認"></textarea>
+    <div class="week-saved" id="w-todo-saved"></div>
+  </div>
+  <div class="week-section">
+    <div class="week-section-label"><span class="dot dot-blue"></span>靈感 / 提案方向</div>
+    <textarea class="week-textarea" id="w-idea" rows="3"
+      placeholder="腦中閃過的方向、看到的靈感…&#10;例：可以做一支「醫師的一天」系列短片"></textarea>
+    <div class="week-saved" id="w-idea-saved"></div>
+  </div>
+  <div class="week-section">
+    <div class="week-section-label"><span class="dot dot-brand"></span>備忘 / 其他</div>
+    <textarea class="week-textarea" id="w-memo" rows="2"
+      placeholder="會議結論、主管交辦、不想忘記的事…"></textarea>
+    <div class="week-saved" id="w-memo-saved"></div>
+  </div>
+  <a href="https://kyoape-ux.github.io/kuangtien-pm/" target="_blank" class="pm-link-btn">
+    <span>開啟 PM 系統查看任務詳情</span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+  </a>
+</div>
+
 <!-- ── 美編代辦 ── -->
-<div class="page active" id="page-design">
+<div class="page" id="page-design">
   <div class="field">
     <label>案件名稱 *</label>
     <input type="text" id="d-title" placeholder="例：運動醫學中心衛教圖卡" autocomplete="off">
@@ -805,8 +892,50 @@ function renderLog() {
   }).join('');
 }
 
+// ── 本週概況 ──
+function getWeekKey() {
+  const d = new Date();
+  const mon = new Date(d); mon.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return `${mon.getFullYear()}-W${String(Math.ceil((((mon - new Date(mon.getFullYear(),0,1))/86400000)+1)/7)).padStart(2,'0')}`;
+}
+
+function getWeekLabel() {
+  const d = new Date();
+  const mon = new Date(d); mon.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const fmt = x => `${x.getMonth()+1}/${x.getDate()}`;
+  return `${fmt(mon)} – ${fmt(sun)}`;
+}
+
+function initWeek() {
+  document.getElementById('header-week').textContent = getWeekLabel();
+  const wk = getWeekKey();
+  const saved = JSON.parse(localStorage.getItem(STORE_KEY + '_week_' + wk) || '{}');
+  ['main','todo','idea','memo'].forEach(k => {
+    const el = document.getElementById('w-' + k);
+    if (saved[k]) el.value = saved[k];
+    el.addEventListener('input', () => saveWeek());
+  });
+}
+
+let weekSaveTimer;
+function saveWeek() {
+  clearTimeout(weekSaveTimer);
+  weekSaveTimer = setTimeout(() => {
+    const wk = getWeekKey();
+    const data = {};
+    ['main','todo','idea','memo'].forEach(k => { data[k] = document.getElementById('w-'+k).value; });
+    localStorage.setItem(STORE_KEY + '_week_' + wk, JSON.stringify(data));
+    ['main','todo','idea','memo'].forEach(k => {
+      const el = document.getElementById('w-'+k+'-saved');
+      if (el) { el.textContent = '已自動儲存'; setTimeout(() => { el.textContent = ''; }, 2000); }
+    });
+  }, 800);
+}
+
 // 初始化
 updateQueueBadge();
+initWeek();
 </script>
 </body>
 </html>
