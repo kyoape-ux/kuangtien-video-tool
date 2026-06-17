@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="快速新增">
+<title>快速新增｜光田視多組</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --brand:       #006341;
+  --brand-light: #007D53;
+  --brand-bg:    #EAF5EE;
+  --brand-bd:    #B3D9C5;
+  --ci-green:    #6EC300;
+  --ci-blue:     #00AAC8;
+  --bg:          #F3F9F6;
+  --border:      #DDE8E3;
+  --text:        #1A2820;
+  --text-sub:    #5A7A6A;
+  --text-muted:  #90A89E;
+  --red:         #C0313D;
+  --yellow:      #FFB900;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+/* ── Header ── */
+.header {
+  background: var(--brand);
+  color: #fff;
+  padding: 16px 20px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-icon {
+  width: 32px; height: 32px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.header-title { font-size: 17px; font-weight: 700; }
+.header-sub   { font-size: 12px; opacity: 0.7; margin-top: 1px; }
+
+/* ── Tab ── */
+.tab-bar {
+  display: flex;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 62px;
+  z-index: 90;
+}
+.tab {
+  flex: 1;
+  padding: 13px 8px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-sub);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.15s;
+}
+.tab.active {
+  color: var(--brand);
+  border-bottom-color: var(--ci-green);
+  font-weight: 700;
+}
+
+/* ── Form ── */
+.page { display: none; padding: 20px 16px; }
+.page.active { display: block; }
+
+.field { margin-bottom: 16px; }
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-sub);
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: 'Noto Sans TC', sans-serif;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: var(--brand);
+}
+.field textarea {
+  height: 90px;
+  resize: none;
+  line-height: 1.6;
+}
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235A7A6A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 38px;
+}
+
+/* 類型快選按鈕 */
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.type-btn {
+  padding: 11px 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-sub);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.type-btn.selected {
+  border-color: var(--brand);
+  background: var(--brand-bg);
+  color: var(--brand);
+  font-weight: 700;
+}
+
+/* 緊急標記 */
+.urgent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.urgent-row.on {
+  border-color: var(--red);
+  background: #fff5f5;
+}
+.urgent-toggle {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.urgent-row.on .urgent-toggle {
+  background: var(--red);
+  border-color: var(--red);
+}
+.urgent-label { font-size: 14px; color: var(--text-sub); }
+.urgent-row.on .urgent-label { color: var(--red); font-weight: 600; }
+
+/* 送出按鈕 */
+.btn-submit {
+  width: 100%;
+  padding: 16px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  margin-top: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background 0.15s;
+}
+.btn-submit:hover { background: var(--brand-light); }
+.btn-submit:active { background: #005030; transform: scale(0.99); }
+.btn-submit:disabled { background: var(--text-muted); cursor: not-allowed; transform: none; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--text);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 999;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--brand); }
+.toast.error   { background: var(--red); }
+
+/* ── 設定 ── */
+.settings-hint {
+  margin: 16px 0 0;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--text-sub);
+  line-height: 1.6;
+}
+.settings-hint a { color: var(--brand); }
+.btn-settings {
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  color: var(--text-sub);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  margin-top: 12px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+/* ── 設定 Modal ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200;
+  align-items: flex-end;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  width: 100%;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.modal-field { margin-bottom: 12px; }
+.modal-field label { font-size: 13px; color: var(--text-sub); display: block; margin-bottom: 5px; }
+.modal-field input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Noto Sans TC', sans-serif;
+  outline: none;
+}
+.modal-field input:focus { border-color: var(--brand); }
+.btn-save {
+  width: 100%;
+  padding: 14px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+/* ── 待提交佇列 badge ── */
+.queue-badge {
+  display: none;
+  background: var(--yellow);
+  color: #7a4500;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  margin-left: auto;
+}
+.queue-badge.show { display: inline-block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+  </div>
+  <div>
+    <div class="header-title">快速新增</div>
+    <div class="header-sub">視覺多媒體設計組</div>
+  </div>
+  <span class="queue-badge" id="queueBadge">離線</span>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" data-tab="design" onclick="switchTab('design')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+    美編代辦
+  </div>
+  <div class="tab" data-tab="video" onclick="switchTab('video')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+    多媒體
+  </div>
+  <div class="tab" data-tab="idea" onclick="switchTab('idea')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+    發想記錄
+  </div>
+</div>
+
+<!-- ── 美編代辦 ── -->
+<div class="page active" id="page-design">
+  <div class="field">
+    <label>案件名稱 *</label>
+    <input type="text" id="d-title" placeholder="例：運動醫學中心衛教圖卡" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>類型</label>
+    <div class="type-grid" id="d-type-grid">
+      <button class="type-btn selected" data-val="社群貼文" onclick="selectType('d',this)">社群貼文</button>
+      <button class="type-btn" data-val="活動海報" onclick="selectType('d',this)">活動海報</button>
+      <button class="type-btn" data-val="衛教圖卡" onclick="selectType('d',this)">衛教圖卡</button>
+      <button class="type-btn" data-val="其他" onclick="selectType('d',this)">其他</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>初始狀態</label>
+    <select id="d-status">
+      <option value="待執行">待執行</option>
+      <option value="需求確認">需求確認</option>
+      <option value="草稿設計">草稿設計</option>
+      <option value="討論中">討論中</option>
+      <option value="初稿審核">初稿審核</option>
+      <option value="審核中">審核中</option>
+      <option value="待發包">待發包</option>
+      <option value="定稿確認">定稿確認</option>
+      <option value="已完成">已完成</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>負責同仁</label>
+    <input type="text" id="d-assignee" placeholder="例：小美" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>截止日期</label>
+    <input type="date" id="d-deadline">
+  </div>
+  <div class="field">
+    <label>備註說明</label>
+    <textarea id="d-note" placeholder="尺寸要求、參考方向、特殊需求…"></textarea>
+  </div>
+  <div class="field">
+    <label>緊急程度</label>
+    <div class="urgent-row" id="d-urgent-row" onclick="toggleUrgent('d')">
+      <div class="urgent-toggle" id="d-urgent-icon">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none" id="d-check">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <span class="urgent-label" id="d-urgent-label">標記為緊急</span>
+    </div>
+  </div>
+  <button class="btn-submit" onclick="submit('design')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    送出美編代辦
+  </button>
+  <button class="btn-settings" onclick="openSettings()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    設定 GAS 接收端
+  </button>
+</div>
+
+<!-- ── 多媒體待拍 ── -->
+<div class="page" id="page-video">
+  <div class="field">
+    <label>影片主題 *</label>
+    <input type="text" id="v-title" placeholder="例：空間形象照攝－手術室" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>類型</label>
+    <div class="type-grid" id="v-type-grid">
+      <button class="type-btn selected" data-val="自主" onclick="selectType('v',this)">自主</button>
+      <button class="type-btn" data-val="醫師配合" onclick="selectType('v',this)">醫師配合</button>
+      <button class="type-btn" data-val="社群媒體" onclick="selectType('v',this)">社群媒體</button>
+      <button class="type-btn" data-val="外部委託" onclick="selectType('v',this)">外部委託</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>初始狀態</label>
+    <select id="v-status">
+      <option value="待執行">待執行</option>
+      <option value="討論中">討論中</option>
+      <option value="腳本已完成">腳本已完成</option>
+      <option value="約拍中">約拍中</option>
+      <option value="已拍攝待剪輯">已拍攝待剪輯</option>
+      <option value="剪輯中">剪輯中</option>
+      <option value="審核中">審核中</option>
+      <option value="待修改">待修改</option>
+      <option value="已完成">已完成</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>負責同仁</label>
+    <input type="text" id="v-assignee" placeholder="例：鈺菁" autocomplete="off">
+  </div>
+  <div class="field">
+    <label>預計拍攝日</label>
+    <input type="date" id="v-deadline">
+  </div>
+  <div class="field">
+    <label>備註說明</label>
+    <textarea id="v-note" placeholder="拍攝地點、需要配合的醫師、參考影片…"></textarea>
+  </div>
+  <div class="field">
+    <label>緊急程度</label>
+    <div class="urgent-row" id="v-urgent-row" onclick="toggleUrgent('v')">
+      <div class="urgent-toggle" id="v-urgent-icon">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:none" id="v-check">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <span class="urgent-label" id="v-urgent-label">標記為緊急</span>
+    </div>
+  </div>
+  <button class="btn-submit" onclick="submit('video')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    送出多媒體任務
+  </button>
+  <button class="btn-settings" onclick="openSettings()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    設定 GAS 接收端
+  </button>
+</div>
+
+<!-- ── 發想記錄 ── -->
+<div class="page" id="page-idea">
+  <div class="field">
+    <label>主題發想 *</label>
+    <textarea id="i-title" style="height:120px" placeholder="腦中閃過的想法、看到的靈感、想拍的主題…"></textarea>
+  </div>
+  <div class="field">
+    <label>分類</label>
+    <div class="type-grid" id="i-type-grid">
+      <button class="type-btn selected" data-val="影片主題" onclick="selectType('i',this)">影片主題</button>
+      <button class="type-btn" data-val="美編概念" onclick="selectType('i',this)">美編概念</button>
+      <button class="type-btn" data-val="活動企劃" onclick="selectType('i',this)">活動企劃</button>
+      <button class="type-btn" data-val="其他靈感" onclick="selectType('i',this)">其他靈感</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>參考來源（選填）</label>
+    <input type="text" id="i-ref" placeholder="連結或說明" autocomplete="off">
+  </div>
+  <button class="btn-submit" onclick="submit('idea')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    記錄這個想法
+  </button>
+  <button class="btn-settings" onclick="openSettings()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    設定 GAS 接收端
+  </button>
+</div>
+
+<!-- ── 設定 Modal ── -->
+<div class="modal-overlay" id="settingsModal" onclick="closeSettings(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">GAS 接收端設定</div>
+    <div class="modal-field">
+      <label>GAS 網址（doPost 端點）</label>
+      <input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/...">
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.6">
+      設定後，每筆提交會 POST 到此端點寫入 Google Sheets。<br>
+      未設定時資料只存在 localStorage。
+    </div>
+    <button class="btn-save" onclick="saveSettings()">儲存設定</button>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+const STORE_KEY = 'ktgh_qe_v1';
+
+// ── 狀態 ──
+const state = {
+  d: { type: '社群貼文', urgent: false },
+  v: { type: '自主',    urgent: false },
+  i: { type: '影片主題' }
+};
+
+// ── Tab 切換 ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + tab));
+}
+
+// ── 類型選取 ──
+function selectType(prefix, btn) {
+  btn.closest('.type-grid').querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state[prefix].type = btn.dataset.val;
+}
+
+// ── 緊急切換 ──
+function toggleUrgent(prefix) {
+  state[prefix].urgent = !state[prefix].urgent;
+  const on = state[prefix].urgent;
+  document.getElementById(prefix + '-urgent-row').classList.toggle('on', on);
+  document.getElementById(prefix + '-check').style.display = on ? '' : 'none';
+  document.getElementById(prefix + '-urgent-label').textContent = on ? '已標記為緊急 ⚡' : '標記為緊急';
+}
+
+// ── 設定 ──
+function openSettings() {
+  document.getElementById('gasUrl').value = localStorage.getItem('ktgh_qe_gas') || '';
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings(e) {
+  if (e.target === document.getElementById('settingsModal')) document.getElementById('settingsModal').classList.remove('open');
+}
+function saveSettings() {
+  const url = document.getElementById('gasUrl').value.trim();
+  if (url) localStorage.setItem('ktgh_qe_gas', url);
+  else localStorage.removeItem('ktgh_qe_gas');
+  document.getElementById('settingsModal').classList.remove('open');
+  showToast('設定已儲存', 'success');
+}
+
+// ── Toast ──
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── 組裝 GAS payload（符合後台 v4 格式）──
+function buildGasPayload(group, item) {
+  return {
+    action: 'add',
+    group,
+    item: {
+      id:         'T' + Date.now(),
+      parentId:   '',
+      category:   item.category || '',
+      title:      item.title,
+      assignee:   item.assignee || '',
+      unit:       '',
+      startDate:  new Date().toISOString().slice(0, 10),
+      endDate:    item.deadline || '',
+      status:     item.status || '待執行',
+      progress:   0,
+      sourceType: item.sourceType || '',
+      supNum:     '',
+      collab:     '',
+      note:       (item.urgent ? '【緊急】' : '') + (item.note || item.ref || '')
+    }
+  };
+}
+
+// ── 送出 ──
+async function submit(tab) {
+  let gasPayload;
+  let pageId;
+
+  if (tab === 'design') {
+    const title = document.getElementById('d-title').value.trim();
+    if (!title) { showToast('請填寫案件名稱', 'error'); return; }
+    pageId = 'design';
+    gasPayload = buildGasPayload('design', {
+      title,
+      category:   state.d.type,
+      assignee:   document.getElementById('d-assignee').value.trim(),
+      deadline:   document.getElementById('d-deadline').value,
+      status:     document.getElementById('d-status').value,
+      note:       document.getElementById('d-note').value.trim(),
+      urgent:     state.d.urgent
+    });
+  } else if (tab === 'video') {
+    const title = document.getElementById('v-title').value.trim();
+    if (!title) { showToast('請填寫影片主題', 'error'); return; }
+    pageId = 'video';
+    gasPayload = buildGasPayload('media', {
+      title,
+      category:   '多媒體',
+      assignee:   document.getElementById('v-assignee').value.trim(),
+      deadline:   document.getElementById('v-deadline').value,
+      status:     document.getElementById('v-status').value,
+      sourceType: state.v.type,
+      note:       document.getElementById('v-note').value.trim(),
+      urgent:     state.v.urgent
+    });
+  } else {
+    const title = document.getElementById('i-title').value.trim();
+    if (!title) { showToast('請填寫發想內容', 'error'); return; }
+    pageId = 'idea';
+    gasPayload = buildGasPayload('media', {
+      title,
+      category:   '發想記錄',
+      status:     '待執行',
+      sourceType: state.i.type,
+      ref:        document.getElementById('i-ref').value.trim()
+    });
+  }
+
+  const gasUrl = localStorage.getItem('ktgh_qe_gas');
+  const btn = document.querySelector('#page-' + pageId + ' .btn-submit');
+  btn.disabled = true;
+
+  if (gasUrl) {
+    try {
+      await fetch(gasUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(gasPayload)
+      });
+      showToast('✓ 已寫入 Sheets', 'success');
+      resetForm(tab);
+    } catch (e) {
+      saveOffline(gasPayload);
+      showToast('網路異常，已存入待傳佇列', 'error');
+    }
+  } else {
+    saveOffline(gasPayload);
+    showToast('已存入本機（尚未設定 GAS）', '');
+    resetForm(tab);
+  }
+
+  btn.disabled = false;
+  updateQueueBadge();
+}
+
+// ── 離線佇列 ──
+function saveOffline(payload) {
+  const q = JSON.parse(localStorage.getItem(STORE_KEY + '_queue') || '[]');
+  q.push(payload);
+  localStorage.setItem(STORE_KEY + '_queue', JSON.stringify(q));
+}
+
+function updateQueueBadge() {
+  const q = JSON.parse(localStorage.getItem(STORE_KEY + '_queue') || '[]');
+  const badge = document.getElementById('queueBadge');
+  if (q.length > 0) {
+    badge.textContent = `${q.length} 筆待傳`;
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+// ── 重置表單 ──
+function resetForm(tab) {
+  if (tab === 'design') {
+    document.getElementById('d-title').value = '';
+    document.getElementById('d-assignee').value = '';
+    document.getElementById('d-deadline').value = '';
+    document.getElementById('d-note').value = '';
+    document.getElementById('d-status').value = '待執行';
+    if (state.d.urgent) toggleUrgent('d');
+  } else if (tab === 'video') {
+    document.getElementById('v-title').value = '';
+    document.getElementById('v-assignee').value = '';
+    document.getElementById('v-deadline').value = '';
+    document.getElementById('v-note').value = '';
+    document.getElementById('v-status').value = '待執行';
+    if (state.v.urgent) toggleUrgent('v');
+  } else {
+    document.getElementById('i-title').value = '';
+    document.getElementById('i-ref').value = '';
+  }
+}
+
+// 初始化
+updateQueueBadge();
+</script>
+</body>
+</html>
