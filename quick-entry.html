@@ -305,6 +305,38 @@ body {
   margin-top: 4px;
 }
 
+/* ── 記錄列表 ── */
+.record-list { display: flex; flex-direction: column; gap: 10px; }
+.record-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.record-card-top {
+  display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px;
+}
+.record-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.record-badge.design { background: #EAF5EE; color: var(--brand); }
+.record-badge.media  { background: #E6F7FB; color: #007A94; }
+.record-badge.idea   { background: #FFF8E6; color: #7a4500; }
+.record-title { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.record-meta  { font-size: 12px; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.record-status {
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 20px;
+  background: var(--brand-bg); color: var(--brand);
+}
+.record-time { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+.empty-state {
+  text-align: center; padding: 48px 20px;
+  color: var(--text-muted); font-size: 14px; line-height: 2;
+}
+
 /* ── 待提交佇列 badge ── */
 .queue-badge {
   display: none;
@@ -346,6 +378,10 @@ body {
   <div class="tab" data-tab="idea" onclick="switchTab('idea')">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
     發想記錄
+  </div>
+  <div class="tab" data-tab="log" onclick="switchTab('log')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:4px"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+    記錄
   </div>
 </div>
 
@@ -500,6 +536,11 @@ body {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
     設定 GAS 接收端
   </button>
+</div>
+
+<!-- ── 記錄 ── -->
+<div class="page" id="page-log">
+  <div id="record-list-container" class="record-list"></div>
 </div>
 
 <!-- ── 設定 Modal ── -->
@@ -659,13 +700,16 @@ async function submit(tab) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(gasPayload)
       });
+      saveRecord(gasPayload);
       showToast('✓ 已寫入 Sheets', 'success');
       resetForm(tab);
     } catch (e) {
       saveOffline(gasPayload);
+      saveRecord(gasPayload);
       showToast('網路異常，已存入待傳佇列', 'error');
     }
   } else {
+    saveRecord(gasPayload);
     saveOffline(gasPayload);
     showToast('已存入本機（尚未設定 GAS）', '');
     resetForm(tab);
@@ -673,6 +717,13 @@ async function submit(tab) {
 
   btn.disabled = false;
   updateQueueBadge();
+}
+
+// ── 儲存記錄（本機完整 log）──
+function saveRecord(payload) {
+  const log = JSON.parse(localStorage.getItem(STORE_KEY + '_log') || '[]');
+  log.unshift({ ...payload, savedAt: new Date().toISOString() });
+  localStorage.setItem(STORE_KEY + '_log', JSON.stringify(log.slice(0, 200)));
 }
 
 // ── 離線佇列 ──
@@ -713,6 +764,45 @@ function resetForm(tab) {
     document.getElementById('i-title').value = '';
     document.getElementById('i-ref').value = '';
   }
+}
+
+// ── Tab 切換時渲染記錄 ──
+const _origSwitchTab = switchTab;
+function switchTab(tab) {
+  _origSwitchTab(tab);
+  if (tab === 'log') renderLog();
+}
+
+// ── 渲染記錄列表 ──
+function renderLog() {
+  const log = JSON.parse(localStorage.getItem(STORE_KEY + '_log') || '[]');
+  const container = document.getElementById('record-list-container');
+  if (!log.length) {
+    container.innerHTML = '<div class="empty-state">還沒有任何記錄<br>新增第一筆試試看</div>';
+    return;
+  }
+  container.innerHTML = log.map(p => {
+    const item = p.item || {};
+    const group = p.group || '';
+    const badgeClass = group === 'design' ? 'design' : (item.category === '發想記錄' ? 'idea' : 'media');
+    const badgeText = group === 'design' ? '美編代辦' : (item.category === '發想記錄' ? '發想記錄' : '多媒體');
+    const d = new Date(p.savedAt || item.id?.replace('T','') || Date.now());
+    const timeStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const meta = [item.assignee, item.endDate].filter(Boolean).join('・');
+    return `
+      <div class="record-card">
+        <div class="record-card-top">
+          <span class="record-badge ${badgeClass}">${badgeText}</span>
+          <span class="record-title">${item.title || ''}</span>
+        </div>
+        <div class="record-meta">
+          <span class="record-status">${item.status || ''}</span>
+          ${meta ? `<span>${meta}</span>` : ''}
+          <span class="record-time">${timeStr}</span>
+        </div>
+        ${item.note ? `<div style="font-size:12px;color:var(--text-sub);margin-top:6px">${item.note}</div>` : ''}
+      </div>`;
+  }).join('');
 }
 
 // 初始化
