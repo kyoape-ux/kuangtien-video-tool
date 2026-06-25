@@ -388,7 +388,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.1 · 2026-06-25 20:17</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.2 · 2026-06-25 20:38</div>
     </div>
   </nav>
 
@@ -794,6 +794,9 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <div class="form-grid cols3" style="margin-top:12px;">
           <div class="form-group full"><label>標題 / 內容摘要 *</label><input type="text" id="th-title" placeholder="貼文主旨"></div>
           <div class="form-group"><label>發布日期 *</label><input type="date" id="th-date"></div>
+          <div class="form-group"><label>類型</label>
+            <select id="th-type"><option value="1">貼文</option><option value="2">影片</option></select>
+          </div>
           <div class="form-group"><label>類別</label><input type="text" id="th-cat" placeholder="例：衛教、活動、日常"></div>
           <div class="form-group full"><label>Threads 連結</label><input type="url" id="th-link" placeholder="https://www.threads.net/@.../post/..."></div>
           <div class="form-group"><label>瀏覽次數</label><input type="number" id="th-views" min="0" placeholder="0"></div>
@@ -815,7 +818,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         </div>
         <div class="tbl-wrap">
           <table><thead><tr>
-            <th>日期</th><th>標題</th><th>類別</th><th>瀏覽</th><th>讚</th><th>回覆</th><th>轉發＋引用</th><th>互動率</th><th>操作</th>
+            <th>日期</th><th>標題</th><th>類型</th><th>類別</th><th>瀏覽</th><th>讚</th><th>回覆</th><th>轉發＋引用</th><th>互動率</th><th>操作</th>
           </tr></thead>
           <tbody id="th-tbody"></tbody></table>
         </div>
@@ -1308,6 +1311,9 @@ tr:hover td{background:rgba(52,211,153,.03);}
     <div class="form-grid cols3">
       <div class="form-group full"><label>標題 / 內容摘要 *</label><input type="text" id="te-title" placeholder="貼文主旨"></div>
       <div class="form-group"><label>發布日期 *</label><input type="date" id="te-date"></div>
+      <div class="form-group"><label>類型</label>
+        <select id="te-type"><option value="1">貼文</option><option value="2">影片</option></select>
+      </div>
       <div class="form-group"><label>類別</label><input type="text" id="te-cat" placeholder="例：衛教、活動、日常"></div>
       <div class="form-group full"><label>Threads 連結</label><input type="url" id="te-link" placeholder="https://www.threads.net/@.../post/..."></div>
       <div class="form-group"><label>瀏覽次數</label><input type="number" id="te-views" min="0"></div>
@@ -2530,6 +2536,7 @@ const IG_TYPE_MAP={'1':'貼文','2':'測驗','3':'影片'};
 // Threads 社群模組（獨立流量追蹤，存 localStorage：kt_th_data）
 // ============================================================
 let TH_DATA=[];
+const TH_TYPE_MAP={'1':'貼文','2':'影片'};
 function loadThreadsData(){try{TH_DATA=JSON.parse(localStorage.getItem('kt_th_data')||'[]');}catch(e){TH_DATA=[];}}
 function saveThreadsData(){TH_DATA.sort((a,b)=>(b.date||'').localeCompare(a.date||''));localStorage.setItem('kt_th_data',JSON.stringify(TH_DATA));}
 function activeThreads(){return TH_DATA.filter(d=>!d.deleted_at);}
@@ -2543,6 +2550,7 @@ function saveThreadsPost(){
   TH_DATA.push({
     id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
     title:t, date:d,
+    type:document.getElementById('th-type').value||'1',
     cat:document.getElementById('th-cat').value.trim(),
     link:document.getElementById('th-link').value.trim(),
     views:Number(document.getElementById('th-views').value)||0,
@@ -2554,7 +2562,7 @@ function saveThreadsPost(){
   saveThreadsData();showAlert('th-entry-alert','已儲存','ok');clearThreadsForm();renderThreads();
 }
 
-function clearThreadsForm(){['title','date','cat','link','views','likes','replies','reposts'].forEach(f=>{const el=document.getElementById('th-'+f);if(el)el.value='';});}
+function clearThreadsForm(){['title','date','cat','link','views','likes','replies','reposts'].forEach(f=>{const el=document.getElementById('th-'+f);if(el)el.value='';});const ty=document.getElementById('th-type');if(ty)ty.value='1';}
 
 function renderThreads(){renderThreadsKpi();renderThreadsList();}
 
@@ -2582,6 +2590,7 @@ function renderThreadsList(){
     return `<tr>
       <td style="white-space:nowrap;">${(d.date||'').substring(0,10)||'—'}</td>
       <td style="max-width:240px;">${lk?`<a href="${lk}" target="_blank" style="color:var(--threads);">${esc(d.title)}</a>`:esc(d.title)}</td>
+      <td><span class="type-badge" style="background:rgba(167,139,250,.12);color:var(--threads);">${TH_TYPE_MAP[d.type]||'貼文'}</span></td>
       <td>${esc(d.cat||'')}</td>
       <td style="font-variant-numeric:tabular-nums;">${(Number(d.views)||0).toLocaleString()}</td>
       <td style="font-variant-numeric:tabular-nums;">${(Number(d.likes)||0).toLocaleString()}</td>
@@ -2600,6 +2609,7 @@ function openThreadsEdit(id){
   const d=TH_DATA.find(x=>x.id===id);if(!d)return;
   document.getElementById('te-id').value=d.id;
   ['title','date','cat','link','views','likes','replies','reposts'].forEach(f=>{const el=document.getElementById('te-'+f);if(el)el.value=d[f]??'';});
+  document.getElementById('te-type').value=d.type||'1';
   document.getElementById('th-edit-modal').classList.add('show');
 }
 function closeThreadsModal(){document.getElementById('th-edit-modal').classList.remove('show');}
@@ -2610,6 +2620,7 @@ function submitThreadsEdit(){
   if(typeof canWrite==='function'&&!canWrite()){showAlert('th-edit-alert','權限不足','err');return;}
   d.title=t;
   d.date=document.getElementById('te-date').value;
+  d.type=document.getElementById('te-type').value||'1';
   d.cat=document.getElementById('te-cat').value.trim();
   d.link=document.getElementById('te-link').value.trim();
   d.views=Number(document.getElementById('te-views').value)||0;
@@ -2625,9 +2636,9 @@ function deleteThreadsPost(id){
   TH_DATA=TH_DATA.filter(d=>d.id!==id);saveThreadsData();renderThreads();
 }
 function exportThreadsCSV(){
-  const rows=[['日期','標題','類別','瀏覽','讚','回覆','轉發引用','互動率%','連結']];
+  const rows=[['日期','標題','類型','類別','瀏覽','讚','回覆','轉發引用','互動率%','連結']];
   activeThreads().slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(d=>{
-    rows.push([(d.date||'').substring(0,10),d.title||'',d.cat||'',Number(d.views)||0,Number(d.likes)||0,Number(d.replies)||0,Number(d.reposts)||0,thEngRate(d).toFixed(1),d.link||'']);
+    rows.push([(d.date||'').substring(0,10),d.title||'',TH_TYPE_MAP[d.type]||'貼文',d.cat||'',Number(d.views)||0,Number(d.likes)||0,Number(d.replies)||0,Number(d.reposts)||0,thEngRate(d).toFixed(1),d.link||'']);
   });
   const csv='﻿'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`threads_${new Date().toISOString().substring(0,10)}.csv`;a.click();
