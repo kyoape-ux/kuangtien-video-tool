@@ -341,6 +341,9 @@ tr:hover td{background:rgba(52,211,153,.03);}
     <div class="nav-item" onclick="showPage('list')">
       <span class="icon"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>影片列表
     </div>
+    <div class="nav-item" onclick="showPage('vidstats')">
+      <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>影片成效
+    </div>
 
     <div class="nav-section">Instagram</div>
     <div class="nav-item" onclick="showPage('igadd')">
@@ -394,7 +397,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.7 · 2026-06-25 23:05</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.8 · 2026-06-25 23:25</div>
     </div>
   </nav>
 
@@ -638,6 +641,61 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon icon-xl" style="color:var(--txt3);margin-bottom:12px;display:block;margin:0 auto 12px;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></span>
         尚無影片資料，請先新增影片
       </div>
+      </div><!-- /page-body -->
+    </div>
+
+    <!-- ═══ Page: 影片成效 ═══ -->
+    <div class="page" id="page-vidstats">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>影片成效</h1>
+          <p>YouTube 影片圖表分析與效率排行（觀看、CTR、完播率）</p>
+        </div>
+      </div>
+      <div class="page-body">
+        <!-- 篩選器 -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;">
+          <span style="font-size:13px;color:var(--txt2);font-weight:600;">篩選範圍：</span>
+          <select id="vs-year" onchange="renderVidStats()" style="padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;background:var(--bg-2);color:var(--txt);outline:none;cursor:pointer;"></select>
+          <select id="vs-month" onchange="renderVidStats()" style="padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;background:var(--bg-2);color:var(--txt);outline:none;cursor:pointer;">
+            <option value="">全年</option><option value="01">1月</option><option value="02">2月</option><option value="03">3月</option><option value="04">4月</option><option value="05">5月</option><option value="06">6月</option><option value="07">7月</option><option value="08">8月</option><option value="09">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+          </select>
+          <span id="vs-label" style="font-size:12px;color:var(--txt3);margin-left:auto;"></span>
+        </div>
+
+        <!-- KPI -->
+        <div class="cards" id="vs-kpi"></div>
+
+        <div class="chart-row" style="margin-top:4px;">
+          <div class="chart-box">
+            <h3><span class="icon"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></span>月度觀看趨勢</h3>
+            <canvas id="vs-chart-monthly"></canvas>
+          </div>
+          <div class="chart-box">
+            <h3><span class="icon"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></span>觀看 TOP 5 影片</h3>
+            <canvas id="vs-chart-top5" style="max-height:240px;"></canvas>
+          </div>
+        </div>
+
+        <!-- 效率排行表 -->
+        <div class="chart-box" style="margin-top:20px;">
+          <h3><span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>影片效率排行 <span style="font-size:11px;color:var(--txt3);font-weight:400;">點欄位標題可排序 · CTR/完播率衡量「內容好不好」而非只看聲量</span></h3>
+          <div class="tbl-wrap" style="margin-top:12px;">
+            <table>
+              <thead><tr>
+                <th style="cursor:pointer;" onclick="setVidSort('date')">日期</th>
+                <th>標題</th>
+                <th style="cursor:pointer;" onclick="setVidSort('views')">全平台觀看 ⇅</th>
+                <th style="cursor:pointer;" onclick="setVidSort('yt_views')">YT 觀看 ⇅</th>
+                <th style="cursor:pointer;" onclick="setVidSort('yt_ctr')">YT CTR ⇅</th>
+                <th style="cursor:pointer;" onclick="setVidSort('yt_ratio')">完播率 ⇅</th>
+                <th style="cursor:pointer;" onclick="setVidSort('yt_avgdur')">平均時長</th>
+              </tr></thead>
+              <tbody id="vs-rank-tbody"></tbody>
+            </table>
+          </div>
+          <div id="vs-rank-empty" style="display:none;text-align:center;padding:36px;color:var(--txt3);">此期間無影片資料</div>
+        </div>
       </div><!-- /page-body -->
     </div>
 
@@ -2208,7 +2266,7 @@ function renderTrashList(){
 // ============================================================
 // 導覽
 // ============================================================
-function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='vidstats')renderVidStats();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
 function renderAll(){renderDashboard();renderList();renderCfgForm();buildMonthFilter();}
 
 // ============================================================
@@ -2318,6 +2376,60 @@ function renderEngRanking(vd,igd,thd){
       <span style="width:120px;text-align:right;font-size:11px;color:var(--txt3);font-variant-numeric:tabular-nums;">${r.eng.toLocaleString()} 互動 / ${r.views.toLocaleString()} 觀看</span>
     </div>`).join('');
 }
+// ============================================================
+// 影片成效（YouTube 效率分析）
+// ============================================================
+let vsChartMonthly=null,vsChartTop5=null,vsSortKey='views',vsSortDir=-1;
+function setVidSort(key){if(vsSortKey===key){vsSortDir=-vsSortDir;}else{vsSortKey=key;vsSortDir=-1;}renderVidStats();}
+function renderVidStats(){
+  const yrSel=document.getElementById('vs-year');if(!yrSel)return;
+  const AV=activeVideos();
+  const years=[...new Set(AV.map(d=>(d.date||'').substring(0,4)).filter(Boolean))].sort().reverse();
+  const nowY=String(new Date().getFullYear());
+  if(!years.includes(nowY))years.unshift(nowY);
+  if(yrSel.dataset.built!=='1'){yrSel.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');yrSel.value=nowY;yrSel.dataset.built='1';}
+  const yr=yrSel.value||nowY;
+  const mo=document.getElementById('vs-month').value;
+  const prefix=mo?`${yr}-${mo}`:yr;
+  const vd=AV.filter(d=>(d.date||'').startsWith(prefix));
+  document.getElementById('vs-label').textContent=`${yr}${mo?` 年 ${parseInt(mo)} 月`:' 全年'} · ${vd.length} 部`;
+  const n=vd.length;
+  const sum=k=>vd.reduce((s,d)=>s+(Number(d[k])||0),0);
+  const avg=k=>n?sum(k)/n:0;
+  const tv=vd.reduce((s,d)=>s+totalViews(d),0);
+  const avgCtr=avg('yt_ctr')*100,avgRatio=avg('yt_ratio')*100,imp=sum('yt_imp');
+  document.getElementById('vs-kpi').innerHTML=`
+    <div class="kpi-card"><div class="kpi-label">影片數</div><div class="kpi-val">${n}</div><div class="kpi-sub">全平台觀看 ${tv.toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">平均 YT CTR</div><div class="kpi-val">${avgCtr.toFixed(1)}%</div><div class="kpi-sub">點閱率（越高越吸睛）</div></div>
+    <div class="kpi-card"><div class="kpi-label">平均完播率</div><div class="kpi-val">${avgRatio.toFixed(1)}%</div><div class="kpi-sub">觀看比例（內容留得住人）</div></div>
+    <div class="kpi-card"><div class="kpi-label">YT 總曝光</div><div class="kpi-val">${imp.toLocaleString()}</div><div class="kpi-sub">影片被推播次數</div></div>`;
+  const months=[];for(let i=1;i<=12;i++)months.push(`${yr}-${String(i).padStart(2,'0')}`);
+  const mv=k=>months.map(m=>AV.filter(d=>(d.date||'').startsWith(m)).reduce((s,d)=>s+(Number(d[k])||0),0));
+  const mYt=mv('yt_views'),mFb=mv('fb_views'),mIg=mv('ig_views');
+  if(vsChartMonthly)vsChartMonthly.destroy();
+  vsChartMonthly=new Chart(document.getElementById('vs-chart-monthly'),{type:'bar',data:{labels:months.map(m=>m.substring(5)+'月'),datasets:[{label:'YouTube',data:mYt,backgroundColor:'#FF4444',borderRadius:3},{label:'Facebook',data:mFb,backgroundColor:'#4C8BF5',borderRadius:3},{label:'Instagram',data:mIg,backgroundColor:'#F472B6',borderRadius:3}]},options:{responsive:true,scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true}},plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:12,padding:14}}}}});
+  const top5=[...vd].sort((a,b)=>totalViews(b)-totalViews(a)).slice(0,5);
+  if(vsChartTop5)vsChartTop5.destroy();
+  vsChartTop5=new Chart(document.getElementById('vs-chart-top5'),{type:'bar',data:{labels:top5.map(d=>(d.title||'(無標題)').slice(0,16)),datasets:[{label:'全平台觀看',data:top5.map(d=>totalViews(d)),backgroundColor:'#34D399',borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
+  const tb=document.getElementById('vs-rank-tbody'),empty=document.getElementById('vs-rank-empty');
+  const sorted=[...vd].sort((a,b)=>{
+    if(vsSortKey==='date'){const av=a.date||'',bv=b.date||'';return (av<bv?-1:av>bv?1:0)*vsSortDir;}
+    const av=vsSortKey==='views'?totalViews(a):(Number(a[vsSortKey])||0);
+    const bv=vsSortKey==='views'?totalViews(b):(Number(b[vsSortKey])||0);
+    return (av-bv)*vsSortDir;
+  });
+  if(empty)empty.style.display=sorted.length?'none':'block';
+  tb.innerHTML=sorted.map(d=>`<tr>
+    <td style="white-space:nowrap;">${(d.date||'').substring(0,10)}</td>
+    <td style="max-width:240px;">${esc(d.title||'')}</td>
+    <td style="font-variant-numeric:tabular-nums;font-weight:600;">${totalViews(d).toLocaleString()}</td>
+    <td style="font-variant-numeric:tabular-nums;">${(Number(d.yt_views)||0).toLocaleString()}</td>
+    <td style="font-variant-numeric:tabular-nums;">${((Number(d.yt_ctr)||0)*100).toFixed(1)}%</td>
+    <td style="font-variant-numeric:tabular-nums;color:${(Number(d.yt_ratio)||0)>=0.5?'#34D399':'var(--txt)'};">${((Number(d.yt_ratio)||0)*100).toFixed(1)}%</td>
+    <td style="font-variant-numeric:tabular-nums;color:var(--txt3);">${esc(d.yt_avgdur||'—')}</td>
+  </tr>`).join('');
+}
+
 function renderCharts(viewData){
   const yr=dashYear,months=[];
   const _AV=activeVideos();
