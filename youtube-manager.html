@@ -14,7 +14,7 @@
   --txt:#E8ECF1; --txt2:#94A3B8; --txt3:#5A6B80;
   --card:#131C28; --card-hover:#182438;
   --red:#F87171; --amber:#FBBF24; --blue:#60A5FA;
-  --yt:#FF4444; --fb:#4C8BF5; --ig:#F472B6; --ig-deep:#BE185D;
+  --yt:#FF4444; --fb:#4C8BF5; --ig:#F472B6; --ig-deep:#BE185D; --threads:#A78BFA;
   --radius:10px; --radius-lg:14px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -350,6 +350,11 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>IG 貼文成效
     </div>
 
+    <div class="nav-section">Threads</div>
+    <div class="nav-item" onclick="showPage('threads')">
+      <span class="icon"><svg viewBox="0 0 24 24"><path d="M16.5 11.5c-.3-.15-.6-.28-.9-.4-.18-3.3-1.98-5.19-5-5.2-2.02 0-3.7.85-4.73 2.4l1.67 1.14c.77-1.16 1.98-1.4 3.06-1.4 1.6 0 2.8.94 3 2.85-.7-.12-1.46-.16-2.27-.1-2.3.13-3.78 1.47-3.68 3.33.05.94.52 1.75 1.32 2.28.67.45 1.54.66 2.44.61 1.2-.06 2.13-.52 2.79-1.35.5-.63.81-1.44.95-2.46.57.34.99.8 1.22 1.34.39.94.41 2.48-.84 3.73-1.1 1.1-2.42 1.57-4.41 1.59-2.21-.02-3.88-.73-4.97-2.12C6.13 17.5 5.6 15.78 5.58 13.6c.02-2.18.55-3.9 1.57-5.13C8.24 7.08 9.91 6.36 12.12 6.35M13.3 13.7c-.04.7-.27 1.94-1.74 2.02-.66.04-1.35-.27-1.39-.95-.03-.5.35-1.06 1.78-1.14.33-.02.64-.01.92.02.16.02.31.04.43.05" stroke-width="1.4"/></svg></span>Threads 社群
+    </div>
+
     <div class="nav-section">標籤與推廣</div>
     <div class="nav-item" onclick="showPage('tags')">
       <span class="icon"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>標籤管理
@@ -383,7 +388,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;">v2.0 · 2026</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.1 · 2026-06-25 20:17</div>
     </div>
   </nav>
 
@@ -767,6 +772,56 @@ tr:hover td{background:rgba(52,211,153,.03);}
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ═══ Page: Threads ═══ -->
+    <div class="page" id="page-threads">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Threads 社群 <span id="th-count" style="font-size:14px;color:var(--txt3);font-weight:400;"></span></h1>
+          <p>Threads 貼文流量追蹤（瀏覽、讚、回覆、轉發）</p>
+        </div>
+      </div>
+      <div class="page-body">
+
+      <!-- Threads KPI -->
+      <div class="cards" id="th-kpi"></div>
+
+      <!-- Threads 新增表單 -->
+      <div class="chart-box" style="margin-bottom:20px;">
+        <h3><span class="icon" style="color:var(--threads);"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>新增 Threads 貼文</h3>
+        <div id="th-entry-alert" class="alert"></div>
+        <div class="form-grid cols3" style="margin-top:12px;">
+          <div class="form-group full"><label>標題 / 內容摘要 *</label><input type="text" id="th-title" placeholder="貼文主旨"></div>
+          <div class="form-group"><label>發布日期 *</label><input type="date" id="th-date"></div>
+          <div class="form-group"><label>類別</label><input type="text" id="th-cat" placeholder="例：衛教、活動、日常"></div>
+          <div class="form-group full"><label>Threads 連結</label><input type="url" id="th-link" placeholder="https://www.threads.net/@.../post/..."></div>
+          <div class="form-group"><label>瀏覽次數</label><input type="number" id="th-views" min="0" placeholder="0"></div>
+          <div class="form-group"><label>讚</label><input type="number" id="th-likes" min="0" placeholder="0"></div>
+          <div class="form-group"><label>回覆</label><input type="number" id="th-replies" min="0" placeholder="0"></div>
+          <div class="form-group"><label>轉發 ＋ 引用</label><input type="number" id="th-reposts" min="0" placeholder="0"></div>
+        </div>
+        <div class="form-actions" style="margin-top:12px;">
+          <button class="btn btn-primary write-only" onclick="saveThreadsPost()">儲存貼文</button>
+          <button class="btn btn-secondary" onclick="clearThreadsForm()">清除</button>
+        </div>
+      </div>
+
+      <!-- Threads 列表 -->
+      <div style="margin-top:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <h3 style="font-size:14px;color:var(--txt2);">貼文列表</h3>
+          <button class="btn btn-secondary btn-sm" onclick="exportThreadsCSV()">匯出 CSV</button>
+        </div>
+        <div class="tbl-wrap">
+          <table><thead><tr>
+            <th>日期</th><th>標題</th><th>類別</th><th>瀏覽</th><th>讚</th><th>回覆</th><th>轉發＋引用</th><th>互動率</th><th>操作</th>
+          </tr></thead>
+          <tbody id="th-tbody"></tbody></table>
+        </div>
+        <div id="th-empty" style="display:none;text-align:center;padding:40px;color:var(--txt3);">尚無 Threads 貼文資料</div>
+      </div>
+      </div><!-- /page-body -->
     </div>
 
     <!-- ═══ Page: Report ═══ -->
@@ -1243,6 +1298,30 @@ tr:hover td{background:rgba(52,211,153,.03);}
   </div>
 </div>
 
+<!-- ═══ Threads Edit Modal ═══ -->
+<div class="modal-overlay" id="th-edit-modal">
+  <div class="modal">
+    <button class="close-btn" onclick="closeThreadsModal()"><span class="icon" style="width:16px;height:16px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></button>
+    <h2><span class="icon" style="color:var(--threads);"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>編輯 Threads 貼文</h2>
+    <div id="th-edit-alert" class="alert"></div>
+    <input type="hidden" id="te-id">
+    <div class="form-grid cols3">
+      <div class="form-group full"><label>標題 / 內容摘要 *</label><input type="text" id="te-title" placeholder="貼文主旨"></div>
+      <div class="form-group"><label>發布日期 *</label><input type="date" id="te-date"></div>
+      <div class="form-group"><label>類別</label><input type="text" id="te-cat" placeholder="例：衛教、活動、日常"></div>
+      <div class="form-group full"><label>Threads 連結</label><input type="url" id="te-link" placeholder="https://www.threads.net/@.../post/..."></div>
+      <div class="form-group"><label>瀏覽次數</label><input type="number" id="te-views" min="0"></div>
+      <div class="form-group"><label>讚</label><input type="number" id="te-likes" min="0"></div>
+      <div class="form-group"><label>回覆</label><input type="number" id="te-replies" min="0"></div>
+      <div class="form-group"><label>轉發 ＋ 引用</label><input type="number" id="te-reposts" min="0"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary write-only" onclick="submitThreadsEdit()">儲存修改</button>
+      <button class="btn btn-secondary" onclick="closeThreadsModal()">取消</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ Edit Modal ═══ -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal">
@@ -1431,6 +1510,7 @@ function createSnapshot(reason,silent){
     role:(typeof CURRENT_ROLE!=='undefined'?CURRENT_ROLE:'unknown'),
     data:JSON.parse(JSON.stringify(DATA||[])),
     ig:JSON.parse(JSON.stringify(typeof IG_DATA!=='undefined'?IG_DATA:[])),
+    th:JSON.parse(JSON.stringify(typeof TH_DATA!=='undefined'?TH_DATA:[])),
     cfg:JSON.parse(JSON.stringify(CFG||{}))
   };
   const arr=loadSnapshots();
@@ -1448,10 +1528,11 @@ function restoreSnapshot(id){
   createSnapshot('還原前自動備份',true);
   DATA=JSON.parse(JSON.stringify(snap.data||[]));
   IG_DATA=JSON.parse(JSON.stringify(snap.ig||[]));
+  TH_DATA=JSON.parse(JSON.stringify(snap.th||[]));
   CFG={...CFG,...(snap.cfg||{})};
-  saveData();saveIgData();
+  saveData();saveIgData();saveThreadsData();
   localStorage.setItem('kt_yt_cfg',JSON.stringify(CFG));
-  renderAll();renderIgAll();renderBackupPage();
+  renderAll();renderIgAll();renderThreads();renderBackupPage();
   showSyncBadge('✅ 已還原快照');
 }
 function deleteSnapshot(id){
@@ -1496,6 +1577,7 @@ function downloadBackupJson(){
     exportedBy:(typeof CURRENT_ROLE!=='undefined'?CURRENT_ROLE:'unknown'),
     data:DATA,
     ig:IG_DATA,
+    th:TH_DATA,
     cfg:CFG,
     snapshots:loadSnapshots()
   };
@@ -1521,11 +1603,12 @@ function restoreFromJsonFile(input){
       createSnapshot('JSON 還原前自動備份',true);
       DATA=Array.isArray(obj.data)?obj.data:[];
       IG_DATA=Array.isArray(obj.ig)?obj.ig:[];
+      TH_DATA=Array.isArray(obj.th)?obj.th:[];
       CFG={...CFG,...(obj.cfg||{})};
-      saveData();saveIgData();
+      saveData();saveIgData();saveThreadsData();
       localStorage.setItem('kt_yt_cfg',JSON.stringify(CFG));
       if(Array.isArray(obj.snapshots))saveSnapshots(obj.snapshots.slice(0,SNAPSHOT_MAX));
-      renderAll();renderIgAll();renderBackupPage();
+      renderAll();renderIgAll();renderThreads();renderBackupPage();
       showAlert('backup-alert','✅ 已從 JSON 還原','ok');
     }catch(err){
       showAlert('backup-alert','還原失敗：'+err.message,'err');
@@ -2062,7 +2145,7 @@ function renderTrashList(){
 // ============================================================
 // 導覽
 // ============================================================
-function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads')renderThreads();if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
 function renderAll(){renderDashboard();renderList();renderCfgForm();buildMonthFilter();}
 
 // ============================================================
@@ -2226,7 +2309,7 @@ async function deleteEntry(id){
 function renderCfgForm(){document.getElementById('cfg-viewGoal').value=CFG.viewGoal;document.getElementById('cfg-countGoal').value=CFG.countGoal;document.getElementById('cfg-personalGoal').value=CFG.personalGoal;document.getElementById('cfg-api-url').value=API_URL;document.getElementById('cfg-yt-key').value=YT_API_KEY;}
 async function saveCfg(){if(!canDelete()){showAlert('cfg-alert','僅組長可修改設定','err');return;}CFG.viewGoal=Number(document.getElementById('cfg-viewGoal').value)||5000;CFG.countGoal=Number(document.getElementById('cfg-countGoal').value)||6;CFG.personalGoal=Number(document.getElementById('cfg-personalGoal').value)||2000;localStorage.setItem('kt_yt_cfg',JSON.stringify(CFG));showAlert('cfg-alert','設定已儲存','ok');renderDashboard();await pushToSheets('saveConfig',{data:CFG});}
 async function forceSync(){if(!USE_API()){alert('請先設定 API URL');return;}createSnapshot('GAS 同步前（強制同步）',true);showSyncBadge('同步中...');const hdr=document.getElementById('sync-status-hdr');if(hdr)hdr.innerHTML='<span style="color:var(--txt3);">同步中...</span>';const ok=await syncFromSheets();await syncConfigFromSheets();await syncIgFromSheets();renderAll();renderIgAll();showSyncBadge(ok?'同步完成':'同步失敗');if(hdr&&ok){const t=new Date();const ts=t.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});hdr.innerHTML=`<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>已同步 ${ts}</span>`;}}
-function clearAllData(){if(!canDelete()){alert('僅組長可清除本機資料');return;}if(!confirm('確定要清除所有本機資料？（會先建立快照）'))return;createSnapshot('清除本機前（自動）',true);DATA=[];IG_DATA=[];localStorage.removeItem('kt_yt_data');localStorage.removeItem('kt_ig_data');renderAll();renderIgAll();showSyncBadge('本機資料已清除（快照已保留）');}
+function clearAllData(){if(!canDelete()){alert('僅組長可清除本機資料');return;}if(!confirm('確定要清除所有本機資料？（會先建立快照）'))return;createSnapshot('清除本機前（自動）',true);DATA=[];IG_DATA=[];TH_DATA=[];localStorage.removeItem('kt_yt_data');localStorage.removeItem('kt_ig_data');localStorage.removeItem('kt_th_data');renderAll();renderIgAll();renderThreads();showSyncBadge('本機資料已清除（快照已保留）');}
 
 // ============================================================
 // 推送全部本機資料覆蓋 Sheets（僅組長，雙重確認）
@@ -2442,6 +2525,113 @@ function importYtStudioCSV(input){
 let IG_DATA=[];
 let igChartMonthly=null, igChartType=null, igChartTop5=null, igChartCat=null;
 const IG_TYPE_MAP={'1':'貼文','2':'測驗','3':'影片'};
+
+// ============================================================
+// Threads 社群模組（獨立流量追蹤，存 localStorage：kt_th_data）
+// ============================================================
+let TH_DATA=[];
+function loadThreadsData(){try{TH_DATA=JSON.parse(localStorage.getItem('kt_th_data')||'[]');}catch(e){TH_DATA=[];}}
+function saveThreadsData(){TH_DATA.sort((a,b)=>(b.date||'').localeCompare(a.date||''));localStorage.setItem('kt_th_data',JSON.stringify(TH_DATA));}
+function activeThreads(){return TH_DATA.filter(d=>!d.deleted_at);}
+function thEngRate(d){const v=Number(d.views)||0;if(!v)return 0;return((Number(d.likes)||0)+(Number(d.replies)||0)+(Number(d.reposts)||0))/v*100;}
+
+function saveThreadsPost(){
+  const t=document.getElementById('th-title').value.trim(),d=document.getElementById('th-date').value;
+  if(!t){showAlert('th-entry-alert','請填寫標題','err');return;}
+  if(!d){showAlert('th-entry-alert','請選擇日期','err');return;}
+  if(typeof canWrite==='function'&&!canWrite()){showAlert('th-entry-alert','您的權限不足，請以組員或組長身份登入','err');return;}
+  TH_DATA.push({
+    id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    title:t, date:d,
+    cat:document.getElementById('th-cat').value.trim(),
+    link:document.getElementById('th-link').value.trim(),
+    views:Number(document.getElementById('th-views').value)||0,
+    likes:Number(document.getElementById('th-likes').value)||0,
+    replies:Number(document.getElementById('th-replies').value)||0,
+    reposts:Number(document.getElementById('th-reposts').value)||0,
+    createdAt:new Date().toISOString()
+  });
+  saveThreadsData();showAlert('th-entry-alert','已儲存','ok');clearThreadsForm();renderThreads();
+}
+
+function clearThreadsForm(){['title','date','cat','link','views','likes','replies','reposts'].forEach(f=>{const el=document.getElementById('th-'+f);if(el)el.value='';});}
+
+function renderThreads(){renderThreadsKpi();renderThreadsList();}
+
+function renderThreadsKpi(){
+  const now=new Date(),ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const cntEl=document.getElementById('th-count');if(cntEl)cntEl.textContent=ym;
+  const md=activeThreads().filter(d=>(d.date||'').startsWith(ym));
+  const sum=(arr,k)=>arr.reduce((s,d)=>s+(Number(d[k])||0),0);
+  const tv=sum(md,'views'),tl=sum(md,'likes'),trp=sum(md,'replies'),trs=sum(md,'reposts');
+  const eng=tv?((tl+trp+trs)/tv*100):0;
+  const box=document.getElementById('th-kpi');if(!box)return;
+  box.innerHTML=`
+    <div class="kpi-card"><div class="kpi-label">本月 Threads 瀏覽</div><div class="kpi-val">${tv.toLocaleString()}</div><div class="kpi-sub">${md.length} 則貼文</div></div>
+    <div class="kpi-card"><div class="kpi-label">讚</div><div class="kpi-val">${tl.toLocaleString()}</div><div class="kpi-sub">本月累計</div></div>
+    <div class="kpi-card"><div class="kpi-label">回覆 + 轉發引用</div><div class="kpi-val">${(trp+trs).toLocaleString()}</div><div class="kpi-sub">回覆 ${trp.toLocaleString()} · 轉發 ${trs.toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">互動率</div><div class="kpi-val">${eng.toFixed(1)}%</div><div class="kpi-sub">(讚+回覆+轉發)÷瀏覽</div></div>`;
+}
+
+function renderThreadsList(){
+  const tb=document.getElementById('th-tbody');if(!tb)return;
+  const list=activeThreads().slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const empty=document.getElementById('th-empty');if(empty)empty.style.display=list.length?'none':'block';
+  tb.innerHTML=list.map(d=>{
+    const lk=d.link?esc(d.link):'';
+    return `<tr>
+      <td style="white-space:nowrap;">${(d.date||'').substring(0,10)||'—'}</td>
+      <td style="max-width:240px;">${lk?`<a href="${lk}" target="_blank" style="color:var(--threads);">${esc(d.title)}</a>`:esc(d.title)}</td>
+      <td>${esc(d.cat||'')}</td>
+      <td style="font-variant-numeric:tabular-nums;">${(Number(d.views)||0).toLocaleString()}</td>
+      <td style="font-variant-numeric:tabular-nums;">${(Number(d.likes)||0).toLocaleString()}</td>
+      <td style="font-variant-numeric:tabular-nums;">${(Number(d.replies)||0).toLocaleString()}</td>
+      <td style="font-variant-numeric:tabular-nums;">${(Number(d.reposts)||0).toLocaleString()}</td>
+      <td style="font-variant-numeric:tabular-nums;color:var(--threads);font-weight:600;">${thEngRate(d).toFixed(1)}%</td>
+      <td><div class="act-btns">
+        <button class="act-btn write-only" onclick="openThreadsEdit('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button>
+        <button class="act-btn del write-only" onclick="deleteThreadsPost('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function openThreadsEdit(id){
+  const d=TH_DATA.find(x=>x.id===id);if(!d)return;
+  document.getElementById('te-id').value=d.id;
+  ['title','date','cat','link','views','likes','replies','reposts'].forEach(f=>{const el=document.getElementById('te-'+f);if(el)el.value=d[f]??'';});
+  document.getElementById('th-edit-modal').classList.add('show');
+}
+function closeThreadsModal(){document.getElementById('th-edit-modal').classList.remove('show');}
+function submitThreadsEdit(){
+  const id=document.getElementById('te-id').value;const d=TH_DATA.find(x=>x.id===id);if(!d)return;
+  const t=document.getElementById('te-title').value.trim();
+  if(!t){showAlert('th-edit-alert','請填寫標題','err');return;}
+  if(typeof canWrite==='function'&&!canWrite()){showAlert('th-edit-alert','權限不足','err');return;}
+  d.title=t;
+  d.date=document.getElementById('te-date').value;
+  d.cat=document.getElementById('te-cat').value.trim();
+  d.link=document.getElementById('te-link').value.trim();
+  d.views=Number(document.getElementById('te-views').value)||0;
+  d.likes=Number(document.getElementById('te-likes').value)||0;
+  d.replies=Number(document.getElementById('te-replies').value)||0;
+  d.reposts=Number(document.getElementById('te-reposts').value)||0;
+  d.updatedAt=new Date().toISOString();
+  saveThreadsData();closeThreadsModal();renderThreads();
+}
+function deleteThreadsPost(id){
+  if(typeof canDelete==='function'&&!canDelete()){alert('僅組長可刪除');return;}
+  if(!confirm('確定刪除此 Threads 貼文？'))return;
+  TH_DATA=TH_DATA.filter(d=>d.id!==id);saveThreadsData();renderThreads();
+}
+function exportThreadsCSV(){
+  const rows=[['日期','標題','類別','瀏覽','讚','回覆','轉發引用','互動率%','連結']];
+  activeThreads().slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(d=>{
+    rows.push([(d.date||'').substring(0,10),d.title||'',d.cat||'',Number(d.views)||0,Number(d.likes)||0,Number(d.replies)||0,Number(d.reposts)||0,thEngRate(d).toFixed(1),d.link||'']);
+  });
+  const csv='﻿'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`threads_${new Date().toISOString().substring(0,10)}.csv`;a.click();
+}
 
 function loadIgData(){try{IG_DATA=JSON.parse(localStorage.getItem('kt_ig_data')||'[]');}catch(e){IG_DATA=[];}}
 function saveIgData(){IG_DATA.sort((a,b)=>(b.date||'').localeCompare(a.date||''));localStorage.setItem('kt_ig_data',JSON.stringify(IG_DATA));}
@@ -3425,7 +3615,7 @@ tr:last-child td{border-bottom:none;}tr:nth-child(even) td{background:#FAFAFA;}
 // ============================================================
 document.addEventListener('DOMContentLoaded',()=>{
   checkAuth();
-  checkSetup();loadTags();loadData();loadIgData();loadIgFollowers();renderIgAll();
+  checkSetup();loadTags();loadData();loadIgData();loadIgFollowers();renderIgAll();loadThreadsData();renderThreads();
   initTagInput('f-tags',[]);initTagInput('ig-tags',[]);
   // 預設粉絲數輸入年月為當月
   const _ymEl=document.getElementById('igf-ym');
