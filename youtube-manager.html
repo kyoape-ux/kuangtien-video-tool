@@ -388,7 +388,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.2 · 2026-06-25 20:38</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.3 · 2026-06-25 20:45</div>
     </div>
   </nav>
 
@@ -502,6 +502,12 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <div class="chart-box">
           <h3><span class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>影片類型分布</h3>
           <canvas id="chart-type"></canvas>
+        </div>
+      </div>
+      <div class="chart-row" style="grid-template-columns:1fr;">
+        <div class="chart-box">
+          <h3><span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>跨平台互動率排行 <span style="font-size:11px;color:var(--txt3);font-weight:400;">(讚＋留言＋分享＋收藏)÷觀看 · 衡量內容品質而非聲量</span></h3>
+          <div id="eng-ranking"></div>
         </div>
       </div>
       <div class="chart-row" style="grid-template-columns:1fr;">
@@ -814,7 +820,10 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <div style="margin-top:20px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <h3 style="font-size:14px;color:var(--txt2);">貼文列表</h3>
-          <button class="btn btn-secondary btn-sm" onclick="exportThreadsCSV()">匯出 CSV</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-secondary btn-sm" onclick="exportThreadsCSV()">匯出 CSV</button>
+            <button class="btn btn-sm write-only" onclick="bulkUploadThreadsToSheets()" style="background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25);" title="將本機所有 Threads 貼文上傳到 Google Sheets"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><polyline points="17,11 12,6 7,11"/><line x1="12" y1="6" x2="12" y2="18"/><path d="M5 21h14"/></svg>上傳本機→Sheets</button>
+          </div>
         </div>
         <div class="tbl-wrap">
           <table><thead><tr>
@@ -1480,6 +1489,22 @@ async function syncIgFromSheets(){
       return row;
     });
     saveIgData();
+    return true;
+  }
+  return false;
+}
+async function syncThreadsFromSheets(){
+  const r=await apiGet('getThreadsPosts');
+  if(r&&r.posts){
+    if(r.posts.length===0&&TH_DATA.length>0){return false;}
+    const localMap=new Map(TH_DATA.map(d=>[d.id,d]));
+    TH_DATA=r.posts.map(p=>{
+      const row={...p,date:fixDate(p.date)};
+      const local=localMap.get(p.id);
+      if(local&&local.deleted_at&&!row.deleted_at){row.deleted_at=local.deleted_at;row.deleted_by=local.deleted_by;}
+      return row;
+    });
+    saveThreadsData();
     return true;
   }
   return false;
@@ -2151,7 +2176,7 @@ function renderTrashList(){
 // ============================================================
 // 導覽
 // ============================================================
-function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads')renderThreads();if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
 function renderAll(){renderDashboard();renderList();renderCfgForm();buildMonthFilter();}
 
 // ============================================================
@@ -2225,7 +2250,41 @@ function renderDashboard(){
     <div class="kpi-card"><div class="kpi-label">YT 平均 CTR</div><div class="kpi-val">${(avgCtr*100).toFixed(1)}%</div><div class="kpi-sub">YouTube 點閱率</div></div>
     <div class="kpi-card"><div class="kpi-label">達標影片</div><div class="kpi-val">${star}</div><div class="kpi-sub">單片 YT ≥${CFG.personalGoal.toLocaleString()}</div></div>
     <div class="kpi-card" style="border-color:rgba(52,211,153,.25);"><div class="kpi-label" style="color:#34D399;">官網曝光（內部歸因）</div><div class="kpi-val">${embedV.toLocaleString()}</div><div class="kpi-sub">YT 外部嵌入觀看 · 佔 YT ${embedRate}%</div><div class="platform-breakdown"><span class="plat-tag" style="background:rgba(52,211,153,.1);color:#34D399;">官網 PV ${webPV.toLocaleString()}</span></div></div>`;
+
+  // 跨平台互動率排行（依目前檢視期間）
+  const inPeriod=(ds)=>{
+    if(!ds)return false; ds=String(ds).substring(0,10);
+    if(dashMode==='month')return ds.startsWith(`${yr}-${String(dashMonth).padStart(2,'0')}`);
+    if(dashMode==='quarter'){const m=ds.substring(5,7);return ds.startsWith(String(yr))&&getQuarterMonths(q).includes(m);}
+    return ds.startsWith(String(yr));
+  };
+  const igd=(typeof activeIgPosts==='function'?activeIgPosts():[]).filter(d=>inPeriod(d.date));
+  const thd=(typeof activeThreads==='function'?activeThreads():[]).filter(d=>inPeriod(d.date));
+  renderEngRanking(vd,igd,thd);
+
   renderCharts(vd);
+}
+function renderEngRanking(vd,igd,thd){
+  const box=document.getElementById('eng-ranking');if(!box)return;
+  const S=(arr,fn)=>arr.reduce((s,d)=>s+fn(d),0);
+  const rows=[
+    {key:'YouTube',color:'#FF4444',views:S(vd,d=>Number(d.yt_views)||0),eng:S(vd,d=>(Number(d.yt_likes)||0)+(Number(d.yt_comments)||0))},
+    {key:'Facebook',color:'#4C8BF5',views:S(vd,d=>Number(d.fb_views)||0),eng:S(vd,d=>(Number(d.fb_likes)||0)+(Number(d.fb_comments)||0)+(Number(d.fb_shares)||0))},
+    {key:'Instagram',color:'#F472B6',views:S(igd,d=>Number(d.views)||0),eng:S(igd,d=>(Number(d.likes)||0)+(Number(d.comments)||0)+(Number(d.shares)||0)+(Number(d.saves)||0))},
+    {key:'Threads',color:'#A78BFA',views:S(thd,d=>Number(d.views)||0),eng:S(thd,d=>(Number(d.likes)||0)+(Number(d.replies)||0)+(Number(d.reposts)||0))}
+  ].map(r=>({...r,rate:r.views>0?r.eng/r.views*100:0}));
+  const ranked=rows.filter(r=>r.views>0).sort((a,b)=>b.rate-a.rate);
+  if(ranked.length===0){box.innerHTML=`<div style="text-align:center;color:var(--txt3);padding:24px;font-size:13px;">此期間尚無含觀看數的資料</div>`;return;}
+  const max=Math.max(...ranked.map(r=>r.rate),0.0001);
+  const medals=['🥇','🥈','🥉','　'];
+  box.innerHTML=ranked.map((r,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:9px 0;${i<ranked.length-1?'border-bottom:1px solid var(--border);':''}">
+      <span style="width:22px;text-align:center;font-size:14px;">${medals[i]||'　'}</span>
+      <span style="width:78px;font-size:12px;font-weight:600;color:${r.color};">${r.key}</span>
+      <div style="flex:1;background:var(--bg-3);border-radius:5px;height:18px;overflow:hidden;"><div style="height:100%;width:${Math.max(2,r.rate/max*100)}%;background:${r.color};border-radius:5px;transition:width .5s;"></div></div>
+      <span style="width:54px;text-align:right;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--txt);">${r.rate.toFixed(1)}%</span>
+      <span style="width:120px;text-align:right;font-size:11px;color:var(--txt3);font-variant-numeric:tabular-nums;">${r.eng.toLocaleString()} 互動 / ${r.views.toLocaleString()} 觀看</span>
+    </div>`).join('');
 }
 function renderCharts(viewData){
   const yr=dashYear,months=[];
@@ -2314,7 +2373,7 @@ async function deleteEntry(id){
 // ============================================================
 function renderCfgForm(){document.getElementById('cfg-viewGoal').value=CFG.viewGoal;document.getElementById('cfg-countGoal').value=CFG.countGoal;document.getElementById('cfg-personalGoal').value=CFG.personalGoal;document.getElementById('cfg-api-url').value=API_URL;document.getElementById('cfg-yt-key').value=YT_API_KEY;}
 async function saveCfg(){if(!canDelete()){showAlert('cfg-alert','僅組長可修改設定','err');return;}CFG.viewGoal=Number(document.getElementById('cfg-viewGoal').value)||5000;CFG.countGoal=Number(document.getElementById('cfg-countGoal').value)||6;CFG.personalGoal=Number(document.getElementById('cfg-personalGoal').value)||2000;localStorage.setItem('kt_yt_cfg',JSON.stringify(CFG));showAlert('cfg-alert','設定已儲存','ok');renderDashboard();await pushToSheets('saveConfig',{data:CFG});}
-async function forceSync(){if(!USE_API()){alert('請先設定 API URL');return;}createSnapshot('GAS 同步前（強制同步）',true);showSyncBadge('同步中...');const hdr=document.getElementById('sync-status-hdr');if(hdr)hdr.innerHTML='<span style="color:var(--txt3);">同步中...</span>';const ok=await syncFromSheets();await syncConfigFromSheets();await syncIgFromSheets();renderAll();renderIgAll();showSyncBadge(ok?'同步完成':'同步失敗');if(hdr&&ok){const t=new Date();const ts=t.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});hdr.innerHTML=`<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>已同步 ${ts}</span>`;}}
+async function forceSync(){if(!USE_API()){alert('請先設定 API URL');return;}createSnapshot('GAS 同步前（強制同步）',true);showSyncBadge('同步中...');const hdr=document.getElementById('sync-status-hdr');if(hdr)hdr.innerHTML='<span style="color:var(--txt3);">同步中...</span>';const ok=await syncFromSheets();await syncConfigFromSheets();await syncIgFromSheets();await syncThreadsFromSheets();renderAll();renderIgAll();renderThreads();showSyncBadge(ok?'同步完成':'同步失敗');if(hdr&&ok){const t=new Date();const ts=t.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});hdr.innerHTML=`<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>已同步 ${ts}</span>`;}}
 function clearAllData(){if(!canDelete()){alert('僅組長可清除本機資料');return;}if(!confirm('確定要清除所有本機資料？（會先建立快照）'))return;createSnapshot('清除本機前（自動）',true);DATA=[];IG_DATA=[];TH_DATA=[];localStorage.removeItem('kt_yt_data');localStorage.removeItem('kt_ig_data');localStorage.removeItem('kt_th_data');renderAll();renderIgAll();renderThreads();showSyncBadge('本機資料已清除（快照已保留）');}
 
 // ============================================================
@@ -2547,7 +2606,7 @@ function saveThreadsPost(){
   if(!t){showAlert('th-entry-alert','請填寫標題','err');return;}
   if(!d){showAlert('th-entry-alert','請選擇日期','err');return;}
   if(typeof canWrite==='function'&&!canWrite()){showAlert('th-entry-alert','您的權限不足，請以組員或組長身份登入','err');return;}
-  TH_DATA.push({
+  const post={
     id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
     title:t, date:d,
     type:document.getElementById('th-type').value||'1',
@@ -2558,8 +2617,10 @@ function saveThreadsPost(){
     replies:Number(document.getElementById('th-replies').value)||0,
     reposts:Number(document.getElementById('th-reposts').value)||0,
     createdAt:new Date().toISOString()
-  });
+  };
+  TH_DATA.push(post);
   saveThreadsData();showAlert('th-entry-alert','已儲存','ok');clearThreadsForm();renderThreads();
+  if(typeof pushToSheets==='function'&&USE_API())pushToSheets('saveThreadsPost',{data:post}).then(ok=>showSyncBadge(ok?'Threads 已同步':'Threads 本機已儲存'));
 }
 
 function clearThreadsForm(){['title','date','cat','link','views','likes','replies','reposts'].forEach(f=>{const el=document.getElementById('th-'+f);if(el)el.value='';});const ty=document.getElementById('th-type');if(ty)ty.value='1';}
@@ -2629,11 +2690,24 @@ function submitThreadsEdit(){
   d.reposts=Number(document.getElementById('te-reposts').value)||0;
   d.updatedAt=new Date().toISOString();
   saveThreadsData();closeThreadsModal();renderThreads();
+  if(typeof pushToSheets==='function'&&USE_API())pushToSheets('updateThreadsPost',{data:d}).then(ok=>showSyncBadge(ok?'Threads 已同步':'Threads 本機已更新'));
 }
 function deleteThreadsPost(id){
   if(typeof canDelete==='function'&&!canDelete()){alert('僅組長可刪除');return;}
   if(!confirm('確定刪除此 Threads 貼文？'))return;
   TH_DATA=TH_DATA.filter(d=>d.id!==id);saveThreadsData();renderThreads();
+  if(typeof pushToSheets==='function'&&USE_API())pushToSheets('deleteThreadsPost',{id}).then(ok=>showSyncBadge(ok?'Threads 已同步刪除':'Threads 本機已刪除'));
+}
+async function bulkUploadThreadsToSheets(){
+  if(!USE_API()){alert('請先設定 API URL');return;}
+  if(!canWrite()){alert('權限不足');return;}
+  let ok=0,fail=0;
+  for(const p of activeThreads()){
+    const r=await pushToSheets('saveThreadsPost',{data:p});
+    r?ok++:fail++;showSyncBadge(`上傳 Threads ${ok+fail}/${activeThreads().length}`);
+  }
+  showSyncBadge(`✅ Threads 上傳完成：${ok}/${ok+fail}${fail?`（失敗 ${fail}）`:''}`);
+  setTimeout(()=>syncThreadsFromSheets().then(s=>{if(s)renderThreads();}),1200);
 }
 function exportThreadsCSV(){
   const rows=[['日期','標題','類型','類別','瀏覽','讚','回覆','轉發引用','互動率%','連結']];
@@ -3167,6 +3241,7 @@ function openMonthlyReport(){
   const scope=document.getElementById('rpt-scope').value||'all';
   const showVideo=scope==='all'||scope==='youtube';
   const showIg=scope==='all'||scope==='instagram';
+  const showTh=scope==='all';
   const ym=`${yr}-${mo}`;
   const mData=showVideo?activeVideos().filter(d=>(d.date||'').substring(0,7)===ym).sort((a,b)=>(a.date||'').localeCompare(b.date||'')):[];
   const moLabel=`${yr} 年 ${parseInt(mo)} 月`;
@@ -3385,6 +3460,34 @@ tr:nth-child(even) td{background:#FAFAFA;}
     }
     if(!html)html=`<div class="sec-title" style="border-color:#F472B6;color:#BE185D;margin-top:28px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg> Instagram 統計</div><p style="text-align:center;color:#aaa;padding:24px;">本月無 IG 資料</p>`;
     return html;
+  })():''}
+  ${showTh?(()=>{
+    const TH_TYPE_LABEL={'1':'貼文','2':'影片'};
+    const thPosts=(typeof activeThreads==='function'?activeThreads():[]).filter(d=>(d.date||'').substring(0,7)===ym).sort((a,b)=>(Number(b.views)||0)-(Number(a.views)||0));
+    if(thPosts.length===0)return '';
+    const sumT=(k)=>thPosts.reduce((s,d)=>s+(Number(d[k])||0),0);
+    const tV=sumT('views'),tL=sumT('likes'),tRe=sumT('replies'),tRp=sumT('reposts');
+    const tEng=tV>0?((tL+tRe+tRp)/tV*100).toFixed(1):'0.0';
+    const rowsTh=thPosts.map(d=>`<tr>
+      <td>${(d.date||'').substring(0,10)}</td>
+      <td style="text-align:left;max-width:220px;">${(d.title||'').replace(/</g,'&lt;')}</td>
+      <td><span style="padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;background:#EDE9FE;color:#6D28D9;">${TH_TYPE_LABEL[d.type]||'貼文'}</span></td>
+      <td>${d.cat||''}</td>
+      <td>${(Number(d.views)||0).toLocaleString()}</td>
+      <td>${(Number(d.likes)||0).toLocaleString()}</td>
+      <td>${(Number(d.replies)||0).toLocaleString()}</td>
+      <td>${(Number(d.reposts)||0).toLocaleString()}</td>
+      <td style="font-weight:700;color:#6D28D9;">${(Number(d.views)>0?((Number(d.likes)||0)+(Number(d.replies)||0)+(Number(d.reposts)||0))/Number(d.views)*100:0).toFixed(1)}%</td>
+    </tr>`).join('');
+    return `<div class="sec-title" style="border-color:#A78BFA;color:#6D28D9;margin-top:28px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Threads 社群（共 ${thPosts.length} 則）</div>
+    <div class="ig-kpi-row">
+      <div class="ig-kpi" style="background:#F5F3FF;border-color:#C4B5FD;"><div class="val" style="color:#6D28D9;">${tV.toLocaleString()}</div><div class="lbl" style="color:#5B21B6;">瀏覽總數</div></div>
+      <div class="ig-kpi" style="background:#F5F3FF;border-color:#C4B5FD;"><div class="val" style="color:#6D28D9;">${tL.toLocaleString()}</div><div class="lbl" style="color:#5B21B6;">讚</div></div>
+      <div class="ig-kpi" style="background:#F5F3FF;border-color:#C4B5FD;"><div class="val" style="color:#6D28D9;">${(tRe+tRp).toLocaleString()}</div><div class="lbl" style="color:#5B21B6;">回覆 + 轉發引用</div></div>
+      <div class="ig-kpi" style="background:#F5F3FF;border-color:#C4B5FD;"><div class="val" style="color:#6D28D9;">${tEng}%</div><div class="lbl" style="color:#5B21B6;">互動率</div></div>
+    </div>
+    <table><thead><tr><th>發布日期</th><th>標題</th><th>類型</th><th>類別</th><th>瀏覽</th><th>讚</th><th>回覆</th><th>轉發引用</th><th>互動率</th></tr></thead>
+    <tbody>${rowsTh}</tbody></table>`;
   })():''}
   <div class="footer"><span>光田綜合醫院 視覺多媒體設計組 · 僅供內部使用</span><span>影片發布資訊管理系統 · 產製於 ${now}</span></div>
 </div></body></html>`;
@@ -3626,7 +3729,7 @@ tr:last-child td{border-bottom:none;}tr:nth-child(even) td{background:#FAFAFA;}
 // ============================================================
 document.addEventListener('DOMContentLoaded',()=>{
   checkAuth();
-  checkSetup();loadTags();loadData();loadIgData();loadIgFollowers();renderIgAll();loadThreadsData();renderThreads();
+  checkSetup();loadTags();loadData();loadIgData();loadIgFollowers();renderIgAll();loadThreadsData();renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();}});}
   initTagInput('f-tags',[]);initTagInput('ig-tags',[]);
   // 預設粉絲數輸入年月為當月
   const _ymEl=document.getElementById('igf-ym');
