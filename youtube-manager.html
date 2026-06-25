@@ -343,8 +343,11 @@ tr:hover td{background:rgba(52,211,153,.03);}
     </div>
 
     <div class="nav-section">Instagram</div>
+    <div class="nav-item" onclick="showPage('igadd')">
+      <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>新增 IG 貼文
+    </div>
     <div class="nav-item" onclick="showPage('ig')">
-      <span class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></span>IG 貼文管理
+      <span class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></span>IG 貼文列表
     </div>
     <div class="nav-item" onclick="showPage('igstats')">
       <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>IG 貼文成效
@@ -388,7 +391,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.4 · 2026-06-25 21:05</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.5 · 2026-06-25 22:40</div>
     </div>
   </nav>
 
@@ -636,18 +639,15 @@ tr:hover td{background:rgba(52,211,153,.03);}
     </div>
 
     <!-- ═══ Page: IG 貼文管理 ═══ -->
-    <div class="page" id="page-ig">
+    <!-- ═══ Page: IG Add ═══ -->
+    <div class="page" id="page-igadd">
       <div class="page-header">
         <div class="page-header-left">
-          <h1>IG 貼文管理 <span id="ig-month" style="font-size:14px;color:var(--txt3);font-weight:400;"></span></h1>
-          <p>Instagram 貼文數據追蹤與分析</p>
+          <h1>新增 IG 貼文</h1>
+          <p>手動新增單則 Instagram 貼文（批次請至「IG 貼文列表」用「匯入 Metricool CSV」）</p>
         </div>
       </div>
       <div class="page-body">
-
-      <!-- IG KPI -->
-      <div class="cards" id="ig-kpi"></div>
-
       <!-- IG 新增表單 -->
       <div class="chart-box" style="margin-bottom:20px;">
         <h3><span class="icon" style="color:var(--ig);"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>新增 IG 貼文</h3>
@@ -679,6 +679,21 @@ tr:hover td{background:rgba(52,211,153,.03);}
           <button class="btn btn-secondary" onclick="clearIgForm()">清除</button>
         </div>
       </div>
+      </div><!-- /page-body -->
+    </div>
+
+    <!-- ═══ Page: IG List ═══ -->
+    <div class="page" id="page-ig">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>IG 貼文列表 <span id="ig-month" style="font-size:14px;color:var(--txt3);font-weight:400;"></span></h1>
+          <p>Instagram 貼文數據追蹤與分析</p>
+        </div>
+      </div>
+      <div class="page-body">
+
+      <!-- IG KPI -->
+      <div class="cards" id="ig-kpi"></div>
 
       <!-- IG 列表 -->
       <div style="margin-top:20px;">
@@ -2178,7 +2193,7 @@ function renderTrashList(){
 // ============================================================
 // 導覽
 // ============================================================
-function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
 function renderAll(){renderDashboard();renderList();renderCfgForm();buildMonthFilter();}
 
 // ============================================================
