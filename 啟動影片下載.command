@@ -16,6 +16,14 @@ if ! command -v yt-dlp >/dev/null 2>&1; then
   echo "（按任意鍵關閉）"; read -k1; exit 1
 fi
 
+# ── 每 7 天自動更新 yt-dlp（背景執行，不拖慢啟動）──
+# YouTube 會定期改版反下載機制，yt-dlp 靠更新跟上；引擎舊了才會壞
+STAMP="$HOME/.ytdlp_last_update"
+if [ ! -f "$STAMP" ] || [ $(( $(date +%s) - $(stat -f %m "$STAMP" 2>/dev/null || echo 0) )) -gt 604800 ]; then
+  echo "（背景檢查 yt-dlp 更新中，不影響使用…）"
+  ( brew upgrade yt-dlp >/dev/null 2>&1; touch "$STAMP" ) &
+fi
+
 # 若服務已在跑，直接開網頁就好
 if lsof -ti:${PORT} >/dev/null 2>&1; then
   echo "服務已在執行中，直接開啟網頁…"
