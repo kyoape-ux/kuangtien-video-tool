@@ -874,7 +874,10 @@ python3 serve_ytdl.py</code>
       <!-- 主要操作 -->
       <div class="ytdl-main" id="ytdlMain" style="display:none">
         <div class="ytdl-inputrow">
-          <input type="text" id="ytdlUrl" class="ytdl-url" placeholder="貼上 YouTube / Facebook / Instagram 影片網址" spellcheck="false" autocomplete="off">
+          <div class="ytdl-urlwrap">
+            <input type="text" id="ytdlUrl" class="ytdl-url" placeholder="貼上 YouTube / Facebook / Instagram 影片網址" spellcheck="false" autocomplete="off">
+            <button class="ytdl-clearbtn" id="ytdlClear" title="清除，換下一個網址" aria-label="清除網址"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+          </div>
           <button class="ytdl-parse" id="ytdlParse">解析</button>
         </div>
         <div class="error-msg ytdl-err" id="ytdlErr"></div>
@@ -6151,7 +6154,11 @@ window.addEventListener('resize', function() {
   .tools-grid.compact-mode .ytdl-card:not(.is-open) .ytdl-platforms{display:none}
 }
 .ytdl-inputrow{display:flex;gap:8px;margin-bottom:10px}
-.ytdl-url{flex:1;background:var(--bg2);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px 12px;font-size:13px;outline:none}
+.ytdl-urlwrap{position:relative;flex:1;display:flex}
+.ytdl-url{flex:1;background:var(--bg2);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px 36px 10px 12px;font-size:13px;outline:none}
+.ytdl-clearbtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:none;border-radius:50%;background:var(--surface2);color:var(--text3);display:none;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.ytdl-clearbtn:hover{background:rgba(239,68,68,.18);color:#f87171}
+.ytdl-urlwrap.has-value .ytdl-clearbtn{display:flex}
 .ytdl-url:focus{border-color:#f87171}
 .ytdl-parse{flex-shrink:0;background:#dc2626;color:#fff;border:none;border-radius:8px;padding:0 20px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
 .ytdl-parse:hover{background:#ef4444}
@@ -6192,6 +6199,14 @@ window.addEventListener('resize', function() {
   var lastUrl = '';
 
   function setErr(m){ errEl.textContent = m || ''; }
+
+  // 由網址判斷平台名稱（進度文字用）
+  function platformName(u){
+    if(/youtu\.be|youtube\.com/i.test(u)) return 'YouTube';
+    if(/facebook\.com|fb\.watch/i.test(u)) return 'Facebook';
+    if(/instagram\.com/i.test(u)) return 'Instagram';
+    return '來源網站';
+  }
 
   // ── 偵測本機服務是否啟動 ──
   function checkHealth(){
@@ -6258,7 +6273,7 @@ window.addEventListener('resize', function() {
   function download(kind, quality, label){
     setErr('');
     setBusy(true);
-    progText.textContent = '準備中… 正在向 YouTube 取得「'+label+'」';
+    progText.textContent = '準備中… 正在向 '+platformName(lastUrl)+' 取得「'+label+'」';
     bar.classList.add('indet'); bar.style.width='';
     fetch(API + '/api/ytdl/download', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -6313,6 +6328,20 @@ window.addEventListener('resize', function() {
   }
   function fmtMB(n){ return (n/1048576).toFixed(1)+'MB'; }
 
+  // ── 清除按鈕：一鍵清空、回到可貼新網址的狀態 ──
+  var urlWrap = urlEl.parentElement;
+  function syncClearBtn(){ urlWrap.classList.toggle('has-value', !!urlEl.value.trim()); }
+  urlEl.addEventListener('input', syncClearBtn);
+  $('ytdlClear').addEventListener('click', function(){
+    urlEl.value = '';
+    lastUrl = '';
+    setErr('');
+    resultEl.style.display = 'none';
+    setBusy(false);
+    syncClearBtn();
+    urlEl.focus();
+  });
+
   parseBtn.addEventListener('click', parse);
   urlEl.addEventListener('keydown', function(e){ if(e.key==='Enter') parse(); });
   $('ytdlRecheck').addEventListener('click', checkHealth);
@@ -6327,7 +6356,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.9.3</span><span class="ver-date">更新於 2026-07-08</span>
+  <span class="ver">v1.9.4</span><span class="ver-date">更新於 2026-07-08</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 

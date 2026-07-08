@@ -126,7 +126,8 @@ def build_info(url):
             # 優先 mp4/avc1（相容性最好），其次比較是否已有資料
             is_mp4 = (f.get('ext') == 'mp4') and str(f.get('vcodec', '')).startswith('avc')
             if prev is None or (is_mp4 and not prev['mp4']) or (sz and not prev['size']):
-                by_h[h] = {'height': h, 'size': sz, 'mp4': is_mp4}
+                by_h[h] = {'height': h, 'width': f.get('width'),
+                           'size': sz, 'mp4': is_mp4}
         else:
             fid = f.get('format_id') or 'video'
             label = (f.get('format_note') or fid).upper()
@@ -134,11 +135,14 @@ def build_info(url):
 
     video_opts = []
     for h in sorted(by_h, reverse=True):
-        total = (by_h[h]['size'] or 0) + (best_audio or 0)
-        tag = ' (4K)' if h >= 2160 else (' (2K)' if h >= 1440 else '')
+        e = by_h[h]
+        total = (e['size'] or 0) + (best_audio or 0)
+        # 畫質慣例以「短邊」為準：直式 1080×1920 應叫 1080p 而非 1920p
+        eff = min(e['width'], h) if e.get('width') else h
+        tag = ' (4K)' if eff >= 2160 else (' (2K)' if eff >= 1440 else '')
         video_opts.append({
             'quality': h,
-            'label': f'{h}p{tag}',
+            'label': f'{eff}p{tag}',
             'sizeText': _human_size(total),
         })
     if not video_opts:
