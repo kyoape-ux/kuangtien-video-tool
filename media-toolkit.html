@@ -866,7 +866,9 @@ if (!self.crossOriginIsolated) {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           需先啟動本機下載服務
         </div>
-        <div class="ytdl-offline-text">此功能需在本機用 yt-dlp 解析，無法在公開網頁直接執行。請在終端機執行下列指令，再用它開啟本頁：</div>
+        <div class="ytdl-offline-text">此功能需要本機的下載引擎，無法在公開網頁直接執行。啟動方式（擇一）：</div>
+        <div class="ytdl-offline-text"><b>最簡單</b>：到「專案控管系統」資料夾，<b>雙擊「啟動影片下載.command」</b>，會自動啟動並開啟頁面。</div>
+        <div class="ytdl-offline-text">或在終端機執行：</div>
         <code class="ytdl-cmd" id="ytdlCmd">cd ~/Desktop/專案控管系統
 python3 serve_ytdl.py</code>
         <div class="ytdl-offline-text">啟動後開啟：<b id="ytdlOpenUrl">http://localhost:8765/media-toolkit.html</b></div>
