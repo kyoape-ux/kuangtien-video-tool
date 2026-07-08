@@ -40,13 +40,21 @@ YTDLP = _resolve('yt-dlp')
 FFMPEG = _resolve('ffmpeg')
 FFMPEG_DIR = os.path.dirname(FFMPEG) if os.path.sep in FFMPEG else None
 
-# 共用穩健性參數：
-#  - player_client 用 android/web_safari，避開 YouTube 對預設 client 的 403 節流
-#  - retries / fragment-retries：斷線自動重試
+# 共用穩健性參數（retries / fragment-retries：斷線自動重試）
 COMMON_ARGS = [
     '--no-warnings', '--no-playlist',
-    '--extractor-args', 'youtube:player_client=android,web_safari,web',
     '--retries', '5', '--fragment-retries', '10',
+]
+
+# YouTube 通道遞補順序：
+#  1. 預設 client → 格式最齊全（1080p 以上都在這）
+#  2. android → 預設被 403 節流時的備援（可能只剩低畫質，仍勝於失敗）
+#  3. web_safari → HLS 備援
+# YouTube 會輪流對不同通道做實驗（如 SABR-only），單押任何一個都會壞。
+CLIENT_TRIES = [
+    [],
+    ['--extractor-args', 'youtube:player_client=android,web'],
+    ['--extractor-args', 'youtube:player_client=web_safari'],
 ]
 
 
@@ -77,13 +85,18 @@ def _friendly_error(raw):
 
 
 def build_info(url):
-    """呼叫 yt-dlp -J 取得 metadata，整理成前端好用的畫質清單。"""
-    cmd = [YTDLP, '-J'] + COMMON_ARGS + [url]
-    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
-    if proc.returncode != 0:
-        raw = (proc.stderr or proc.stdout or '解析失敗').strip().splitlines()[-1]
-        raise RuntimeError(_friendly_error(raw))
-    data = json.loads(proc.stdout)
+    """呼叫 yt-dlp -J 取得 metadata，整理成前端好用的畫質清單（多通道遞補）。"""
+    last_err = '解析失敗'
+    data = None
+    for client_args in CLIENT_TRIES:
+        cmd = [YTDLP, '-J'] + COMMON_ARGS + client_args + [url]
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+        if proc.returncode == 0:
+            data = json.loads(proc.stdout)
+            break
+        last_err = (proc.stderr or proc.stdout or last_err).strip().splitlines()[-1]
+    if data is None:
+        raise RuntimeError(_friendly_error(last_err))
 
     duration = data.get('duration') or 0
     formats = data.get('formats') or []
@@ -157,15 +170,12 @@ def build_info(url):
 
 
 def run_download(url, kind, quality, outdir):
-    """下載到 outdir，回傳 (最終檔案路徑)。"""
+    """下載到 outdir，回傳最終檔案路徑（多通道遞補：預設→android→web_safari）。"""
     out_tmpl = os.path.join(outdir, '%(title).100B.%(ext)s')
-    base = [YTDLP] + COMMON_ARGS + ['--no-part', '-o', out_tmpl, '--windows-filenames']
-    if FFMPEG_DIR:
-        base += ['--ffmpeg-location', FFMPEG_DIR]
 
     if kind == 'audio':
         aq = '0' if str(quality) == '320' else f'{quality}K'
-        cmd = base + ['-x', '--audio-format', 'mp3', '--audio-quality', aq, url]
+        tail = ['-x', '--audio-format', 'mp3', '--audio-quality', aq, url]
     else:
         q = str(quality)
         if q.isdigit():
@@ -174,18 +184,37 @@ def run_download(url, kind, quality, outdir):
         else:
             # FB 等平台的 sd/hd 直接用 format_id（多半已含音訊）
             fmt = f'{q}+ba/{q}/b'
-        cmd = base + ['-f', fmt, '--merge-output-format', 'mp4', url]
+        tail = ['-f', fmt, '--merge-output-format', 'mp4', url]
 
-    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
-    if proc.returncode != 0:
-        raw = (proc.stderr or proc.stdout or '下載失敗').strip().splitlines()[-1]
-        raise RuntimeError(_friendly_error(raw))
+    last_err = '下載失敗'
+    for client_args in CLIENT_TRIES:
+        # 清掉上一輪的殘檔，避免撿到失敗的半成品
+        for f in os.listdir(outdir):
+            try:
+                os.remove(os.path.join(outdir, f))
+            except OSError:
+                pass
 
-    files = [f for f in os.listdir(outdir) if not f.startswith('.')]
-    if not files:
-        raise RuntimeError('下載完成但找不到輸出檔')
-    files.sort(key=lambda f: os.path.getsize(os.path.join(outdir, f)), reverse=True)
-    return os.path.join(outdir, files[0])
+        base = [YTDLP] + COMMON_ARGS + client_args + \
+               ['--no-part', '-o', out_tmpl, '--windows-filenames']
+        if FFMPEG_DIR:
+            base += ['--ffmpeg-location', FFMPEG_DIR]
+
+        proc = subprocess.run(base + tail, capture_output=True, text=True, timeout=1800)
+        if proc.returncode == 0:
+            files = [f for f in os.listdir(outdir) if not f.startswith('.')]
+            if files:
+                files.sort(key=lambda f: os.path.getsize(os.path.join(outdir, f)),
+                           reverse=True)
+                return os.path.join(outdir, files[0])
+            last_err = '下載完成但找不到輸出檔'
+        else:
+            last_err = (proc.stderr or proc.stdout or last_err).strip().splitlines()[-1]
+            # 無聲音軌之類的內容問題，換通道也不會好 → 直接回報
+            if 'unable to obtain file audio codec' in last_err.lower():
+                break
+
+    raise RuntimeError(_friendly_error(last_err))
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
