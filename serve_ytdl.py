@@ -38,6 +38,7 @@ def _resolve(name):
 
 YTDLP = _resolve('yt-dlp')
 FFMPEG = _resolve('ffmpeg')
+FFPROBE = _resolve('ffprobe')
 FFMPEG_DIR = os.path.dirname(FFMPEG) if os.path.sep in FFMPEG else None
 
 # 共用穩健性參數（retries / fragment-retries：斷線自動重試）
@@ -174,6 +175,39 @@ def build_info(url):
     }
 
 
+def _ensure_h264(path):
+    """FB/IG 常只給 AV1 編碼，macOS 空白鍵預覽與部分剪輯軟體播不了。
+    非 H.264 且短邊 ≤1080 就地轉成 H.264；2K/4K 保留原編碼（轉檔太耗時）。"""
+    try:
+        probe = subprocess.run(
+            [FFPROBE, '-v', 'error', '-select_streams', 'v:0',
+             '-show_entries', 'stream=codec_name,width,height',
+             '-of', 'csv=p=0', path],
+            capture_output=True, text=True, timeout=30).stdout.strip()
+        codec, w, h = (probe.split(',') + ['', ''])[:3]
+        w, h = int(w or 0), int(h or 0)
+    except Exception:
+        return path
+    if codec == 'h264' or not codec:
+        return path
+    if w and h and min(w, h) > 1080:
+        return path
+    tmp_out = path + '.h264.mp4'
+    conv = subprocess.run(
+        [FFMPEG, '-y', '-i', path, '-c:v', 'libx264', '-preset', 'veryfast',
+         '-crf', '19', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k',
+         '-movflags', '+faststart', tmp_out],
+        capture_output=True, text=True, timeout=1800)
+    if conv.returncode == 0 and os.path.exists(tmp_out) and os.path.getsize(tmp_out) > 0:
+        os.replace(tmp_out, path)
+    else:
+        try:
+            os.remove(tmp_out)
+        except OSError:
+            pass
+    return path
+
+
 def run_download(url, kind, quality, outdir):
     """下載到 outdir，回傳最終檔案路徑（多通道遞補：預設→android→web_safari）。"""
     out_tmpl = os.path.join(outdir, '%(title).100B.%(ext)s')
@@ -211,7 +245,10 @@ def run_download(url, kind, quality, outdir):
             if files:
                 files.sort(key=lambda f: os.path.getsize(os.path.join(outdir, f)),
                            reverse=True)
-                return os.path.join(outdir, files[0])
+                path = os.path.join(outdir, files[0])
+                if kind == 'video':
+                    path = _ensure_h264(path)
+                return path
             last_err = '下載完成但找不到輸出檔'
         else:
             last_err = (proc.stderr or proc.stdout or last_err).strip().splitlines()[-1]
