@@ -135,9 +135,10 @@ def build_info(url):
     video_opts = []
     for h in sorted(by_h, reverse=True):
         total = (by_h[h]['size'] or 0) + (best_audio or 0)
+        tag = ' (4K)' if h >= 2160 else (' (2K)' if h >= 1440 else '')
         video_opts.append({
             'quality': h,
-            'label': f'{h}p',
+            'label': f'{h}p{tag}',
             'sizeText': _human_size(total),
         })
     if not video_opts:
