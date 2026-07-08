@@ -60,12 +60,29 @@ def _human_size(n):
     return f'{n:.1f}TB'
 
 
+def _friendly_error(raw):
+    """把 yt-dlp 的錯誤翻成使用者看得懂的訊息。"""
+    low = raw.lower()
+    if 'login required' in low or 'log in' in low or 'rate-limit' in low or 'not logged in' in low:
+        return '此內容需要登入才能存取（私人帳號、限時動態或被平台限流）。目前僅支援公開影片。'
+    if 'private' in low:
+        return '這是私人影片，無法下載。'
+    if 'unavailable' in low or 'removed' in low:
+        return '影片不存在或已被移除。'
+    if 'unsupported url' in low:
+        return '不支援這個網址。請貼影片本身的連結（YouTube / Facebook / Instagram）。'
+    if 'unable to obtain file audio codec' in low:
+        return '這部影片沒有聲音軌，無法轉成 MP3。'
+    return raw
+
+
 def build_info(url):
     """呼叫 yt-dlp -J 取得 metadata，整理成前端好用的畫質清單。"""
     cmd = [YTDLP, '-J'] + COMMON_ARGS + [url]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
     if proc.returncode != 0:
-        raise RuntimeError((proc.stderr or proc.stdout or '解析失敗').strip().splitlines()[-1])
+        raw = (proc.stderr or proc.stdout or '解析失敗').strip().splitlines()[-1]
+        raise RuntimeError(_friendly_error(raw))
     data = json.loads(proc.stdout)
 
     duration = data.get('duration') or 0
@@ -81,19 +98,26 @@ def build_info(url):
             best_audio = max(best_audio, sz or 0)
 
     # 依高度歸納可用影片畫質（取每個高度中檔案最小的 mp4/avc 優先）
+    # FB 等平台的格式常無 height、只有 sd/hd 之類的 format_id → 以 format_id 呈現
     by_h = {}
+    no_height = {}
     for f in formats:
-        h = f.get('height')
-        if not h or f.get('vcodec') == 'none':
+        if f.get('vcodec') == 'none':
             continue
         sz = f.get('filesize') or f.get('filesize_approx') or 0
         if not sz and f.get('tbr') and duration:
             sz = f['tbr'] * 1000 / 8 * duration
-        prev = by_h.get(h)
-        # 優先 mp4/avc1（相容性最好），其次比較是否已有資料
-        is_mp4 = (f.get('ext') == 'mp4') and str(f.get('vcodec', '')).startswith('avc')
-        if prev is None or (is_mp4 and not prev['mp4']) or (sz and not prev['size']):
-            by_h[h] = {'height': h, 'size': sz, 'mp4': is_mp4}
+        h = f.get('height')
+        if h:
+            prev = by_h.get(h)
+            # 優先 mp4/avc1（相容性最好），其次比較是否已有資料
+            is_mp4 = (f.get('ext') == 'mp4') and str(f.get('vcodec', '')).startswith('avc')
+            if prev is None or (is_mp4 and not prev['mp4']) or (sz and not prev['size']):
+                by_h[h] = {'height': h, 'size': sz, 'mp4': is_mp4}
+        else:
+            fid = f.get('format_id') or 'video'
+            label = (f.get('format_note') or fid).upper()
+            no_height[fid] = {'label': label, 'size': sz}
 
     video_opts = []
     for h in sorted(by_h, reverse=True):
@@ -103,6 +127,15 @@ def build_info(url):
             'label': f'{h}p',
             'sizeText': _human_size(total),
         })
+    if not video_opts:
+        # 無高度資訊時退回 format_id 清單（hd 排前面）
+        for fid in sorted(no_height, key=lambda k: no_height[k]['label'], reverse=False):
+            video_opts.append({
+                'quality': fid,
+                'label': no_height[fid]['label'],
+                'sizeText': _human_size(no_height[fid]['size']),
+            })
+        video_opts.sort(key=lambda o: {'HD': 0, 'SD': 1}.get(o['label'], 2))
 
     audio_opts = [
         {'quality': '320', 'label': '320k (.mp3)',
@@ -134,14 +167,19 @@ def run_download(url, kind, quality, outdir):
         aq = '0' if str(quality) == '320' else f'{quality}K'
         cmd = base + ['-x', '--audio-format', 'mp3', '--audio-quality', aq, url]
     else:
-        h = int(quality)
-        fmt = (f'bv*[height<={h}][ext=mp4]+ba[ext=m4a]/'
-               f'bv*[height<={h}]+ba/b[height<={h}]/b')
+        q = str(quality)
+        if q.isdigit():
+            fmt = (f'bv*[height<={q}][ext=mp4]+ba[ext=m4a]/'
+                   f'bv*[height<={q}]+ba/b[height<={q}]/b')
+        else:
+            # FB 等平台的 sd/hd 直接用 format_id（多半已含音訊）
+            fmt = f'{q}+ba/{q}/b'
         cmd = base + ['-f', fmt, '--merge-output-format', 'mp4', url]
 
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
     if proc.returncode != 0:
-        raise RuntimeError((proc.stderr or proc.stdout or '下載失敗').strip().splitlines()[-1])
+        raw = (proc.stderr or proc.stdout or '下載失敗').strip().splitlines()[-1]
+        raise RuntimeError(_friendly_error(raw))
 
     files = [f for f in os.listdir(outdir) if not f.startswith('.')]
     if not files:

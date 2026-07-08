@@ -857,8 +857,8 @@ if (!self.crossOriginIsolated) {
       <div class="tool-icon ytdl-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31.3 31.3 0 0 0 0 12a31.3 31.3 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.3 31.3 0 0 0 24 12a31.3 31.3 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
       </div>
-      <div class="tool-name">YouTube 下載</div>
-      <div class="tool-desc">貼上 YouTube 網址，解析後可下載 MP4 影片或 MP3 音訊到本機，作為剪輯素材使用。</div>
+      <div class="tool-name">影片下載（YT / FB / IG）</div>
+      <div class="tool-desc">貼上 YouTube、Facebook 或 Instagram 影片網址，解析後可下載 MP4 影片或 MP3 音訊到本機，作為剪輯素材使用。</div>
 
       <!-- 服務未啟動時的說明 -->
       <div class="ytdl-offline" id="ytdlOffline" style="display:none">
@@ -876,14 +876,14 @@ python3 serve_ytdl.py</code>
       <!-- 主要操作 -->
       <div class="ytdl-main" id="ytdlMain" style="display:none">
         <div class="ytdl-inputrow">
-          <input type="text" id="ytdlUrl" class="ytdl-url" placeholder="https://www.youtube.com/watch?v=..." spellcheck="false" autocomplete="off">
+          <input type="text" id="ytdlUrl" class="ytdl-url" placeholder="貼上 YouTube / Facebook / Instagram 影片網址" spellcheck="false" autocomplete="off">
           <button class="ytdl-parse" id="ytdlParse">解析</button>
         </div>
         <div class="error-msg ytdl-err" id="ytdlErr"></div>
 
         <div class="ytdl-result" id="ytdlResult" style="display:none">
           <div class="ytdl-meta">
-            <img class="ytdl-thumb" id="ytdlThumb" alt="">
+            <img class="ytdl-thumb" id="ytdlThumb" alt="" referrerpolicy="no-referrer">
             <div class="ytdl-meta-txt">
               <div class="ytdl-title" id="ytdlTitle"></div>
               <div class="ytdl-sub" id="ytdlSub"></div>
@@ -6184,7 +6184,7 @@ window.addEventListener('resize', function() {
   function parse(){
     var url = urlEl.value.trim();
     setErr('');
-    if(!/^https?:\/\//.test(url)){ setErr('請貼上有效的 YouTube 網址'); return; }
+    if(!/^https?:\/\//.test(url)){ setErr('請貼上有效的影片網址（YouTube / Facebook / Instagram）'); return; }
     lastUrl = url;
     parseBtn.disabled = true; parseBtn.textContent = '解析中…';
     resultEl.style.display='none';
@@ -6202,7 +6202,10 @@ window.addEventListener('resize', function() {
   }
 
   function renderResult(d){
-    $('ytdlThumb').src = d.thumbnail || '';
+    var thumb = $('ytdlThumb');
+    thumb.style.display = d.thumbnail ? '' : 'none';
+    thumb.onerror = function(){ thumb.style.display = 'none'; };
+    thumb.src = d.thumbnail || '';
     $('ytdlTitle').textContent = d.title || '';
     $('ytdlSub').textContent = [d.uploader, d.durationText].filter(Boolean).join(' · ');
     fillOpts($('ytdlVideo'), d.video || [], 'video');
