@@ -28,22 +28,17 @@ header::after{content:'';position:absolute;inset:0;opacity:.04;background-image:
 .logo-icon{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4f46e5,#7c3aed);box-shadow:0 4px 20px rgba(99,102,241,.5),0 0 0 1px rgba(255,255,255,.1)}
 .logo-title{font-size:28px;font-weight:800;color:#fff;letter-spacing:.5px;text-shadow:0 2px 12px rgba(99,102,241,.4)}
 .logo-sub{font-size:12px;color:rgba(255,255,255,.4);letter-spacing:2.5px;text-transform:uppercase;margin-top:3px}
-.header-tags{display:flex;gap:8px;justify-content:center;margin-top:18px;flex-wrap:wrap}
-.adv-cta{display:inline-flex;align-items:center;gap:12px;margin:22px auto 0;padding:12px 18px;text-decoration:none;border-radius:14px;background:linear-gradient(120deg,rgba(99,102,241,.18),rgba(139,92,246,.18));border:1px solid rgba(129,140,248,.45);box-shadow:0 6px 24px rgba(99,102,241,.18);transition:.18s;max-width:520px}
-.adv-cta:hover{transform:translateY(-2px);border-color:var(--indigo2);box-shadow:0 10px 32px rgba(99,102,241,.32);background:linear-gradient(120deg,rgba(99,102,241,.28),rgba(139,92,246,.28))}
-.adv-cta-ico{flex-shrink:0;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,var(--indigo),var(--violet))}
-.adv-cta-txt{display:flex;flex-direction:column;gap:2px;text-align:left;line-height:1.3}
-.adv-cta-txt b{font-size:15px;font-weight:700;color:var(--text)}
-.adv-cta-txt small{font-size:11px;color:var(--text2)}
-.adv-cta-arrow{flex-shrink:0;color:var(--indigo2);transition:transform .18s}
-.adv-cta:hover .adv-cta-arrow{transform:translateX(4px)}
-.tag{background:rgba(255,255,255,.07);color:rgba(255,255,255,.65);font-size:11.5px;font-weight:600;padding:5px 13px;border-radius:99px;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:5px}
+.logo-tagline{margin-top:16px;font-size:13px;color:rgba(255,255,255,.5);letter-spacing:.5px}
 
 .nav-wrap{display:flex;justify-content:center;padding:22px 16px 0}
 .nav{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;display:inline-flex;gap:2px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
 .nav-btn{padding:9px 22px;border-radius:10px;border:none;background:transparent;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;transition:.18s;display:flex;align-items:center;gap:7px;white-space:nowrap}
 .nav-btn.active{background:linear-gradient(135deg,var(--indigo),var(--violet));color:#fff;box-shadow:0 2px 12px rgba(99,102,241,.4)}
 .nav-btn:hover:not(.active){background:var(--surface2);color:var(--text)}
+.nav-sep{width:1px;align-self:stretch;margin:5px 4px;background:var(--border)}
+.nav-ezcut{padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:.18s;color:var(--indigo2);background:linear-gradient(120deg,rgba(99,102,241,.10),rgba(139,92,246,.10));border:1px solid rgba(129,140,248,.3)}
+.nav-ezcut:hover{color:#fff;border-color:var(--indigo2);background:linear-gradient(135deg,var(--indigo),var(--violet));box-shadow:0 2px 12px rgba(99,102,241,.4)}
+@media (max-width:560px){.nav-sep,.nav-ezcut{display:none}}
 
 main{max-width:980px;margin:24px auto 0;padding:0 16px}
 .section-title{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
@@ -781,19 +776,7 @@ if (!self.crossOriginIsolated) {
         <div class="logo-sub">Media Toolkit</div>
       </div>
     </div>
-    <div class="header-tags">
-      <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-tool"/></svg>影音工具</span>
-      <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-film"/></svg>影音資源庫</span>
-      <span class="tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-monitor"/></svg>剪輯軟體推薦</span>
-    </div>
-    <a href="./ezcut.html" target="_blank" rel="noopener" class="adv-cta">
-      <span class="adv-cta-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span>
-      <span class="adv-cta-txt">
-        <b>進階功能 · EZcut</b>
-        <small>時間軸多軌剪輯 · 影片／音檔分軌 · 轉場字幕匯出</small>
-      </span>
-      <svg class="adv-cta-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    </a>
+    <div class="logo-tagline">轉檔、剪輯、錄製、下載素材 — 全在瀏覽器完成</div>
   </div>
 </header>
 
@@ -808,6 +791,11 @@ if (!self.crossOriginIsolated) {
     <button class="nav-btn" onclick="showPanel('sw',this)">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-monitor"/></svg>剪輯軟體
     </button>
+    <span class="nav-sep"></span>
+    <a href="./ezcut.html" target="_blank" rel="noopener" class="nav-ezcut" title="時間軸多軌剪輯 · 影片／音檔分軌 · 轉場字幕匯出">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>EZcut 進階剪輯
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+    </a>
   </div>
 </div>
 
@@ -6339,7 +6327,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.9.2</span><span class="ver-date">更新於 2026-07-08</span>
+  <span class="ver">v1.9.3</span><span class="ver-date">更新於 2026-07-08</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
