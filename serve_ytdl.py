@@ -26,8 +26,14 @@ import subprocess
 import threading
 import urllib.parse
 
-# ── 解析工具路徑（Finder 啟動時 PATH 可能缺 /opt/homebrew/bin）──
+# ── 解析工具路徑 ──
+# 優先順序：同資料夾 bin/（一鍵安裝包的獨立引擎）→ PATH → Homebrew 常見路徑
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def _resolve(name):
+    local = os.path.join(_SCRIPT_DIR, 'bin', name)
+    if os.path.exists(local) and os.access(local, os.X_OK):
+        return local
     p = shutil.which(name)
     if p:
         return p
