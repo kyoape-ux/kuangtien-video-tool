@@ -294,17 +294,21 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
 
+    _ytdlp_ver = None  # 版本快取：獨立版首次啟動要自我解壓（約 10 秒），避免重複觸發
+
     def do_GET(self):
         if self.path.rstrip('/') == '/api/ytdl/health':
-            ver = None
-            try:
-                ver = subprocess.run([YTDLP, '--version'], capture_output=True,
-                                     text=True, timeout=10).stdout.strip()
-            except Exception:
-                pass
+            cls = type(self)
+            if not cls._ytdlp_ver:
+                try:
+                    cls._ytdlp_ver = subprocess.run(
+                        [YTDLP, '--version'], capture_output=True,
+                        text=True, timeout=60).stdout.strip() or None
+                except Exception:
+                    pass
             self._send_json({
-                'ok': bool(ver),
-                'ytdlp': ver,
+                'ok': bool(cls._ytdlp_ver),
+                'ytdlp': cls._ytdlp_ver,
                 'ffmpeg': bool(shutil.which(FFMPEG) or os.path.exists(FFMPEG)),
             })
             return
