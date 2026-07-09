@@ -39,12 +39,15 @@ if not exist "%BIN%\yt-dlp.exe" (
   curl -L -# %RETRY% -o "%BIN%\yt-dlp.exe" "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
 )
 
-REM 3. ffmpeg + ffprobe（改用 GitHub CDN，速度較快）
+REM 3. ffmpeg + ffprobe（GitHub CDN；PowerShell 只解壓，複製用 cmd 較保險）
 if not exist "%BIN%\ffmpeg.exe" (
   echo [3/4] 下載 ffmpeg 影音引擎（約 87MB，請稍候）...
   curl -L -# %RETRY% -o "%TEMP%\ktgh_ff.zip" "https://github.com/GyanD/codexffmpeg/releases/download/7.1/ffmpeg-7.1-essentials_build.zip"
   echo    解壓縮中...
-  powershell -NoProfile -Command "$d=Join-Path $env:TEMP 'ktgh_ff'; Expand-Archive -Force (Join-Path $env:TEMP 'ktgh_ff.zip') $d; $f=Get-ChildItem $d -Recurse -Filter ffmpeg.exe ^| Select-Object -First 1; Copy-Item $f.FullName (Join-Path '%BIN%' 'ffmpeg.exe'); Copy-Item (Join-Path $f.DirectoryName 'ffprobe.exe') (Join-Path '%BIN%' 'ffprobe.exe')"
+  if exist "%TEMP%\ktgh_ff" rmdir /s /q "%TEMP%\ktgh_ff"
+  powershell -NoProfile -Command "Expand-Archive -Force '%TEMP%\ktgh_ff.zip' '%TEMP%\ktgh_ff'"
+  for /r "%TEMP%\ktgh_ff" %%F in (ffmpeg.exe) do copy /y "%%F" "%BIN%\ffmpeg.exe" >nul
+  for /r "%TEMP%\ktgh_ff" %%F in (ffprobe.exe) do copy /y "%%F" "%BIN%\ffprobe.exe" >nul
 )
 
 REM 4. 同步最新程式（與公開網站一致）
@@ -53,13 +56,13 @@ curl -s -L %RETRY% -o "%TOOLDIR%\serve_ytdl.py" "%BASE%/serve_ytdl.py"
 curl -s -L %RETRY% -o "%TOOLDIR%\media-toolkit.html" "%BASE%/media-toolkit.html"
 
 if not exist "%PYDIR%\python.exe" (
-  echo. & echo [錯誤] Python 下載或解壓失敗，請確認網路後重試。& pause & exit /b 1
+  echo. & echo [錯誤] Python 安裝失敗，請關掉本視窗、重新雙擊本檔案再試。& pause & exit /b 1
 )
 if not exist "%BIN%\ffmpeg.exe" (
-  echo. & echo [錯誤] ffmpeg 下載失敗，請關掉本視窗、重新雙擊本檔案再試一次。& pause & exit /b 1
+  echo. & echo [錯誤] ffmpeg 安裝失敗，請關掉本視窗、重新雙擊本檔案再試。& pause & exit /b 1
 )
 if not exist "%TOOLDIR%\serve_ytdl.py" (
-  echo. & echo [錯誤] 無法下載程式，請確認網路連線後再試一次。& pause & exit /b 1
+  echo. & echo [錯誤] 無法下載程式，請確認網路連線後再試。& pause & exit /b 1
 )
 
 REM 3 秒後自動開啟瀏覽器
