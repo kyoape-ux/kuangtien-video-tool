@@ -14,6 +14,13 @@ set "RETRY=--retry 5 --retry-delay 3 --retry-all-errors"
 if not exist "%BIN%" mkdir "%BIN%" 2>nul
 cd /d "%TOOLDIR%"
 
+echo ============================================================
+echo    光田影片下載工具
+echo    本工具只下載官方開源引擎 yt-dlp / ffmpeg 並在本機執行,
+echo    不會上傳任何資料; 原始碼公開於 kyoape-ux.github.io
+echo ============================================================
+echo.
+
 REM 服務已在跑就直接開網頁
 curl -s -o nul --max-time 2 "http://localhost:%PORT%/api/ytdl/health"
 if not errorlevel 1 (
@@ -22,8 +29,7 @@ if not errorlevel 1 (
   exit /b
 )
 
-echo.
-echo   光田影片下載工具 安裝／啟動中，第一次約需 1-2 分鐘...
+echo 安裝／啟動中，第一次約需 1-2 分鐘，完成後本視窗會自動關閉...
 echo.
 
 REM 1. Python 綠色版（免安裝）
@@ -55,26 +61,15 @@ echo [4/4] 同步最新程式...
 curl -s -L %RETRY% -o "%TOOLDIR%\serve_ytdl.py" "%BASE%/serve_ytdl.py"
 curl -s -L %RETRY% -o "%TOOLDIR%\media-toolkit.html" "%BASE%/media-toolkit.html"
 
-if not exist "%PYDIR%\python.exe" (
-  echo. & echo [錯誤] Python 安裝失敗，請關掉本視窗、重新雙擊本檔案再試。& pause & exit /b 1
-)
-if not exist "%BIN%\ffmpeg.exe" (
-  echo. & echo [錯誤] ffmpeg 安裝失敗，請關掉本視窗、重新雙擊本檔案再試。& pause & exit /b 1
-)
-if not exist "%TOOLDIR%\serve_ytdl.py" (
-  echo. & echo [錯誤] 無法下載程式，請確認網路連線後再試。& pause & exit /b 1
-)
-
-REM 3 秒後自動開啟瀏覽器
-start "" cmd /c "timeout /t 3 >nul & start "" "%PAGEURL%""
+if not exist "%PYDIR%\python.exe" ( echo. & echo [錯誤] Python 安裝失敗，請關掉本視窗、重新雙擊本檔案再試。& pause & exit /b 1 )
+if not exist "%BIN%\ffmpeg.exe" ( echo. & echo [錯誤] ffmpeg 安裝失敗，請關掉本視窗、重新雙擊本檔案再試。& pause & exit /b 1 )
+if not exist "%TOOLDIR%\serve_ytdl.py" ( echo. & echo [錯誤] 無法下載程式，請確認網路連線後再試。& pause & exit /b 1 )
 
 echo.
-echo ==========================================
-echo   影片下載服務啟動中（連接埠 %PORT%）
-echo   關閉此視窗即停止服務
-echo ==========================================
-echo.
-"%PYDIR%\python.exe" "%TOOLDIR%\serve_ytdl.py" %PORT% "%TOOLDIR%"
-echo.
-echo 服務已停止。按任意鍵關閉視窗。
-pause >nul
+echo 安裝完成！正在啟動服務並開啟下載頁...
+
+REM 服務改在「最小化的獨立視窗」執行；本安裝視窗隨即自動關閉。
+REM 要停止服務：到工作列關閉那個「光田影片下載服務」視窗即可。
+start "光田影片下載服務（用完關閉此視窗即停止）" /min "%PYDIR%\python.exe" "%TOOLDIR%\serve_ytdl.py" %PORT% "%TOOLDIR%"
+start "" cmd /c "timeout /t 4 >nul & start "" "%PAGEURL%""
+exit /b
