@@ -935,37 +935,6 @@ if (!self.crossOriginIsolated) {
       </div>
     </div>
 
-    <!-- 格式轉換 -->
-    <div class="tool-card c-amber" data-tool="convert">
-      <input type="file" hidden accept="video/*,.mkv,.avi,.webm,.flv,.ts">
-      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-convert"/></svg></div>
-      <div class="tool-name">格式轉換</div>
-      <div class="tool-desc">影片格式互轉，解決播放器相容性問題。</div>
-      <select class="fmt-select" name="outfmt">
-        <option value="mp4">轉成 MP4（最相容）</option>
-        <option value="webm">轉成 WebM（網頁用）</option>
-        <option value="mov">轉成 MOV（Apple 用）</option>
-        <option value="avi">轉成 AVI</option>
-      </select>
-      <div class="drop-area">
-        <div class="drop-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-folder"/></svg></div>
-        <div class="drop-area-text">拖曳影片到這裡，或點擊選取</div>
-        <div class="drop-area-sub">支援所有主流影片格式</div>
-      </div>
-      <div class="file-info">
-        <span class="file-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-file"/></svg></span>
-        <span class="file-info-name"></span><span class="file-info-size"></span>
-        <button class="file-clear"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-x"/></svg></button>
-      </div>
-      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">轉換中...</div></div>
-      <div class="error-msg"></div>
-      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-bolt"/></svg>開始轉換</button>
-      <div class="download-wrap">
-        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載轉換後影片</button>
-        <button class="reset-btn">再次轉換</button>
-      </div>
-    </div>
-
     <!-- 影片裁切 -->
     <div class="tool-card c-sky" data-tool="trim">
       <input type="file" hidden accept="video/*,.mkv,.avi,.webm">
@@ -1061,6 +1030,37 @@ if (!self.crossOriginIsolated) {
       <div class="download-wrap">
         <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載合併後影片</button>
         <button class="reset-btn">重新選取</button>
+      </div>
+    </div>
+
+    <!-- 格式轉換 -->
+    <div class="tool-card c-amber" data-tool="convert">
+      <input type="file" hidden accept="video/*,.mkv,.avi,.webm,.flv,.ts">
+      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-convert"/></svg></div>
+      <div class="tool-name">格式轉換</div>
+      <div class="tool-desc">影片格式互轉，解決播放器相容性問題。</div>
+      <select class="fmt-select" name="outfmt">
+        <option value="mp4">轉成 MP4（最相容）</option>
+        <option value="webm">轉成 WebM（網頁用）</option>
+        <option value="mov">轉成 MOV（Apple 用）</option>
+        <option value="avi">轉成 AVI</option>
+      </select>
+      <div class="drop-area">
+        <div class="drop-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-folder"/></svg></div>
+        <div class="drop-area-text">拖曳影片到這裡，或點擊選取</div>
+        <div class="drop-area-sub">支援所有主流影片格式</div>
+      </div>
+      <div class="file-info">
+        <span class="file-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-file"/></svg></span>
+        <span class="file-info-name"></span><span class="file-info-size"></span>
+        <button class="file-clear"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-x"/></svg></button>
+      </div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">轉換中...</div></div>
+      <div class="error-msg"></div>
+      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-bolt"/></svg>開始轉換</button>
+      <div class="download-wrap">
+        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載轉換後影片</button>
+        <button class="reset-btn">再次轉換</button>
       </div>
     </div>
 
