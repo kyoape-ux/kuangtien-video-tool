@@ -100,7 +100,7 @@ def build_info(url):
     data = None
     for client_args in CLIENT_TRIES:
         cmd = [YTDLP, '-J'] + COMMON_ARGS + client_args + [url]
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
+        proc = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=90)
         if proc.returncode == 0:
             data = json.loads(proc.stdout)
             break
@@ -192,7 +192,7 @@ def _ensure_h264(path):
             [FFPROBE, '-v', 'error', '-select_streams', 'v:0',
              '-show_entries', 'stream=codec_name,width,height',
              '-of', 'csv=p=0', path],
-            capture_output=True, text=True, timeout=30).stdout.strip()
+            capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=30).stdout.strip()
         codec, w, h = (probe.split(',') + ['', ''])[:3]
         w, h = int(w or 0), int(h or 0)
     except Exception:
@@ -206,7 +206,7 @@ def _ensure_h264(path):
         [FFMPEG, '-y', '-i', path, '-c:v', 'libx264', '-preset', 'veryfast',
          '-crf', '19', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k',
          '-movflags', '+faststart', tmp_out],
-        capture_output=True, text=True, timeout=1800)
+        capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=1800)
     if conv.returncode == 0 and os.path.exists(tmp_out) and os.path.getsize(tmp_out) > 0:
         os.replace(tmp_out, path)
     else:
@@ -248,7 +248,7 @@ def run_download(url, kind, quality, outdir):
         if FFMPEG_DIR:
             base += ['--ffmpeg-location', FFMPEG_DIR]
 
-        proc = subprocess.run(base + tail, capture_output=True, text=True, timeout=1800)
+        proc = subprocess.run(base + tail, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=1800)
         if proc.returncode == 0:
             files = [f for f in os.listdir(outdir) if not f.startswith('.')]
             if files:
@@ -308,7 +308,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 try:
                     cls._ytdlp_ver = subprocess.run(
                         [YTDLP, '--version'], capture_output=True,
-                        text=True, timeout=60).stdout.strip() or None
+                        text=True, encoding='utf-8', errors='replace',
+                        timeout=60).stdout.strip() or None
                 except Exception:
                     pass
             self._send_json({
@@ -378,6 +379,12 @@ class ThreadingServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 
 if __name__ == '__main__':
+    # Windows 終端機預設 cp950，強制 UTF-8 避免中文 print 崩潰
+    for _s in (sys.stdout, sys.stderr):
+        try:
+            _s.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
     directory = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(os.path.abspath(__file__))
     os.chdir(directory)
