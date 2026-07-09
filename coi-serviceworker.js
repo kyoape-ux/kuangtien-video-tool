@@ -9,6 +9,8 @@ self.addEventListener('fetch', e => {
   // Don't intercept non-GET or extension requests
   if (e.request.method !== 'GET') return;
   if (e.request.cache === 'only-if-cached' && e.request.mode !== 'same-origin') return;
+  // 本機下載服務（影片下載卡片）直接由頁面發送——SW 環境無法連 localhost
+  if (/^http:\/\/(localhost|127\.0\.0\.1):/.test(e.request.url)) return;
 
   e.respondWith(
     fetch(e.request, { credentials: 'same-origin' })
