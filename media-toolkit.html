@@ -1422,6 +1422,13 @@ if (!self.crossOriginIsolated) {
       </div>
     </div>
 
+    <!-- EZcut 進階剪輯（外開新分頁）-->
+    <a href="./ezcut.html" target="_blank" rel="noopener" class="tool-card ezcut-card">
+      <div class="tool-icon ezcut-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+      <div class="tool-name">EZcut 進階剪輯<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:5px"><path d="M7 17L17 7M9 7h8v8"/></svg></div>
+      <div class="tool-desc">時間軸多軌剪輯、影片／音檔分軌、畫布直接操作、轉場與字幕匯出。開啟獨立剪輯器。</div>
+    </a>
+
   </div>
 
   <div class="section-title">音訊工具</div>
@@ -6115,6 +6122,13 @@ window.addEventListener('resize', function() {
 <!-- ══════════ YouTube 下載（需搭配 serve_ytdl.py 本機服務）══════════ -->
 <style>
 .ytdl-icon{background:rgba(239,68,68,.15)!important}
+/* EZcut 進階剪輯入口卡片（外開連結）*/
+.ezcut-card{text-decoration:none;display:block}
+.ezcut-card::before{background:linear-gradient(90deg,#6366f1,#a78bfa)}
+.ezcut-card:hover{box-shadow:0 0 24px rgba(129,140,248,.22)}
+.ezcut-icon{background:linear-gradient(135deg,var(--indigo),var(--violet))!important}
+.ezcut-card .tool-name{display:flex;align-items:center;color:#fff}
+.ezcut-card:hover .tool-name{color:#c7d2fe}
 .ytdl-card::before{background:linear-gradient(90deg,#dc2626,#f87171)}
 .ytdl-card:hover{box-shadow:0 0 24px rgba(239,68,68,.15)}
 
@@ -6336,7 +6350,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.11.2</span><span class="ver-date">更新於 2026-07-09</span>
+  <span class="ver">v1.12.0</span><span class="ver-date">更新於 2026-07-09 20:13</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
