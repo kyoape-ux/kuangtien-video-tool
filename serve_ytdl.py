@@ -292,6 +292,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        # Chrome 對「公開網頁 → 本機服務」的 Private Network Access 預檢
+        self.send_header('Access-Control-Allow-Private-Network', 'true')
         self.end_headers()
 
     _ytdlp_ver = None  # 版本快取：獨立版首次啟動要自我解壓（約 10 秒），避免重複觸發

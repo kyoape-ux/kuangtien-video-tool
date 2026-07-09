@@ -862,12 +862,10 @@ if (!self.crossOriginIsolated) {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           需先啟動本機下載服務
         </div>
-        <div class="ytdl-offline-text">此功能需要本機的下載引擎，無法在公開網頁直接執行。啟動方式（擇一）：</div>
-        <div class="ytdl-offline-text"><b>最簡單</b>：到「專案控管系統」資料夾，<b>雙擊「啟動影片下載.command」</b>，會自動啟動並開啟頁面。</div>
-        <div class="ytdl-offline-text">或在終端機執行：</div>
-        <code class="ytdl-cmd" id="ytdlCmd">cd ~/Desktop/專案控管系統
-python3 serve_ytdl.py</code>
-        <div class="ytdl-offline-text">啟動後開啟：<b id="ytdlOpenUrl">http://localhost:8765/media-toolkit.html</b></div>
+        <div class="ytdl-offline-text">此功能需要本機的下載引擎。啟動方式：</div>
+        <div class="ytdl-offline-text"><b>第一次使用</b>：下載 <a href="./影片下載工具.command" download style="color:#a5f3c9;font-weight:700">影片下載工具.command</a>，在檔案上按右鍵 → 打開（僅第一次需要），會自動安裝並啟動。</div>
+        <div class="ytdl-offline-text"><b>之後</b>：雙擊同一個檔案即可啟動。啟動後按下方「重新偵測服務」就能直接在本頁使用。</div>
+        <div class="ytdl-offline-text" id="ytdlOpenUrl" style="color:var(--text3)">（進階：也可在終端機執行 python3 serve_ytdl.py 後開啟 http://localhost:8765/media-toolkit.html）</div>
         <button class="ytdl-recheck" id="ytdlRecheck">重新偵測服務</button>
       </div>
 
@@ -6191,7 +6189,13 @@ window.addEventListener('resize', function() {
 </style>
 <script>
 (function(){
-  var API = location.origin;                 // 同源：由 serve_ytdl.py 提供
+  // API 位置：優先同源（serve_ytdl.py 直接提供本頁時）；
+  // 本頁若來自公開網站（GitHub Pages），退而探測本機服務 localhost:8765
+  var API_CANDIDATES = [location.origin];
+  if (location.origin !== 'http://localhost:8765') {
+    API_CANDIDATES.push('http://localhost:8765');
+  }
+  var API = API_CANDIDATES[0];
   var $ = function(id){ return document.getElementById(id); };
   var offline = $('ytdlOffline'), main = $('ytdlMain'), errEl = $('ytdlErr');
   var resultEl = $('ytdlResult'), prog = $('ytdlProg'), bar = $('ytdlBar'), progText = $('ytdlProgText');
@@ -6208,21 +6212,25 @@ window.addEventListener('resize', function() {
     return '來源網站';
   }
 
-  // ── 偵測本機服務是否啟動 ──
-  function checkHealth(){
-    fetch(API + '/api/ytdl/health', {cache:'no-store'})
+  // ── 偵測本機服務是否啟動（依序探測各候選位置）──
+  function probeBase(base){
+    return fetch(base + '/api/ytdl/health', {cache:'no-store'})
       .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
-      .then(function(d){
-        if(d && d.ok){ offline.style.display='none'; main.style.display='block'; }
-        else showOffline();
-      })
-      .catch(showOffline);
+      .then(function(d){ if(d && d.ok) return base; throw 0; });
+  }
+  function checkHealth(){
+    var chain = Promise.reject();
+    API_CANDIDATES.forEach(function(base){
+      chain = chain.catch(function(){ return probeBase(base); });
+    });
+    chain.then(function(base){
+      API = base;
+      offline.style.display='none'; main.style.display='block';
+    }).catch(showOffline);
   }
   function showOffline(){
     main.style.display='none';
     offline.style.display='block';
-    var openUrl = $('ytdlOpenUrl');
-    if(openUrl && location.protocol==='http:') openUrl.textContent = location.origin + '/media-toolkit.html';
   }
 
   // ── 解析網址 ──
@@ -6356,7 +6364,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.9.5</span><span class="ver-date">更新於 2026-07-08</span>
+  <span class="ver">v1.10.0</span><span class="ver-date">更新於 2026-07-09</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
