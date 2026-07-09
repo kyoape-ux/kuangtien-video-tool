@@ -838,23 +838,15 @@ if (!self.crossOriginIsolated) {
     </div>
   </div>
 
-  <!-- ══════════ 取得素材：YouTube 下載 ══════════ -->
-  <div class="section-title">取得素材</div>
+  <!-- ══════════ 影片工具（第一張：影片下載，需本機服務）══════════ -->
+  <div class="section-title">影片工具</div>
   <div class="tools-grid">
     <div class="tool-card ytdl-card" id="ytdlCard" data-tool="ytdl">
       <div class="tool-icon ytdl-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31.3 31.3 0 0 0 0 12a31.3 31.3 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.3 31.3 0 0 0 24 12a31.3 31.3 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
       </div>
       <div class="tool-name">影片下載</div>
-      <div class="tool-desc">貼上影片網址，解析後可下載 MP4 影片或 MP3 音訊到本機，作為剪輯素材使用。</div>
-
-      <!-- 緊湊模式（未展開）右側的平台徽章 -->
-      <div class="ytdl-platforms">
-        <span class="yp yp-yt"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31.3 31.3 0 0 0 0 12a31.3 31.3 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.3 31.3 0 0 0 24 12a31.3 31.3 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>YouTube</span>
-        <span class="yp yp-fb"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.49h-2.8V24C19.62 23.09 24 18.1 24 12.07z"/></svg>Facebook</span>
-        <span class="yp yp-ig"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor" stroke="none"/></svg>Instagram</span>
-        <span class="yp-cta">貼上網址下載<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-      </div>
+      <div class="tool-desc">貼上 YouTube／FB／IG 影片網址，下載 MP4 或 MP3 到本機當素材。</div>
 
       <!-- 服務未啟動時的說明 -->
       <div class="ytdl-offline" id="ytdlOffline" style="display:none">
@@ -910,10 +902,6 @@ if (!self.crossOriginIsolated) {
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="section-title">影片工具</div>
-  <div class="tools-grid">
 
     <!-- 影片壓縮 -->
     <div class="tool-card c-emerald" data-tool="compress">
@@ -6130,37 +6118,6 @@ window.addEventListener('resize', function() {
 .ytdl-card::before{background:linear-gradient(90deg,#dc2626,#f87171)}
 .ytdl-card:hover{box-shadow:0 0 24px rgba(239,68,68,.15)}
 
-/* ── 取得素材精選卡片：緊湊模式時占滿整列、橫向排版 ── */
-.ytdl-platforms{display:none}
-.tools-grid.compact-mode .ytdl-card:not(.is-open){
-  grid-column:1/-1;
-  display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;
-  column-gap:16px;row-gap:3px;align-items:center;align-content:center;
-  min-height:0;padding:20px 24px;
-  background:linear-gradient(120deg,rgba(220,38,38,.10),var(--surface) 55%);
-}
-.tools-grid.compact-mode .ytdl-card:not(.is-open) .tool-icon{grid-row:1/3;margin:0}
-.tools-grid.compact-mode .ytdl-card:not(.is-open) .tool-name{grid-column:2;margin:0}
-.tools-grid.compact-mode .ytdl-card:not(.is-open) .tool-desc{grid-column:2;margin:0}
-.tools-grid.compact-mode .ytdl-card:not(.is-open) .ytdl-platforms{
-  grid-column:3;grid-row:1/3;display:flex;align-items:center;gap:8px;
-}
-.yp{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;
-  font-size:12px;font-weight:600;border:1px solid var(--border2);background:var(--bg2);color:var(--text2)}
-.yp svg{flex-shrink:0}
-.yp-yt{color:#f87171;border-color:rgba(239,68,68,.25)}
-.yp-fb{color:#60a5fa;border-color:rgba(59,130,246,.25)}
-.yp-ig{color:#e879a9;border-color:rgba(217,70,160,.25)}
-.yp-cta{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;
-  font-size:12.5px;font-weight:700;color:#fff;background:linear-gradient(120deg,#dc2626,#ef4444);
-  margin-left:6px;transition:.18s}
-.tools-grid.compact-mode .ytdl-card:not(.is-open):hover .yp-cta{transform:translateX(3px);box-shadow:0 4px 16px rgba(239,68,68,.35)}
-@media (max-width:900px){
-  .tools-grid.compact-mode .ytdl-card:not(.is-open) .yp{display:none}
-}
-@media (max-width:560px){
-  .tools-grid.compact-mode .ytdl-card:not(.is-open) .ytdl-platforms{display:none}
-}
 .ytdl-inputrow{display:flex;gap:8px;margin-bottom:10px}
 .ytdl-urlwrap{position:relative;flex:1;display:flex}
 .ytdl-url{flex:1;background:var(--bg2);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:10px 36px 10px 12px;font-size:13px;outline:none}
@@ -6379,7 +6336,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.11.1</span><span class="ver-date">更新於 2026-07-09</span>
+  <span class="ver">v1.11.2</span><span class="ver-date">更新於 2026-07-09</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
