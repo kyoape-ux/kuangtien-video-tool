@@ -31,9 +31,12 @@ import urllib.parse
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def _resolve(name):
-    local = os.path.join(_SCRIPT_DIR, 'bin', name)
-    if os.path.exists(local) and os.access(local, os.X_OK):
-        return local
+    # Windows 的執行檔帶 .exe；同資料夾 bin/ 優先（一鍵安裝包）
+    cands = [name + '.exe', name] if os.name == 'nt' else [name]
+    for c in cands:
+        local = os.path.join(_SCRIPT_DIR, 'bin', c)
+        if os.path.exists(local):
+            return local
     p = shutil.which(name)
     if p:
         return p

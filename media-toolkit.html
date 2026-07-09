@@ -862,11 +862,20 @@ if (!self.crossOriginIsolated) {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           需先啟動本機下載服務
         </div>
-        <div class="ytdl-offline-text">此功能需要本機的下載引擎，第一次只需三步（約 1 分鐘）：</div>
-        <div class="ytdl-offline-text"><b>① 下載</b> <a href="./光田影片下載工具.zip" download style="color:#a5f3c9;font-weight:700">光田影片下載工具.zip</a>（下載後在「下載」資料夾點兩下解壓縮）</div>
-        <div class="ytdl-offline-text"><b>② 開啟</b>：對解壓出來的「影片下載工具」<b>按右鍵 → 打開 → 再按一次「打開」</b>（只有第一次要這樣，這是 macOS 的安全確認）</div>
-        <div class="ytdl-offline-text"><b>③ 完成</b>：會自動安裝引擎並開啟下載頁，之後雙擊同一個檔案即可啟動。</div>
-        <div class="ytdl-offline-text" id="ytdlOpenUrl" style="color:var(--text3)">（進階：也可在終端機執行 python3 serve_ytdl.py 後開啟 http://localhost:8765/media-toolkit.html）</div>
+        <div class="ytdl-offline-text">此功能需要本機的下載引擎，第一次只需三步（約 1-2 分鐘）：</div>
+        <!-- Windows -->
+        <div id="ytdlInstallWin" style="display:none">
+          <div class="ytdl-offline-text"><b>① 下載</b> <a href="./影片下載工具.bat" download style="color:#a5f3c9;font-weight:700">影片下載工具.bat</a></div>
+          <div class="ytdl-offline-text"><b>② 雙擊執行</b>：若跳出藍色「Windows 已保護您的電腦」，點 <b>「其他資訊」→「仍要執行」</b>（只有第一次要這樣，這是 Windows 的安全確認）</div>
+          <div class="ytdl-offline-text"><b>③ 完成</b>：會自動下載引擎並開啟下載頁；之後雙擊同一個檔案即可啟動。</div>
+        </div>
+        <!-- macOS -->
+        <div id="ytdlInstallMac" style="display:none">
+          <div class="ytdl-offline-text"><b>① 下載</b> <a href="./光田影片下載工具.zip" download style="color:#a5f3c9;font-weight:700">光田影片下載工具.zip</a>（在「下載」資料夾點兩下解壓縮）</div>
+          <div class="ytdl-offline-text"><b>② 開啟</b>：對解壓出的「影片下載工具」<b>按右鍵 → 打開 → 再按一次「打開」</b>（只有第一次要這樣，這是 macOS 的安全確認）</div>
+          <div class="ytdl-offline-text"><b>③ 完成</b>：會自動安裝引擎並開啟下載頁；之後雙擊同一個檔案即可啟動。</div>
+        </div>
+        <div class="ytdl-offline-text" style="color:var(--text3);margin-top:4px">另一個系統的版本：<a href="./影片下載工具.bat" download style="color:var(--text2)">Windows</a> ・ <a href="./光田影片下載工具.zip" download style="color:var(--text2)">Mac</a></div>
         <button class="ytdl-recheck" id="ytdlRecheck">重新偵測服務</button>
       </div>
 
@@ -6232,6 +6241,11 @@ window.addEventListener('resize', function() {
   function showOffline(){
     main.style.display='none';
     offline.style.display='block';
+    // 依作業系統顯示對應安裝包指引
+    var ua = navigator.userAgent || '';
+    var isWin = /Windows|Win32|Win64/i.test(ua) || /Win/i.test(navigator.platform||'');
+    var win = $('ytdlInstallWin'), mac = $('ytdlInstallMac');
+    if(win && mac){ win.style.display = isWin?'block':'none'; mac.style.display = isWin?'none':'block'; }
   }
 
   // ── 解析網址 ──
@@ -6365,7 +6379,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.10.1</span><span class="ver-date">更新於 2026-07-09</span>
+  <span class="ver">v1.11.0</span><span class="ver-date">更新於 2026-07-09</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
