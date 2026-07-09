@@ -9,6 +9,7 @@ set "PORT=8765"
 set "BASE=https://kyoape-ux.github.io"
 set "PAGEURL=http://localhost:%PORT%/media-toolkit.html"
 set "PYDIR=%BIN%\python"
+set "RETRY=--retry 5 --retry-delay 3 --retry-all-errors"
 
 if not exist "%BIN%" mkdir "%BIN%" 2>nul
 cd /d "%TOOLDIR%"
@@ -28,30 +29,34 @@ echo.
 REM 1. Python 綠色版（免安裝）
 if not exist "%PYDIR%\python.exe" (
   echo [1/4] 下載 Python 綠色版...
-  curl -L -# -o "%TEMP%\ktgh_py.zip" "https://www.python.org/ftp/python/3.12.8/python-3.12.8-embed-amd64.zip"
+  curl -L -# %RETRY% -o "%TEMP%\ktgh_py.zip" "https://www.python.org/ftp/python/3.12.8/python-3.12.8-embed-amd64.zip"
   powershell -NoProfile -Command "Expand-Archive -Force '%TEMP%\ktgh_py.zip' '%PYDIR%'"
 )
 
 REM 2. yt-dlp 引擎
 if not exist "%BIN%\yt-dlp.exe" (
   echo [2/4] 下載 yt-dlp 引擎...
-  curl -L -# -o "%BIN%\yt-dlp.exe" "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
+  curl -L -# %RETRY% -o "%BIN%\yt-dlp.exe" "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
 )
 
-REM 3. ffmpeg + ffprobe
+REM 3. ffmpeg + ffprobe（改用 GitHub CDN，速度較快）
 if not exist "%BIN%\ffmpeg.exe" (
-  echo [3/4] 下載 ffmpeg 影音引擎...
-  curl -L -# -o "%TEMP%\ktgh_ff.zip" "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+  echo [3/4] 下載 ffmpeg 影音引擎（約 87MB，請稍候）...
+  curl -L -# %RETRY% -o "%TEMP%\ktgh_ff.zip" "https://github.com/GyanD/codexffmpeg/releases/download/7.1/ffmpeg-7.1-essentials_build.zip"
+  echo    解壓縮中...
   powershell -NoProfile -Command "$d=Join-Path $env:TEMP 'ktgh_ff'; Expand-Archive -Force (Join-Path $env:TEMP 'ktgh_ff.zip') $d; $f=Get-ChildItem $d -Recurse -Filter ffmpeg.exe ^| Select-Object -First 1; Copy-Item $f.FullName (Join-Path '%BIN%' 'ffmpeg.exe'); Copy-Item (Join-Path $f.DirectoryName 'ffprobe.exe') (Join-Path '%BIN%' 'ffprobe.exe')"
 )
 
 REM 4. 同步最新程式（與公開網站一致）
 echo [4/4] 同步最新程式...
-curl -s -L -o "%TOOLDIR%\serve_ytdl.py" "%BASE%/serve_ytdl.py"
-curl -s -L -o "%TOOLDIR%\media-toolkit.html" "%BASE%/media-toolkit.html"
+curl -s -L %RETRY% -o "%TOOLDIR%\serve_ytdl.py" "%BASE%/serve_ytdl.py"
+curl -s -L %RETRY% -o "%TOOLDIR%\media-toolkit.html" "%BASE%/media-toolkit.html"
 
 if not exist "%PYDIR%\python.exe" (
   echo. & echo [錯誤] Python 下載或解壓失敗，請確認網路後重試。& pause & exit /b 1
+)
+if not exist "%BIN%\ffmpeg.exe" (
+  echo. & echo [錯誤] ffmpeg 下載失敗，請關掉本視窗、重新雙擊本檔案再試一次。& pause & exit /b 1
 )
 if not exist "%TOOLDIR%\serve_ytdl.py" (
   echo. & echo [錯誤] 無法下載程式，請確認網路連線後再試一次。& pause & exit /b 1
