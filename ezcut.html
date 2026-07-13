@@ -250,6 +250,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 /* ── Effects Panel ── */
 .fx-btn{padding:7px 5px;background:var(--bg-clip);border:1.5px solid var(--border);border-radius:6px;color:var(--text2);font-size:10px;cursor:pointer;transition:.15s;text-align:center}
 .fx-btn:hover{border-color:var(--accent-l);color:var(--accent-l)}
+.fx-btn.on{border-color:var(--accent-l);color:var(--accent-l);background:rgba(99,102,241,.12)}
+.wm-pos-btn{font-size:15px;padding:7px 2px}
 .fx-btn[draggable="true"]{cursor:grab}
 .fx-btn[draggable="true"]:active{cursor:grabbing}
 .fx-hint{margin:2px 10px 6px;padding:7px 9px;font-size:10px;line-height:1.5;color:var(--text2);background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);border-radius:6px}
@@ -327,6 +329,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
   <button class="ni" data-p="text" onclick="setPanel('text')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7V5h16v2M9 20h6M12 5v15"/></svg><span class="lbl">文字</span></button>
   <button class="ni" data-p="audio" onclick="setPanel('audio')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span class="lbl">音樂</span></button>
   <button class="ni" data-p="fx" onclick="setPanel('fx')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span class="lbl">特效</span></button>
+  <button class="ni" data-p="watermark" onclick="setPanel('watermark')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l2.4 5.4L20 8l-4 4 1 6-5-2.8L7 18l1-6-4-4 5.6-.6z"/></svg><span class="lbl">浮水印</span></button>
   <div class="ni-sep"></div>
   <button class="ni" data-p="record" onclick="setPanel('record')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3M8 22h8"/></svg><span class="lbl">錄音</span></button>
 </nav>
@@ -423,6 +426,35 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
       <button class="fx-btn" draggable="true" data-fxk="vfx" data-fxv="vivid" onclick="applyFx('vfx','vivid')">✦ 鮮豔</button>
       <button class="fx-btn" onclick="applyFx('vfx','none')">✕ 移除效果</button>
     </div>
+  </div>
+  <!-- WATERMARK -->
+  <div class="ps" id="ps-watermark">
+    <div class="pt">浮水印</div>
+    <div class="ts-row" style="padding:2px 10px 8px"><label style="display:flex;align-items:center;gap:6px;min-width:auto"><input type="checkbox" id="wm-on" onchange="updateWm()">顯示浮水印</label></div>
+    <div class="pt">標誌</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding:0 10px 8px">
+      <button class="fx-btn wm-logo-btn" data-wm="color" onclick="setWmLogo('color',this)">全彩</button>
+      <button class="fx-btn wm-logo-btn on" data-wm="redwhite" onclick="setWmLogo('redwhite',this)">紅標白字</button>
+      <button class="fx-btn wm-logo-btn" data-wm="white" onclick="setWmLogo('white',this)">全白</button>
+    </div>
+    <label class="fx-btn" style="margin:0 10px 8px;display:block;cursor:pointer;padding:8px">上傳自訂標誌<input type="file" accept="image/*" style="display:none" onchange="uploadWmCustom(this)"></label>
+    <div class="pt">位置</div>
+    <div id="wm-pos-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:0 10px 8px">
+      <button class="fx-btn wm-pos-btn" data-pos="tl" onclick="setWmPos('tl',this)">↖</button>
+      <button class="fx-btn wm-pos-btn" data-pos="tc" onclick="setWmPos('tc',this)">↑</button>
+      <button class="fx-btn wm-pos-btn" data-pos="tr" onclick="setWmPos('tr',this)">↗</button>
+      <button class="fx-btn wm-pos-btn" data-pos="ml" onclick="setWmPos('ml',this)">←</button>
+      <button class="fx-btn wm-pos-btn" data-pos="mc" onclick="setWmPos('mc',this)">＋</button>
+      <button class="fx-btn wm-pos-btn" data-pos="mr" onclick="setWmPos('mr',this)">→</button>
+      <button class="fx-btn wm-pos-btn" data-pos="bl" onclick="setWmPos('bl',this)">↙</button>
+      <button class="fx-btn wm-pos-btn" data-pos="bc" onclick="setWmPos('bc',this)">↓</button>
+      <button class="fx-btn wm-pos-btn on" data-pos="br" onclick="setWmPos('br',this)">↘</button>
+    </div>
+    <div class="ts-row"><label>大小</label><input type="range" id="wm-size" min="5" max="60" value="18" style="flex:1" oninput="updateWm()"><span id="wm-size-v" style="font-size:10px;color:var(--text2);min-width:34px">18%</span></div>
+    <div class="ts-row"><label>透明度</label><input type="range" id="wm-op" min="10" max="100" value="85" style="flex:1" oninput="updateWm()"><span id="wm-op-v" style="font-size:10px;color:var(--text2);min-width:34px">85%</span></div>
+    <div class="ts-row"><label style="display:flex;align-items:center;gap:6px;min-width:auto"><input type="checkbox" id="wm-shadow" checked onchange="updateWm()">陰影（淺底也看得見）</label></div>
+    <div class="fx-hint" style="margin-top:4px">浮水印會套用到整支影片，並在匯出時一起輸出。用下方「截取此格」可先看單格效果。</div>
+    <button class="add-txt-btn" onclick="captureFrame()" style="margin:6px 10px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>截取此格 PNG</button>
   </div>
   <!-- RECORD -->
   <div class="ps" id="ps-record">
@@ -610,6 +642,7 @@ let S={
   color:{br:0,co:0,sa:0,hu:0,bl:0},
   text:{font:'Noto Sans TC',size:48,color:'#ffffff',bold:false,strokeColor:'#000000',strokeWidth:0,boxOn:false,boxColor:'#000000',boxWidth:3,boxRadius:8,bgColor:'#000000',bgOpacity:0,shadowOn:false,shadowColor:'#000000',shadowBlur:6},
   expFmt:'mp4',expQual:'high',expRes:'canvas',
+  watermark:{on:false,logo:'redwhite',pos:'br',size:18,opacity:85,shadow:true},
   ffLoaded:false,processing:false,capturing:false,
 };
 let undoStack=[],redoStack=[],uid_=1;
@@ -792,6 +825,44 @@ function drawVarietyText(ctx,text,cx,cy,opts){
   ctx.fillStyle=color;ctx.fillText(text,tx,cy);
 }
 function roundRect(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+
+/* ===== WATERMARK ===== */
+const wmImgs={};
+['white','color','redwhite'].forEach(k=>{const im=new Image();im.src='./ktgh-logo-'+k+'.png';wmImgs[k]=im;});
+let wmCustomImg=null;
+function currentWmImg(){return S.watermark.logo==='custom'?wmCustomImg:wmImgs[S.watermark.logo];}
+function drawWatermark(ctx,cw,ch){
+  const wm=S.watermark;if(!wm.on)return;
+  const img=currentWmImg();if(!img||!img.complete||!img.naturalWidth)return;
+  const w=cw*wm.size/100,h=w*img.naturalHeight/img.naturalWidth,m=cw*0.03;
+  const vert=wm.pos[0],horiz=wm.pos[1];
+  const x=horiz==='l'?m:horiz==='r'?cw-w-m:(cw-w)/2;
+  const y=vert==='t'?m:vert==='b'?ch-h-m:(ch-h)/2;
+  ctx.save();
+  ctx.globalAlpha*=wm.opacity/100;
+  if(wm.shadow){ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=Math.max(2,cw*0.005);ctx.shadowOffsetY=Math.max(1,cw*0.002);}
+  ctx.drawImage(img,x,y,w,h);
+  ctx.restore();
+}
+function updateWm(){
+  const g=id=>document.getElementById(id),wm=S.watermark;
+  wm.on=g('wm-on').checked;
+  wm.size=parseInt(g('wm-size').value)||18;
+  wm.opacity=parseInt(g('wm-op').value)||85;
+  wm.shadow=g('wm-shadow').checked;
+  g('wm-size-v').textContent=wm.size+'%';
+  g('wm-op-v').textContent=wm.opacity+'%';
+  renderPreview();
+}
+function setWmLogo(k,btn){S.watermark.logo=k;document.querySelectorAll('.wm-logo-btn').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');if(!S.watermark.on){document.getElementById('wm-on').checked=true;S.watermark.on=true;}renderPreview();}
+function setWmPos(p,btn){S.watermark.pos=p;document.querySelectorAll('.wm-pos-btn').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');renderPreview();}
+function uploadWmCustom(input){const f=input.files[0];if(!f)return;const im=new Image();im.onload=()=>{wmCustomImg=im;S.watermark.logo='custom';document.querySelectorAll('.wm-logo-btn').forEach(b=>b.classList.remove('on'));document.getElementById('wm-on').checked=true;S.watermark.on=true;renderPreview();toast('自訂浮水印已套用','ok');};im.src=URL.createObjectURL(f);input.value='';}
+function captureFrame(){
+  renderPreview();
+  const a=document.createElement('a');a.href=previewCanvas.toDataURL('image/png');
+  a.download=(S.projectName||'frame')+'_'+fmtT(S.currentTime,1).replace(':','m')+'.png';a.click();
+  toast('已截取此格 PNG','ok');
+}
 
 /* Draw a video/image element into ctx maintaining aspect ratio (pillarbox/letterbox) */
 function drawMediaFit(ctx,el,cw,ch,filterStr){
@@ -1500,6 +1571,8 @@ function renderFrameTo(ctx,pxW,pxH){
       }
     }
   }
+  // Watermark on top of everything (scales with output resolution)
+  drawWatermark(ctx,w,h);
   ctx.setTransform(1,0,0,1,0,0);
 }
 function renderPreview(){
