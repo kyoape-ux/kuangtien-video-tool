@@ -1126,8 +1126,13 @@ if (!self.crossOriginIsolated) {
         <button class="file-clear"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-x"/></svg></button>
       </div>
       <div class="wm-logo-pick">
-        <button class="tool-btn wm-logo-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-file"/></svg>選擇 LOGO 圖片</button>
-        <span class="wm-logo-name">尚未選擇（PNG 透明背景建議）</span>
+        <div class="wm-preset-row" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+          <button type="button" class="tool-btn wm-preset" data-preset="color" style="flex:1;min-width:72px;padding:6px 4px;font-size:11px">光田全彩</button>
+          <button type="button" class="tool-btn wm-preset" data-preset="redwhite" style="flex:1;min-width:72px;padding:6px 4px;font-size:11px">紅標白字</button>
+          <button type="button" class="tool-btn wm-preset" data-preset="white" style="flex:1;min-width:72px;padding:6px 4px;font-size:11px">全白</button>
+        </div>
+        <button class="tool-btn wm-logo-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-file"/></svg>選擇自訂 LOGO 圖片</button>
+        <span class="wm-logo-name">預設光田 LOGO，或上傳自訂（PNG 透明背景建議）</span>
       </div>
       <div class="wm-opts">
         <div class="trim-bit-row">
@@ -2641,8 +2646,27 @@ window.dispatchEvent(new Event('transcription-ready'));
       if (logoInput.files[0]) {
         logoFile = logoInput.files[0];
         logoNameEl.textContent = logoFile.name;
+        card.querySelectorAll('.wm-preset').forEach(function(b){ b.style.outline=''; });
         updateReady();
       }
+    });
+    // 光田 LOGO 預設（檔案已隨站台部署，同源可直接取用）
+    var PRESET_LABEL = { color:'全彩', redwhite:'紅標白字', white:'全白' };
+    card.querySelectorAll('.wm-preset').forEach(function(btn) {
+      btn.addEventListener('click', async function() {
+        var key = btn.dataset.preset;
+        logoNameEl.textContent = '載入光田 LOGO 中…';
+        try {
+          var resp = await fetch('./ktgh-logo-' + key + '.png');
+          if (!resp.ok) throw new Error('logo not found');
+          var blob = await resp.blob();
+          logoFile = new File([blob], 'ktgh-logo-' + key + '.png', { type:'image/png' });
+          logoNameEl.textContent = '光田 LOGO（' + PRESET_LABEL[key] + '）';
+          card.querySelectorAll('.wm-preset').forEach(function(b){ b.style.outline=''; });
+          btn.style.outline = '2px solid var(--indigo, #6366f1)';
+          updateReady();
+        } catch(e) { logoNameEl.textContent = '光田 LOGO 載入失敗，請改用自訂上傳'; }
+      });
     });
 
     card.querySelectorAll('.wm-pos-btn').forEach(function(btn) {
@@ -6350,7 +6374,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.12.1</span><span class="ver-date">更新於 2026-07-09 21:32</span>
+  <span class="ver">v1.12.1</span><span class="ver-date">更新於 2026-07-13 17:31</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
