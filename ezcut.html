@@ -458,7 +458,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
       <button class="fx-btn wm-pos-btn" data-pos="bc" onclick="setWmPos('bc',this)">↓</button>
       <button class="fx-btn wm-pos-btn" data-pos="br" onclick="setWmPos('br',this)">↘</button>
     </div>
-    <div class="ts-row"><label>大小</label><input type="range" id="wm-size" min="5" max="60" value="26" style="flex:1" oninput="updateWm()"><span id="wm-size-v" style="font-size:10px;color:var(--text2);min-width:34px">26%</span></div>
+    <div class="ts-row"><label>大小</label><input type="range" id="wm-size" min="5" max="60" value="16" style="flex:1" oninput="updateWm()"><span id="wm-size-v" style="font-size:10px;color:var(--text2);min-width:34px">16%</span></div>
     <div class="ts-row"><label>透明度</label><input type="range" id="wm-op" min="10" max="100" value="85" style="flex:1" oninput="updateWm()"><span id="wm-op-v" style="font-size:10px;color:var(--text2);min-width:34px">85%</span></div>
     <div class="ts-row"><label style="display:flex;align-items:center;gap:6px;min-width:auto"><input type="checkbox" id="wm-shadow" checked onchange="updateWm()">陰影（淺底也看得見）</label></div>
     <div class="fx-hint" style="margin-top:4px">浮水印會套用到整支影片，並在匯出時一起輸出。用下方「截取此格」可先看單格效果。</div>
@@ -651,7 +651,7 @@ let S={
   color:{br:0,co:0,sa:0,hu:0,bl:0},
   text:{font:'Noto Sans TC',size:48,color:'#ffffff',bold:false,strokeColor:'#000000',strokeWidth:0,boxOn:false,boxColor:'#000000',boxWidth:3,boxRadius:8,bgColor:'#000000',bgOpacity:0,shadowOn:false,shadowColor:'#000000',shadowBlur:6},
   expFmt:'mp4',expQual:'high',expRes:'canvas',
-  watermark:{on:false,logo:'color',pos:'tr',size:26,opacity:85,shadow:true},
+  watermark:{on:false,logo:'color',pos:'tr',size:16,opacity:85,shadow:true},
   faceBlur:{on:false,strength:12,boxes:[],_resolve:null,_busy:false},
   ffLoaded:false,processing:false,capturing:false,
 };
@@ -844,8 +844,8 @@ function currentWmImg(){return S.watermark.logo==='custom'?wmCustomImg:wmImgs[S.
 function drawWatermark(ctx,cw,ch){
   const wm=S.watermark;if(!wm.on)return;
   const img=currentWmImg();if(!img||!img.complete||!img.naturalWidth)return;
-  // 範例比例：x 邊距=寬×0.8%、y 邊距=高×3%（與小助手壓製公式一致）
-  const w=cw*wm.size/100,h=w*img.naturalHeight/img.naturalWidth,mx=cw*0.008,my=ch*0.03;
+  // 邊距 x=寬×1.2%、y=高×3.2%（與小助手壓製公式一致）
+  const w=cw*wm.size/100,h=w*img.naturalHeight/img.naturalWidth,mx=cw*0.012,my=ch*0.032;
   const vert=wm.pos[0],horiz=wm.pos[1];
   const x=horiz==='l'?mx:horiz==='r'?cw-w-mx:(cw-w)/2;
   const y=vert==='t'?my:vert==='b'?ch-h-my:(ch-h)/2;
@@ -858,7 +858,7 @@ function drawWatermark(ctx,cw,ch){
 function updateWm(){
   const g=id=>document.getElementById(id),wm=S.watermark;
   wm.on=g('wm-on').checked;
-  wm.size=parseInt(g('wm-size').value)||18;
+  wm.size=parseInt(g('wm-size').value)||16;
   wm.opacity=parseInt(g('wm-op').value)||85;
   wm.shadow=g('wm-shadow').checked;
   g('wm-size-v').textContent=wm.size+'%';
