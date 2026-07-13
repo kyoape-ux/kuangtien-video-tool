@@ -397,6 +397,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
   </div>
   <!-- EFFECTS / TRANSITIONS -->
   <div class="ps" id="ps-fx">
+    <div class="pt">人臉模糊（保護隱私）</div>
+    <div style="padding:0 10px 8px">
+      <button class="add-txt-btn" id="fb-detect" onclick="detectFacePreview()" style="margin:0 0 6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M9 15c1 1 5 1 6 0"/></svg>偵測並模糊人臉（此格）</button>
+      <div class="ts-row"><label style="display:flex;align-items:center;gap:5px;min-width:auto"><input type="checkbox" id="fb-on" onchange="toggleFaceBlur()">匯出時自動模糊人臉</label></div>
+      <div class="ts-row"><label>強度</label><input type="range" id="fb-strength" min="4" max="30" value="12" style="flex:1" oninput="setFbStrength(this.value)"><span id="fb-strength-v" style="font-size:10px;color:var(--text2);min-width:22px">12</span></div>
+      <button class="fx-btn" onclick="clearFaceBlur()" style="width:100%">✕ 清除人臉模糊</button>
+      <div class="fx-hint" style="margin:6px 0 0">用 MediaPipe 自動偵測人臉並打上馬賽克模糊。先「偵測此格」看效果；勾「匯出時自動模糊」則整支影片逐格偵測（會較慢）。</div>
+    </div>
     <div class="pt">特效</div>
     <div class="fx-hint">拖曳特效到時間軸素材上套用，或先選取素材再點擊。套用後會顯示在素材上。</div>
     <div style="padding:4px 10px 6px;font-size:10px;color:var(--text2)">淡入淡出</div>
@@ -609,6 +617,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 <div class="toasts" id="toasts"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
 <script>
 /* ===== COI Service Worker ===== */
 (function(){
@@ -643,6 +652,7 @@ let S={
   text:{font:'Noto Sans TC',size:48,color:'#ffffff',bold:false,strokeColor:'#000000',strokeWidth:0,boxOn:false,boxColor:'#000000',boxWidth:3,boxRadius:8,bgColor:'#000000',bgOpacity:0,shadowOn:false,shadowColor:'#000000',shadowBlur:6},
   expFmt:'mp4',expQual:'high',expRes:'canvas',
   watermark:{on:false,logo:'redwhite',pos:'br',size:18,opacity:85,shadow:true},
+  faceBlur:{on:false,strength:12,boxes:[],_resolve:null,_busy:false},
   ffLoaded:false,processing:false,capturing:false,
 };
 let undoStack=[],redoStack=[],uid_=1;
@@ -863,6 +873,71 @@ function captureFrame(){
   a.download=(S.projectName||'frame')+'_'+fmtT(S.currentTime,1).replace(':','m')+'.png';a.click();
   toast('已截取此格 PNG','ok');
 }
+
+/* ===== FACE BLUR (MediaPipe) ===== */
+let faceDet=null;
+async function initFaceDetector(){
+  if(faceDet)return faceDet;
+  if(typeof FaceDetection==='undefined')throw new Error('MediaPipe 未載入');
+  faceDet=new FaceDetection({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${f}`});
+  faceDet.setOptions({model:'short',minDetectionConfidence:0.5});
+  faceDet.onResults(r=>{
+    S.faceBlur.boxes=(r.detections||[]).map(d=>{const b=d.boundingBox;return{cx:b.xCenter,cy:b.yCenter,w:b.width,h:b.height};});
+    S.faceBlur._busy=false;
+    if(S.faceBlur._resolve){const fn=S.faceBlur._resolve;S.faceBlur._resolve=null;fn(S.faceBlur.boxes.length);}
+  });
+  if(faceDet.initialize)await faceDet.initialize();
+  return faceDet;
+}
+function detectFacesNow(){
+  return new Promise(async(resolve)=>{
+    try{await initFaceDetector();}catch(e){resolve(-1);return;}
+    S.faceBlur._resolve=resolve;S.faceBlur._busy=true;
+    try{await faceDet.send({image:previewCanvas});}catch(e){S.faceBlur._busy=false;S.faceBlur._resolve=null;resolve(-1);}
+  });
+}
+// Fire-and-forget detection used during export capture to keep boxes fresh
+function detectFacesAsync(){
+  if(!faceDet||S.faceBlur._busy)return;
+  S.faceBlur._busy=true;
+  try{faceDet.send({image:previewCanvas});}catch(e){S.faceBlur._busy=false;}
+}
+/* Blur the detected face regions (device-pixel space) */
+function applyFaceBlur(ctx,pxW,pxH){
+  const fb=S.faceBlur;
+  if(!fb.on||!fb.boxes||!fb.boxes.length)return;
+  const cv=ctx.canvas;
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0);
+  for(const b of fb.boxes){
+    const w=b.w*pxW*1.4,h=b.h*pxH*1.5; // enlarge to fully cover head
+    const cx=b.cx*pxW,cy=b.cy*pxH;
+    const x=cx-w/2,y=cy-h/2;
+    const rad=Math.max(6,Math.max(w,h)*0.12*(fb.strength/12));
+    ctx.save();
+    ctx.beginPath();ctx.ellipse(cx,cy,w/2,h/2,0,0,Math.PI*2);ctx.clip();
+    ctx.filter=`blur(${rad}px)`;
+    ctx.drawImage(cv,x,y,w,h,x,y,w,h);
+    ctx.drawImage(cv,x,y,w,h,x,y,w,h);
+    ctx.restore();
+  }
+  ctx.filter='none';
+  ctx.restore();
+}
+async function detectFacePreview(){
+  const btn=document.getElementById('fb-detect');if(btn){btn.disabled=true;btn.textContent='偵測中…';}
+  toast('偵測人臉中（首次需載入模型）…','info');
+  S.faceBlur.on=true;const cb=document.getElementById('fb-on');if(cb)cb.checked=true;
+  const n=await detectFacesNow();
+  renderPreview();
+  if(btn){btn.disabled=false;btn.innerHTML='偵測並模糊人臉（此格）';}
+  if(n>0)toast('偵測到 '+n+' 張臉，已模糊','ok');
+  else if(n===0)toast('這格沒偵測到人臉','info');
+  else toast('人臉偵測載入失敗，請重試','err');
+}
+function toggleFaceBlur(){S.faceBlur.on=document.getElementById('fb-on').checked;if(S.faceBlur.on&&faceDet)detectFacesAsync();renderPreview();}
+function setFbStrength(v){S.faceBlur.strength=parseInt(v)||12;document.getElementById('fb-strength-v').textContent=S.faceBlur.strength;renderPreview();}
+function clearFaceBlur(){S.faceBlur.on=false;S.faceBlur.boxes=[];const cb=document.getElementById('fb-on');if(cb)cb.checked=false;renderPreview();toast('已清除人臉模糊','info');}
 
 /* Draw a video/image element into ctx maintaining aspect ratio (pillarbox/letterbox) */
 function drawMediaFit(ctx,el,cw,ch,filterStr){
@@ -1545,6 +1620,8 @@ function renderFrameTo(ctx,pxW,pxH){
       }
     }
   }
+  // Face blur over the video/image content (under text & watermark)
+  applyFaceBlur(ctx,pxW,pxH);
   // Draw text clips (always on top)
   for(const t of S.tracks){
     for(const cl of t.clips){
@@ -2016,6 +2093,7 @@ function captureLoop(dur,onProg,onFrame){
       S.currentTime=(ts-start)/1000;
       syncAllMedia(true);
       updatePlayhead();renderPreview();
+      if(S.faceBlur.on)detectFacesAsync(); // keep face boxes fresh during export
       if(onFrame)onFrame();
       onProg(Math.min(1,S.currentTime/dur));
       if(S.currentTime>=dur){S.currentTime=dur;renderPreview();if(onFrame)onFrame();resolve();return;}
