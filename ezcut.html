@@ -441,8 +441,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
     <div class="ts-row" style="padding:2px 10px 8px"><label style="display:flex;align-items:center;gap:6px;min-width:auto"><input type="checkbox" id="wm-on" onchange="updateWm()">顯示浮水印</label></div>
     <div class="pt">標誌</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding:0 10px 8px">
-      <button class="fx-btn wm-logo-btn" data-wm="color" onclick="setWmLogo('color',this)">全彩</button>
-      <button class="fx-btn wm-logo-btn on" data-wm="redwhite" onclick="setWmLogo('redwhite',this)">紅標白字</button>
+      <button class="fx-btn wm-logo-btn on" data-wm="color" onclick="setWmLogo('color',this)">全彩</button>
+      <button class="fx-btn wm-logo-btn" data-wm="redwhite" onclick="setWmLogo('redwhite',this)">紅標白字</button>
       <button class="fx-btn wm-logo-btn" data-wm="white" onclick="setWmLogo('white',this)">全白</button>
     </div>
     <label class="fx-btn" style="margin:0 10px 8px;display:block;cursor:pointer;padding:8px">上傳自訂標誌<input type="file" accept="image/*" style="display:none" onchange="uploadWmCustom(this)"></label>
@@ -450,15 +450,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
     <div id="wm-pos-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:0 10px 8px">
       <button class="fx-btn wm-pos-btn" data-pos="tl" onclick="setWmPos('tl',this)">↖</button>
       <button class="fx-btn wm-pos-btn" data-pos="tc" onclick="setWmPos('tc',this)">↑</button>
-      <button class="fx-btn wm-pos-btn" data-pos="tr" onclick="setWmPos('tr',this)">↗</button>
+      <button class="fx-btn wm-pos-btn on" data-pos="tr" onclick="setWmPos('tr',this)">↗</button>
       <button class="fx-btn wm-pos-btn" data-pos="ml" onclick="setWmPos('ml',this)">←</button>
       <button class="fx-btn wm-pos-btn" data-pos="mc" onclick="setWmPos('mc',this)">＋</button>
       <button class="fx-btn wm-pos-btn" data-pos="mr" onclick="setWmPos('mr',this)">→</button>
       <button class="fx-btn wm-pos-btn" data-pos="bl" onclick="setWmPos('bl',this)">↙</button>
       <button class="fx-btn wm-pos-btn" data-pos="bc" onclick="setWmPos('bc',this)">↓</button>
-      <button class="fx-btn wm-pos-btn on" data-pos="br" onclick="setWmPos('br',this)">↘</button>
+      <button class="fx-btn wm-pos-btn" data-pos="br" onclick="setWmPos('br',this)">↘</button>
     </div>
-    <div class="ts-row"><label>大小</label><input type="range" id="wm-size" min="5" max="60" value="18" style="flex:1" oninput="updateWm()"><span id="wm-size-v" style="font-size:10px;color:var(--text2);min-width:34px">18%</span></div>
+    <div class="ts-row"><label>大小</label><input type="range" id="wm-size" min="5" max="60" value="26" style="flex:1" oninput="updateWm()"><span id="wm-size-v" style="font-size:10px;color:var(--text2);min-width:34px">26%</span></div>
     <div class="ts-row"><label>透明度</label><input type="range" id="wm-op" min="10" max="100" value="85" style="flex:1" oninput="updateWm()"><span id="wm-op-v" style="font-size:10px;color:var(--text2);min-width:34px">85%</span></div>
     <div class="ts-row"><label style="display:flex;align-items:center;gap:6px;min-width:auto"><input type="checkbox" id="wm-shadow" checked onchange="updateWm()">陰影（淺底也看得見）</label></div>
     <div class="fx-hint" style="margin-top:4px">浮水印會套用到整支影片，並在匯出時一起輸出。用下方「截取此格」可先看單格效果。</div>
@@ -651,7 +651,7 @@ let S={
   color:{br:0,co:0,sa:0,hu:0,bl:0},
   text:{font:'Noto Sans TC',size:48,color:'#ffffff',bold:false,strokeColor:'#000000',strokeWidth:0,boxOn:false,boxColor:'#000000',boxWidth:3,boxRadius:8,bgColor:'#000000',bgOpacity:0,shadowOn:false,shadowColor:'#000000',shadowBlur:6},
   expFmt:'mp4',expQual:'high',expRes:'canvas',
-  watermark:{on:false,logo:'redwhite',pos:'br',size:18,opacity:85,shadow:true},
+  watermark:{on:false,logo:'color',pos:'tr',size:26,opacity:85,shadow:true},
   faceBlur:{on:false,strength:12,boxes:[],_resolve:null,_busy:false},
   ffLoaded:false,processing:false,capturing:false,
 };
@@ -844,10 +844,11 @@ function currentWmImg(){return S.watermark.logo==='custom'?wmCustomImg:wmImgs[S.
 function drawWatermark(ctx,cw,ch){
   const wm=S.watermark;if(!wm.on)return;
   const img=currentWmImg();if(!img||!img.complete||!img.naturalWidth)return;
-  const w=cw*wm.size/100,h=w*img.naturalHeight/img.naturalWidth,m=cw*0.03;
+  // 範例比例：x 邊距=寬×0.8%、y 邊距=高×3%（與小助手壓製公式一致）
+  const w=cw*wm.size/100,h=w*img.naturalHeight/img.naturalWidth,mx=cw*0.008,my=ch*0.03;
   const vert=wm.pos[0],horiz=wm.pos[1];
-  const x=horiz==='l'?m:horiz==='r'?cw-w-m:(cw-w)/2;
-  const y=vert==='t'?m:vert==='b'?ch-h-m:(ch-h)/2;
+  const x=horiz==='l'?mx:horiz==='r'?cw-w-mx:(cw-w)/2;
+  const y=vert==='t'?my:vert==='b'?ch-h-my:(ch-h)/2;
   ctx.save();
   ctx.globalAlpha*=wm.opacity/100;
   if(wm.shadow){ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=Math.max(2,cw*0.005);ctx.shadowOffsetY=Math.max(1,cw*0.002);}

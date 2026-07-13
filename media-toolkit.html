@@ -1147,10 +1147,10 @@ if (!self.crossOriginIsolated) {
         <div class="trim-bit-row">
           <span class="trim-bit-lbl">大小</span>
           <select class="fmt-select wm-size-sel" style="margin-bottom:0">
-            <option value="80">小（80px）</option>
-            <option value="120" selected>中（120px）</option>
-            <option value="180">大（180px）</option>
-            <option value="250">特大（250px）</option>
+            <option value="18">小（佔畫面寬 18%）</option>
+            <option value="22">中（佔畫面寬 22%）</option>
+            <option value="26" selected>標準（佔畫面寬 26%・範例）</option>
+            <option value="32">大（佔畫面寬 32%）</option>
           </select>
         </div>
       </div>
@@ -2662,7 +2662,7 @@ window.dispatchEvent(new Event('transcription-ready'));
       if (Math.abs(pvVideo.currentTime - t) > 0.05) pvVideo.currentTime = t; // -> seeked -> draw
       else drawWmPreview();
     }
-    // Overlay matches the FFmpeg filter exactly: logo width = size(px), 20px margin, native pixels
+    // Overlay matches the FFmpeg filter exactly: logo width = W×size%, margins x=W×0.8% / y=H×3%（範例比例）
     function drawWmPreview() {
       if (!pvVideo || !pvVideo.videoWidth) return;
       var W = pvVideo.videoWidth, H = pvVideo.videoHeight;
@@ -2673,11 +2673,12 @@ window.dispatchEvent(new Event('transcription-ready'));
         var posBtn = card.querySelector('.wm-pos-btn.active');
         var pos = posBtn ? posBtn.dataset.pos : 'tr';
         var sizeSel = card.querySelector('.wm-size-sel');
-        var lw = parseInt(sizeSel ? sizeSel.value : '120') || 120;
+        var pct = parseInt(sizeSel ? sizeSel.value : '26') || 26;
+        var lw = W * pct / 100;
         var lh = lw * logoImg.naturalHeight / logoImg.naturalWidth;
-        var m = 20;
-        var x = (pos === 'tl' || pos === 'bl') ? m : W - lw - m;
-        var y = (pos === 'tl' || pos === 'tr') ? m : H - lh - m;
+        var mx = W * 0.008, my = H * 0.03;
+        var x = (pos === 'tl' || pos === 'bl') ? mx : W - lw - mx;
+        var y = (pos === 'tl' || pos === 'tr') ? my : H - lh - my;
         ctx.drawImage(logoImg, x, y, lw, lh);
       }
       if (pvWrap) pvWrap.style.display = '';
@@ -2691,6 +2692,7 @@ window.dispatchEvent(new Event('transcription-ready'));
       sizeEl.textContent = fmtBytes(f.size);
       bar.style.width = '0%'; errEl.textContent = '';
       buildPvVideo(f);
+      if (!logoFile) applyPreset('color'); // 預設自動帶入光田全彩
       updateReady();
     }
 
@@ -2718,22 +2720,22 @@ window.dispatchEvent(new Event('transcription-ready'));
         applyLogo(logoInput.files[0], logoInput.files[0].name);
       }
     });
-    // 光田 LOGO 預設（檔案已隨站台部署，同源可直接取用）
+    // 光田 LOGO 預設（檔案已隨站台部署，同源可直接取用）；拖入影片時自動帶入「全彩」
     var PRESET_LABEL = { color:'全彩', redwhite:'紅標白字', white:'全白' };
+    async function applyPreset(key) {
+      logoNameEl.textContent = '載入光田 LOGO 中…';
+      try {
+        var resp = await fetch('./ktgh-logo-' + key + '.png');
+        if (!resp.ok) throw new Error('logo not found');
+        var blob = await resp.blob();
+        card.querySelectorAll('.wm-preset').forEach(function(b){ b.style.outline = (b.dataset.preset === key) ? '2px solid var(--indigo, #6366f1)' : ''; });
+        applyLogo(new File([blob], 'ktgh-logo-' + key + '.png', { type:'image/png' }), '光田 LOGO（' + PRESET_LABEL[key] + '）');
+      } catch(e) { logoNameEl.textContent = '光田 LOGO 載入失敗，請改用自訂上傳'; }
+    }
     card.querySelectorAll('.wm-preset').forEach(function(btn) {
-      btn.addEventListener('click', async function() {
-        var key = btn.dataset.preset;
-        logoNameEl.textContent = '載入光田 LOGO 中…';
-        try {
-          var resp = await fetch('./ktgh-logo-' + key + '.png');
-          if (!resp.ok) throw new Error('logo not found');
-          var blob = await resp.blob();
-          card.querySelectorAll('.wm-preset').forEach(function(b){ b.style.outline=''; });
-          btn.style.outline = '2px solid var(--indigo, #6366f1)';
-          applyLogo(new File([blob], 'ktgh-logo-' + key + '.png', { type:'image/png' }), '光田 LOGO（' + PRESET_LABEL[key] + '）');
-        } catch(e) { logoNameEl.textContent = '光田 LOGO 載入失敗，請改用自訂上傳'; }
-      });
+      btn.addEventListener('click', function() { applyPreset(btn.dataset.preset); });
     });
+    card._wmApplyPreset = applyPreset;
 
     card.querySelectorAll('.wm-pos-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -2776,7 +2778,7 @@ window.dispatchEvent(new Event('transcription-ready'));
         var posBtn = card.querySelector('.wm-pos-btn.active');
         var pos = posBtn ? posBtn.dataset.pos : 'tr';
         var sizeSel = card.querySelector('.wm-size-sel');
-        var logoW = sizeSel ? sizeSel.value : '120';
+        var pct = ((parseInt(sizeSel ? sizeSel.value : '26') || 26) / 100).toFixed(2);
         var inExt = getExt(file.name), logoExt = getExt(logoFile.name);
         var inN = 'in.' + inExt, logoN = 'logo.' + logoExt, outN = 'out.mp4';
         try { ff.FS('unlink', inN); } catch(e) {}
@@ -2785,8 +2787,9 @@ window.dispatchEvent(new Event('transcription-ready'));
         ff.FS('writeFile', inN, await fetchFile(file));
         ff.FS('writeFile', logoN, await fetchFile(logoFile));
         bar.style.width = '25%';
-        var overlayPos = { tl:'20:20', tr:'W-w-20:20', bl:'20:H-h-20', br:'W-w-20:H-h-20' }[pos] || 'W-w-20:20';
-        var filter = '[1:v]scale=' + logoW + ':-1[logo];[0:v][logo]overlay=' + overlayPos;
+        // 與預覽同公式：LOGO 寬 = 影片寬×size%，邊距 x=W×0.8%、y=H×3%（範例比例）
+        var overlayPos = { tl:'W*0.008:H*0.03', tr:'W-w-W*0.008:H*0.03', bl:'W*0.008:H-h-H*0.03', br:'W-w-W*0.008:H-h-H*0.03' }[pos] || 'W-w-W*0.008:H*0.03';
+        var filter = '[1:v][0:v]scale2ref=w=iw*' + pct + ':h=ow/mdar[logo][base];[base][logo]overlay=' + overlayPos;
         await ff.run(
           '-i', inN, '-i', logoN,
           '-filter_complex', filter,
@@ -6444,7 +6447,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.12.1</span><span class="ver-date">更新於 2026-07-13 17:40</span>
+  <span class="ver">v1.12.1</span><span class="ver-date">更新於 2026-07-13 21:45</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
