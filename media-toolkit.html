@@ -1147,10 +1147,10 @@ if (!self.crossOriginIsolated) {
         <div class="trim-bit-row">
           <span class="trim-bit-lbl">大小</span>
           <select class="fmt-select wm-size-sel" style="margin-bottom:0">
-            <option value="12">小（佔畫面寬 12%）</option>
-            <option value="16" selected>標準（佔畫面寬 16%・範例）</option>
-            <option value="20">中（佔畫面寬 20%）</option>
-            <option value="26">大（佔畫面寬 26%）</option>
+            <option value="10">小（佔畫面寬 10%）</option>
+            <option value="13" selected>標準（佔畫面寬 13%・範例）</option>
+            <option value="16">中（佔畫面寬 16%）</option>
+            <option value="20">大（佔畫面寬 20%）</option>
           </select>
         </div>
       </div>
@@ -2673,10 +2673,10 @@ window.dispatchEvent(new Event('transcription-ready'));
         var posBtn = card.querySelector('.wm-pos-btn.active');
         var pos = posBtn ? posBtn.dataset.pos : 'tr';
         var sizeSel = card.querySelector('.wm-size-sel');
-        var pct = parseInt(sizeSel ? sizeSel.value : '16') || 16;
+        var pct = parseInt(sizeSel ? sizeSel.value : '13') || 13;
         var lw = W * pct / 100;
         var lh = lw * logoImg.naturalHeight / logoImg.naturalWidth;
-        var mx = W * 0.012, my = H * 0.032;
+        var mx = W * 0.008, my = H * 0.04;
         var x = (pos === 'tl' || pos === 'bl') ? mx : W - lw - mx;
         var y = (pos === 'tl' || pos === 'tr') ? my : H - lh - my;
         ctx.drawImage(logoImg, x, y, lw, lh);
@@ -2778,7 +2778,7 @@ window.dispatchEvent(new Event('transcription-ready'));
         var posBtn = card.querySelector('.wm-pos-btn.active');
         var pos = posBtn ? posBtn.dataset.pos : 'tr';
         var sizeSel = card.querySelector('.wm-size-sel');
-        var pct = ((parseInt(sizeSel ? sizeSel.value : '16') || 16) / 100).toFixed(2);
+        var pct = ((parseInt(sizeSel ? sizeSel.value : '13') || 13) / 100).toFixed(2);
         var inExt = getExt(file.name), logoExt = getExt(logoFile.name);
         var inN = 'in.' + inExt, logoN = 'logo.' + logoExt, outN = 'out.mp4';
         try { ff.FS('unlink', inN); } catch(e) {}
@@ -2788,7 +2788,7 @@ window.dispatchEvent(new Event('transcription-ready'));
         ff.FS('writeFile', logoN, await fetchFile(logoFile));
         bar.style.width = '25%';
         // 與預覽同公式：LOGO 寬 = 影片寬×size%，邊距 x=W×1.2%、y=H×3.2%
-        var overlayPos = { tl:'W*0.012:H*0.032', tr:'W-w-W*0.012:H*0.032', bl:'W*0.012:H-h-H*0.032', br:'W-w-W*0.012:H-h-H*0.032' }[pos] || 'W-w-W*0.012:H*0.032';
+        var overlayPos = { tl:'W*0.008:H*0.04', tr:'W-w-W*0.008:H*0.04', bl:'W*0.008:H-h-H*0.04', br:'W-w-W*0.008:H-h-H*0.04' }[pos] || 'W-w-W*0.008:H*0.04';
         var filter = '[1:v][0:v]scale2ref=w=iw*' + pct + ':h=ow/mdar[logo][base];[base][logo]overlay=' + overlayPos;
         await ff.run(
           '-i', inN, '-i', logoN,
@@ -6447,7 +6447,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.12.1</span><span class="ver-date">更新於 2026-07-13 22:54</span>
+  <span class="ver">v1.12.1</span><span class="ver-date">更新於 2026-07-13 23:00</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
