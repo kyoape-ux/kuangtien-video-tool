@@ -1154,6 +1154,14 @@ if (!self.crossOriginIsolated) {
           </select>
         </div>
       </div>
+      <div class="wm-preview" style="display:none;margin-top:10px">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:5px">預覽此格（與實際輸出位置一致）</div>
+        <canvas class="wm-preview-cv" style="width:100%;border-radius:8px;display:block;background:#000"></canvas>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+          <span style="font-size:11px;color:var(--text2);white-space:nowrap">預覽時間</span>
+          <input type="range" class="wm-preview-time" min="0" max="100" value="20" style="flex:1">
+        </div>
+      </div>
       <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">壓製浮水印中...</div></div>
       <div class="error-msg"></div>
       <button class="tool-btn start-btn" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-bolt"/></svg>開始壓製</button>
@@ -2611,11 +2619,68 @@ window.dispatchEvent(new Event('transcription-ready'));
     var resetBtn = card.querySelector('.reset-btn');
     var errEl = card.querySelector('.error-msg');
     var logoFile = null;
+    // 預覽此格
+    var logoImg = null, logoUrl = null;
+    var pvWrap = card.querySelector('.wm-preview');
+    var pvCv = card.querySelector('.wm-preview-cv');
+    var pvTime = card.querySelector('.wm-preview-time');
+    var pvVideo = null, pvUrl = null;
 
     function updateReady() {
       var ready = !!fileMap.get(card) && !!logoFile;
       if (ready) { card.classList.add('wm-ready'); startBtn.style.display = ''; }
       else { card.classList.remove('wm-ready'); startBtn.style.display = 'none'; }
+      if (fileMap.get(card) && logoImg) { if (pvWrap) pvWrap.style.display = ''; renderWmPreview(); }
+      else if (pvWrap) pvWrap.style.display = 'none';
+    }
+
+    function applyLogo(file, label) {
+      logoFile = file;
+      if (logoUrl) URL.revokeObjectURL(logoUrl);
+      logoUrl = URL.createObjectURL(file);
+      logoImg = new Image();
+      logoImg.onload = function() { updateReady(); drawWmPreview(); };
+      logoImg.src = logoUrl;
+      logoNameEl.textContent = label;
+      updateReady();
+    }
+
+    function buildPvVideo(file) {
+      if (pvUrl) URL.revokeObjectURL(pvUrl);
+      pvUrl = URL.createObjectURL(file);
+      pvVideo = document.createElement('video');
+      pvVideo.muted = true; pvVideo.preload = 'auto'; pvVideo.playsInline = true;
+      pvVideo.src = pvUrl;
+      pvVideo.addEventListener('loadeddata', function() { renderWmPreview(); });
+      pvVideo.addEventListener('seeked', function() { drawWmPreview(); });
+    }
+    function renderWmPreview() {
+      if (!pvVideo || !fileMap.get(card)) return;
+      var dur = pvVideo.duration;
+      if (!dur || isNaN(dur)) return;
+      var t = (parseInt(pvTime.value) || 0) / 100 * dur;
+      if (Math.abs(pvVideo.currentTime - t) > 0.05) pvVideo.currentTime = t; // -> seeked -> draw
+      else drawWmPreview();
+    }
+    // Overlay matches the FFmpeg filter exactly: logo width = size(px), 20px margin, native pixels
+    function drawWmPreview() {
+      if (!pvVideo || !pvVideo.videoWidth) return;
+      var W = pvVideo.videoWidth, H = pvVideo.videoHeight;
+      pvCv.width = W; pvCv.height = H;
+      var ctx = pvCv.getContext('2d');
+      ctx.drawImage(pvVideo, 0, 0, W, H);
+      if (logoImg && logoImg.complete && logoImg.naturalWidth) {
+        var posBtn = card.querySelector('.wm-pos-btn.active');
+        var pos = posBtn ? posBtn.dataset.pos : 'tr';
+        var sizeSel = card.querySelector('.wm-size-sel');
+        var lw = parseInt(sizeSel ? sizeSel.value : '120') || 120;
+        var lh = lw * logoImg.naturalHeight / logoImg.naturalWidth;
+        var m = 20;
+        var x = (pos === 'tl' || pos === 'bl') ? m : W - lw - m;
+        var y = (pos === 'tl' || pos === 'tr') ? m : H - lh - m;
+        ctx.drawImage(logoImg, x, y, lw, lh);
+      }
+      if (pvWrap) pvWrap.style.display = '';
     }
 
     function setFile(f) {
@@ -2625,15 +2690,20 @@ window.dispatchEvent(new Event('transcription-ready'));
       nameEl.textContent = f.name;
       sizeEl.textContent = fmtBytes(f.size);
       bar.style.width = '0%'; errEl.textContent = '';
+      buildPvVideo(f);
       updateReady();
     }
 
     function reset() {
       fileMap.delete(card); logoFile = null;
-      logoNameEl.textContent = '尚未選擇（PNG 透明背景建議）';
+      logoNameEl.textContent = '預設光田 LOGO，或上傳自訂（PNG 透明背景建議）';
       var prevUrl = blobMap.get(card);
       if (prevUrl) URL.revokeObjectURL(prevUrl);
       blobMap.delete(card);
+      if (logoUrl) { URL.revokeObjectURL(logoUrl); logoUrl = null; } logoImg = null;
+      if (pvUrl) { URL.revokeObjectURL(pvUrl); pvUrl = null; } pvVideo = null;
+      if (pvWrap) pvWrap.style.display = 'none';
+      card.querySelectorAll('.wm-preset').forEach(function(b){ b.style.outline=''; });
       card.classList.remove('has-file','done','has-error','processing','wm-ready');
       if (input) input.value = '';
       if (logoInput) logoInput.value = '';
@@ -2644,10 +2714,8 @@ window.dispatchEvent(new Event('transcription-ready'));
     logoBtn.addEventListener('click', function() { logoInput.click(); });
     logoInput.addEventListener('change', function() {
       if (logoInput.files[0]) {
-        logoFile = logoInput.files[0];
-        logoNameEl.textContent = logoFile.name;
         card.querySelectorAll('.wm-preset').forEach(function(b){ b.style.outline=''; });
-        updateReady();
+        applyLogo(logoInput.files[0], logoInput.files[0].name);
       }
     });
     // 光田 LOGO 預設（檔案已隨站台部署，同源可直接取用）
@@ -2660,11 +2728,9 @@ window.dispatchEvent(new Event('transcription-ready'));
           var resp = await fetch('./ktgh-logo-' + key + '.png');
           if (!resp.ok) throw new Error('logo not found');
           var blob = await resp.blob();
-          logoFile = new File([blob], 'ktgh-logo-' + key + '.png', { type:'image/png' });
-          logoNameEl.textContent = '光田 LOGO（' + PRESET_LABEL[key] + '）';
           card.querySelectorAll('.wm-preset').forEach(function(b){ b.style.outline=''; });
           btn.style.outline = '2px solid var(--indigo, #6366f1)';
-          updateReady();
+          applyLogo(new File([blob], 'ktgh-logo-' + key + '.png', { type:'image/png' }), '光田 LOGO（' + PRESET_LABEL[key] + '）');
         } catch(e) { logoNameEl.textContent = '光田 LOGO 載入失敗，請改用自訂上傳'; }
       });
     });
@@ -2673,8 +2739,12 @@ window.dispatchEvent(new Event('transcription-ready'));
       btn.addEventListener('click', function() {
         card.querySelectorAll('.wm-pos-btn').forEach(function(b) { b.classList.remove('active'); });
         btn.classList.add('active');
+        drawWmPreview();
       });
     });
+    var wmSizeSel = card.querySelector('.wm-size-sel');
+    if (wmSizeSel) wmSizeSel.addEventListener('change', function() { drawWmPreview(); });
+    if (pvTime) pvTime.addEventListener('input', function() { renderWmPreview(); });
 
     if (dropArea) {
       dropArea.addEventListener('click', function() { input.click(); });
@@ -6374,7 +6444,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.12.1</span><span class="ver-date">更新於 2026-07-13 17:31</span>
+  <span class="ver">v1.12.1</span><span class="ver-date">更新於 2026-07-13 17:40</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
