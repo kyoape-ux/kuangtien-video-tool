@@ -411,7 +411,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.29 · 2026-08-15 19:10</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.30 · 2026-08-15 20:00</div>
     </div>
   </nav>
 
@@ -561,6 +561,9 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <div class="form-group"><label>內容類別</label>
           <select id="f-cat"><option value="疾病衛教">疾病衛教</option><option value="特色醫療">特色醫療</option><option value="新服務流程">新服務流程</option><option value="醫院形象">醫院形象</option><option value="員工活動">員工活動</option><option value="教學">教學</option><option value="其他">其他</option></select>
         </div>
+        <div class="form-group"><label>影片系列</label>
+          <select id="f-series"><option value="">— 未指定 —</option><option value="藏鏡人">藏鏡人</option><option value="光小編出任務">光小編出任務</option><option value="光田醫點通">光田醫點通</option><option value="光田e學院">光田e學院</option><option value="健康人文藝術講座">健康人文藝術講座</option><option value="其他">其他</option></select>
+        </div>
         <div class="form-group"><label>影片時長</label><input type="text" id="f-dur" placeholder="例：3:25"></div>
         <div class="form-group"><label>負責企劃</label><input type="text" id="f-planner" placeholder="企劃人員"></div>
         <div class="form-group"><label>影片製作</label><input type="text" id="f-producer" placeholder="製作人員"></div>
@@ -642,14 +645,16 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <input type="text" id="search-input" placeholder="搜尋標題、企劃、製作..." oninput="renderList()">
         <select id="filter-type" onchange="renderList()"><option value="">全部類型</option><option value="short">Short</option><option value="long">Long</option></select>
         <select id="filter-cat" onchange="renderList()"><option value="">全部類別</option><option value="疾病衛教">疾病衛教</option><option value="特色醫療">特色醫療</option><option value="新服務流程">新服務流程</option><option value="醫院形象">醫院形象</option><option value="員工活動">員工活動</option><option value="教學">教學</option><option value="其他">其他</option></select>
+        <select id="filter-series" onchange="renderList()"><option value="">全部系列</option><option value="藏鏡人">藏鏡人</option><option value="光小編出任務">光小編出任務</option><option value="光田醫點通">光田醫點通</option><option value="光田e學院">光田e學院</option><option value="健康人文藝術講座">健康人文藝術講座</option><option value="其他">其他</option><option value="__none__">（未指定系列）</option></select>
         <select id="filter-month" onchange="renderList()"><option value="">全部月份</option></select>
+        <button class="btn btn-sm write-only" onclick="scanVideoSeries()" style="background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25);" title="依標題自動辨識影片系列，確認後批次套用">自動辨識系列</button>
         <button class="btn btn-sm" onclick="batchUpdateYt()" style="background:rgba(255,68,68,.12);color:var(--yt);border:1px solid rgba(255,68,68,.2);">批次更新 YT 數據</button>
         <button class="btn btn-secondary btn-sm" onclick="document.getElementById('csv-import').click()">匯入 YT Studio CSV</button>
         <input type="file" id="csv-import" accept=".csv" style="display:none;" onchange="importYtStudioCSV(this)">
         <button class="btn btn-secondary btn-sm" onclick="exportCSV()">匯出 CSV</button>
       </div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>狀態</th><th>日期</th><th>標題</th><th>類型</th><th>類別</th><th>全平台觀看</th><th>數據日期</th><th>企劃</th><th>操作</th></tr></thead>
+        <table><thead><tr><th>狀態</th><th>日期</th><th>標題</th><th>系列</th><th>類型</th><th>類別</th><th>全平台觀看</th><th>數據日期</th><th>企劃</th><th>操作</th></tr></thead>
         <tbody id="video-tbody"></tbody></table>
       </div>
       <div id="list-empty" style="display:none;text-align:center;padding:48px;color:var(--txt3);">
@@ -728,6 +733,29 @@ tr:hover td{background:rgba(52,211,153,.03);}
           <button class="btn btn-sm" onclick="copyInsightBrief()" style="background:rgba(52,211,153,.14);color:#34d399;border:1px solid rgba(52,211,153,.3);" title="匯出全平台數據＋分析提示到剪貼簿"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>匯出分析簡報（給 AI 大腦）</button>
         </div>
         <div id="insights-body"></div>
+
+        <!-- 系列 × 月份統計 + 每月結論 -->
+        <div class="chart-box" style="margin-top:24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+            <h3 style="margin:0;"><span class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg></span>系列 × 月份 影片數量統計</h3>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="series-year" onchange="renderSeriesTable()" style="padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;background:var(--bg-2);color:var(--txt);"></select>
+              <button class="btn btn-secondary btn-sm" onclick="copySeriesTable()">複製表格</button>
+            </div>
+          </div>
+          <div id="series-table-wrap"></div>
+        </div>
+
+        <div class="chart-box" style="margin-top:20px;border-color:rgba(52,211,153,.25);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+            <h3 style="margin:0;color:#34D399;"><span class="icon" style="color:#34D399;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>每月成效結論（貼到團隊筆記本用）</h3>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="month" id="concl-month" onchange="renderMonthlyConclusion()" style="padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;background:var(--bg-2);color:var(--txt);">
+              <button class="btn btn-sm" onclick="copyMonthlyConclusion()" style="background:rgba(52,211,153,.14);color:#34d399;border:1px solid rgba(52,211,153,.3);">複製結論</button>
+            </div>
+          </div>
+          <pre id="concl-text" style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.9;color:var(--txt2);background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:0;"></pre>
+        </div>
       </div>
     </div>
 
@@ -1608,6 +1636,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <div class="form-group"><label>發布日期 *</label><input type="date" id="e-date"></div>
       <div class="form-group"><label>影片類型</label><select id="e-type"><option value="long">Long</option><option value="short">Short</option></select></div>
       <div class="form-group"><label>內容類別</label><select id="e-cat"><option value="疾病衛教">疾病衛教</option><option value="特色醫療">特色醫療</option><option value="新服務流程">新服務流程</option><option value="醫院形象">醫院形象</option><option value="員工活動">員工活動</option><option value="教學">教學</option><option value="其他">其他</option></select></div>
+      <div class="form-group"><label>影片系列</label><select id="e-series"><option value="">— 未指定 —</option><option value="藏鏡人">藏鏡人</option><option value="光小編出任務">光小編出任務</option><option value="光田醫點通">光田醫點通</option><option value="光田e學院">光田e學院</option><option value="健康人文藝術講座">健康人文藝術講座</option><option value="其他">其他</option></select></div>
       <div class="form-group"><label>影片時長</label><input type="text" id="e-dur"></div>
       <div class="form-group"><label>負責企劃</label><input type="text" id="e-planner"></div>
       <div class="form-group"><label>影片製作</label><input type="text" id="e-producer"></div>
@@ -1670,7 +1699,69 @@ tr:hover td{background:rgba(52,211,153,.03);}
 // ============================================================
 // 欄位定義
 // ============================================================
-const BASIC_FIELDS = ['title','date','dur','type','cat','planner','producer','note'];
+const BASIC_FIELDS = ['title','date','dur','type','cat','series','planner','producer','note'];
+// ── 影片系列（對應團隊規劃筆記本的節目分類）──
+const SERIES_LIST = ['藏鏡人','光小編出任務','光田醫點通','光田e學院','健康人文藝術講座','其他'];
+const SERIES_DESC = {'藏鏡人':'生活化 / 醫療迷思破解','光小編出任務':'空間設備開箱 / 暖心故事 / 街訪','光田醫點通':'健康知識、醫師訪談對談 QA','光田e學院':'新儀器 / 新技術講解','健康人文藝術講座':'活動講座側錄','其他':'未歸類'};
+const SERIES_COLOR = {'藏鏡人':'#C9922B','光小編出任務':'#C4749B','光田醫點通':'#5B9E5B','光田e學院':'#4C8BF5','健康人文藝術講座':'#C4564E','其他':'#64748B'};
+const SERIES_RULES = [
+  ['光小編出任務',[/光小編出任務/,/出任務\s*(特別篇|EP)/i,/老編出任務/]],
+  ['光田醫點通',[/醫點通/]],
+  ['光田e學院',[/e\s*學院/i,/光田醫新聞/]],
+  ['健康人文藝術講座',[/健康藝術人文系列講座/,/人文藝術講座/,/系列講座/]],
+  ['藏鏡人',[/藏鏡人/]]
+];
+function detectSeries(title){
+  const t=String(title||'');
+  const m=SERIES_RULES.find(([,ps])=>ps.some(p=>p.test(t)));
+  return m?m[0]:'';
+}
+let _seriesSug=[];
+function scanVideoSeries(){
+  if(typeof canWrite==='function'&&!canWrite()){alert('權限不足，請以組員或組長登入');return;}
+  _seriesSug=activeVideos().filter(d=>!d.series).map(d=>({id:d.id,title:d.title||'(無標題)',date:(d.date||'').substring(0,10),guess:detectSeries(d.title)}));
+  if(!_seriesSug.length){alert('✅ 所有影片都已指定系列。');return;}
+  const auto=_seriesSug.filter(x=>x.guess).length;
+  let ov=document.getElementById('series-modal');
+  if(!ov){ov=document.createElement('div');ov.id='series-modal';ov.className='modal-overlay';document.body.appendChild(ov);}
+  const opts=s=>['<option value="">— 不指定 —</option>'].concat(SERIES_LIST.map(x=>`<option value="${x}" ${x===s?'selected':''}>${x}</option>`)).join('');
+  ov.innerHTML=`<div class="modal" style="max-width:860px;">
+    <button class="close-btn" onclick="document.getElementById('series-modal').classList.remove('show')"><span class="icon" style="width:16px;height:16px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></button>
+    <h2><span class="icon" style="color:var(--accent);"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></span>自動辨識影片系列 — ${_seriesSug.length} 支待指定</h2>
+    <p style="font-size:12px;color:var(--txt3);margin-bottom:10px;">依標題自動辨識，已自動選好 <b style="color:var(--accent);">${auto}</b> 支；其餘請手動選擇（標題沒寫系列名的無法自動判斷）。</p>
+    <div style="max-height:52vh;overflow-y:auto;">
+      ${_seriesSug.map((x,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);">
+        <span style="font-size:11px;color:var(--txt3);width:76px;flex-shrink:0;">${x.date}</span>
+        <span style="flex:1;font-size:12px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(x.title)}</span>
+        <select data-i="${i}" style="width:180px;flex-shrink:0;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg-2);color:var(--txt);">${opts(x.guess)}</select>
+      </div>`).join('')}
+    </div>
+    <div class="form-actions" style="margin-top:14px;">
+      <button class="btn btn-primary" onclick="applyVideoSeries()">套用系列</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('series-modal').classList.remove('show')">取消</button>
+    </div>
+  </div>`;
+  ov.classList.add('show');
+}
+function applyVideoSeries(){
+  const ov=document.getElementById('series-modal');
+  const changed=[];
+  ov.querySelectorAll('select[data-i]').forEach(sel=>{
+    const x=_seriesSug[Number(sel.dataset.i)];if(!x||!sel.value)return;
+    const d=DATA.find(v=>v.id===x.id);if(!d)return;
+    d.series=sel.value;d.updatedAt=new Date().toISOString();changed.push(d);
+  });
+  saveData();renderAll();ov.classList.remove('show');
+  alert(`✅ 已為 ${changed.length} 支影片指定系列。`);
+  if(changed.length&&typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
+    (async()=>{let ok=0;for(const d of changed){const r=await pushToSheets('updateVideo',{data:d});if(r)ok++;showSyncBadge(`同步系列 ${ok}/${changed.length}`);}showSyncBadge(`✅ 系列已同步 ${ok}/${changed.length}`);})();
+  }
+}
+function seriesBadge(s){
+  if(!s)return '<span style="color:var(--txt3);font-size:11px;">—</span>';
+  const c=SERIES_COLOR[s]||'#64748B';
+  return `<span style="display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;background:${c}22;color:${c};white-space:nowrap;">${esc(s)}</span>`;
+}
 const YT_FIELDS = ['yt_url','yt_views','yt_likes','yt_comments','yt_imp','yt_ctr','yt_ratio','yt_avgdur'];
 const FB_FIELDS = ['fb_url','fb_views','fb_likes','fb_comments','fb_shares','fb_reach'];
 const IG_FIELDS = ['ig_url','ig_views','ig_likes','ig_comments','ig_shares','ig_reach'];
@@ -1766,6 +1857,8 @@ async function syncFromSheets(){
         if(local.deleted_at&&!row.deleted_at){row.deleted_at=local.deleted_at;row.deleted_by=local.deleted_by;}
         // 保留本機標籤（Sheets 端不一定存 tags）
         if(local.tags&&(!row.tags||(Array.isArray(row.tags)&&row.tags.length===0))){row.tags=local.tags;}
+        // 保留本機系列（Sheets 端尚未有 series 欄時不要被清空）
+        if(local.series&&!row.series){row.series=local.series;}
       }
       return row;
     });
@@ -2988,7 +3081,7 @@ function renderInsightsTabs(){
   tb.innerHTML=cfg.map(([k,l])=>`<button onclick="setInsightsPlat('${k}')" style="padding:5px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:.12s;${k===insightsPlat?'background:var(--accent);color:#000;':'background:transparent;color:var(--txt3);'}">${l}</button>`).join('');
 }
 function renderInsights(){
-  renderInsightsTabs();
+  renderInsightsTabs();renderSeriesTable();renderMonthlyConclusion();
   const box=document.getElementById('insights-body');if(!box)return;
   if(insightsPlat==='yt'){renderInsightsYt(box);return;}
   const cfgs={
@@ -2998,6 +3091,137 @@ function renderInsights(){
   };
   renderInsightsGeneric(box,cfgs[insightsPlat]);
 }
+// ── 系列 × 月份統計 ──────────────────────────────────
+function seriesMatrix(yr){
+  const AV=activeVideos().filter(d=>(d.date||'').startsWith(String(yr)));
+  const rows=SERIES_LIST.map(s=>{
+    const months=Array.from({length:12},(_,i)=>{
+      const m=`${yr}-${String(i+1).padStart(2,'0')}`;
+      return AV.filter(d=>(d.date||'').startsWith(m)&&(d.series||'其他')===s).length;
+    });
+    return {s,months,total:months.reduce((a,b)=>a+b,0)};
+  });
+  const unset=Array.from({length:12},(_,i)=>{
+    const m=`${yr}-${String(i+1).padStart(2,'0')}`;
+    return AV.filter(d=>(d.date||'').startsWith(m)&&!d.series).length;
+  });
+  return {rows,unset,unsetTotal:unset.reduce((a,b)=>a+b,0)};
+}
+function renderSeriesTable(){
+  const sel=document.getElementById('series-year');if(!sel)return;
+  if(!sel.dataset.built){
+    const ys=[...new Set(activeVideos().map(d=>(d.date||'').substring(0,4)).filter(Boolean))].sort().reverse();
+    const nowY=String(new Date().getFullYear());if(!ys.includes(nowY))ys.unshift(nowY);
+    sel.innerHTML=ys.map(y=>`<option value="${y}">${y} 年</option>`).join('');
+    sel.value=nowY;sel.dataset.built='1';
+  }
+  const yr=sel.value;
+  const {rows,unset,unsetTotal}=seriesMatrix(yr);
+  const colTotals=Array.from({length:12},(_,i)=>rows.reduce((s,r)=>s+r.months[i],0));
+  const grand=colTotals.reduce((a,b)=>a+b,0);
+  document.getElementById('series-table-wrap').innerHTML=`
+    <div class="tbl-wrap"><table><thead><tr>
+      <th style="text-align:left;">節目</th>${Array.from({length:12},(_,i)=>`<th>${i+1}月</th>`).join('')}<th>合計</th>
+    </tr></thead><tbody>
+    ${rows.map(r=>`<tr>
+      <td style="text-align:left;">${seriesBadge(r.s)}<div style="font-size:10px;color:var(--txt3);margin-top:2px;">${SERIES_DESC[r.s]||''}</div></td>
+      ${r.months.map(v=>`<td style="font-variant-numeric:tabular-nums;color:${v?'var(--txt)':'var(--txt3)'};">${v||''}</td>`).join('')}
+      <td style="font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent);">${r.total}</td>
+    </tr>`).join('')}
+    <tr style="background:var(--bg-2);"><td style="text-align:left;font-weight:700;">每月總計</td>
+      ${colTotals.map(v=>`<td style="font-weight:700;font-variant-numeric:tabular-nums;">${v||''}</td>`).join('')}
+      <td style="font-weight:900;color:var(--accent);">${grand}</td></tr>
+    </tbody></table></div>
+    ${unsetTotal?`<div style="font-size:11px;color:var(--amber);margin-top:10px;">⚠️ 尚有 ${unsetTotal} 支未指定系列（已計入「其他」）。可到「影片列表 → 自動辨識系列」批次補上。</div>`:''}`;
+}
+function copySeriesTable(){
+  const yr=document.getElementById('series-year').value;
+  const {rows}=seriesMatrix(yr);
+  const head=['節目',...Array.from({length:12},(_,i)=>`${i+1}月`),'合計'].join('\t');
+  const body=rows.map(r=>[r.s,...r.months,r.total].join('\t')).join('\n');
+  const colTotals=Array.from({length:12},(_,i)=>rows.reduce((s,r)=>s+r.months[i],0));
+  const foot=['每月總計',...colTotals,colTotals.reduce((a,b)=>a+b,0)].join('\t');
+  const t=`${yr} 光田影音團隊｜影片數量統計\n${head}\n${body}\n${foot}`;
+  const done=()=>alert('✅ 表格已複製（Tab 分隔）。\n\n貼到 Google 試算表會自動分欄。');
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));
+  else fallbackCopy(t,done);
+}
+// ── 每月成效結論 ──────────────────────────────────────
+function buildMonthlyConclusion(ym){
+  const isAd=d=>/廣告|贊助|投放/.test(String(d.title||''));
+  const med=a=>{const x=a.filter(v=>!isNaN(v)).sort((p,q)=>p-q);if(!x.length)return 0;const m=Math.floor(x.length/2);return Math.round(x.length%2?x[m]:(x[m-1]+x[m])/2);};
+  const sum=(a,f)=>a.reduce((s,d)=>s+(Number(f(d))||0),0);
+  const all=activeVideos().filter(d=>(d.date||'').substring(0,7)===ym);
+  const vids=all.filter(d=>!isAd(d));
+  if(!vids.length)return `${ym} 尚無影片資料。`;
+  const [y,m]=ym.split('-');
+  const locked=vids.filter(d=>getVideoStatus(d)==='locked');
+  const collecting=vids.filter(d=>getVideoStatus(d)==='collecting');
+  const shorts=vids.filter(d=>d.type==='short'),longs=vids.filter(d=>d.type!=='short');
+  const tv=sum(vids,totalViews);
+  // 上月比較
+  const pd=new Date(parseInt(y),parseInt(m)-2,1);
+  const prevYm=`${pd.getFullYear()}-${String(pd.getMonth()+1).padStart(2,'0')}`;
+  const prev=activeVideos().filter(d=>(d.date||'').substring(0,7)===prevYm&&!isAd(d));
+  const prevV=sum(prev,totalViews);
+  const mom=prevV>0?Math.round((tv-prevV)/prevV*100):null;
+  const best=[...vids].sort((a,b)=>totalViews(b)-totalViews(a))[0];
+  const domOf=d=>{const a=Number(d.yt_views)||0,b=Number(d.fb_views)||0,c=Number(d.ig_views)||0,t=a+b+c;if(!t)return '';const x=Math.max(a,b,c);return `${x===a?'YouTube':x===c?'Instagram':'Facebook'} 佔 ${Math.round(x/t*100)}%`;};
+  // 系列表現
+  const sm={};vids.forEach(d=>{const s=d.series||'其他';(sm[s]=sm[s]||[]).push(d);});
+  const sRank=Object.entries(sm).map(([s,a])=>({s,n:a.length,m:med(a.map(totalViews))})).sort((a,b)=>b.m-a.m);
+  const L=[];
+  L.push(`【${y} 年 ${parseInt(m)} 月 影片成效結論】`);
+  L.push('');
+  L.push(`本月共發布 ${vids.length} 支影片（已定案 ${locked.length} 支、統計中 ${collecting.length} 支）${all.length-vids.length?`，另有 ${all.length-vids.length} 支投放廣告未列入自然成效`:''}。`);
+  L.push(`全平台觀看合計 ${tv.toLocaleString()}${mom!==null?`，較上月${mom>=0?'成長':'下降'} ${Math.abs(mom)}%`:''}。`);
+  L.push('');
+  L.push(`◆ 格式表現`);
+  L.push(`　Short ${shorts.length} 支，觀看中位數 ${med(shorts.map(totalViews)).toLocaleString()}`);
+  L.push(`　Long ${longs.length} 支，觀看中位數 ${med(longs.map(totalViews)).toLocaleString()}`);
+  if(shorts.length&&longs.length&&med(longs.map(totalViews))>0){
+    L.push(`　→ Short 約為 Long 的 ${Math.round(med(shorts.map(totalViews))/Math.max(med(longs.map(totalViews)),1))} 倍。Long 定位為存檔與搜尋需求，不與 Short 比觀看量。`);
+  }
+  if(sRank.length){
+    L.push('');
+    L.push(`◆ 系列表現（觀看中位數）`);
+    sRank.forEach(r=>L.push(`　${r.s}：${r.n} 支，中位數 ${r.m.toLocaleString()}`));
+  }
+  if(best){
+    L.push('');
+    L.push(`◆ 本月最佳`);
+    L.push(`　${best.title||''}`);
+    L.push(`　${totalViews(best).toLocaleString()} 觀看${domOf(best)?`（${domOf(best)}）`:''}`);
+  }
+  const pv={YouTube:sum(vids,d=>d.yt_views),Facebook:sum(vids,d=>d.fb_views),Instagram:sum(vids,d=>d.ig_views)};
+  const pAll=pv.YouTube+pv.Facebook+pv.Instagram;
+  if(pAll){
+    L.push('');
+    L.push(`◆ 平台佔比`);
+    L.push(`　YouTube ${Math.round(pv.YouTube/pAll*100)}%　Facebook ${Math.round(pv.Facebook/pAll*100)}%　Instagram ${Math.round(pv.Instagram/pAll*100)}%`);
+  }
+  L.push('');
+  L.push(`◆ 下月方向`);
+  if(sRank.length>1)L.push(`　1. 加碼「${sRank[0].s}」（本月中位數最高），檢討「${sRank[sRank.length-1].s}」的選題角度。`);
+  if(shorts.length&&longs.length&&med(shorts.map(totalViews))>med(longs.map(totalViews))*3)L.push(`　${sRank.length>1?2:1}. 觸及主力持續放在 Short；長講座保留存檔並另拆 Short 發布。`);
+  const topP=Object.entries(pv).sort((a,b)=>b[1]-a[1])[0];
+  if(topP&&topP[1]>0)L.push(`　${(sRank.length>1?1:0)+(shorts.length&&longs.length?1:0)+1}. ${topP[0]} 為主要觀看來源，同題材依平台改寫開頭與標題，避免三平台原封不動上架。`);
+  if(collecting.length)L.push('');
+  if(collecting.length)L.push(`※ ${collecting.length} 支發布未滿 1 個月，數據仍在累積，將於下月結論納入。`);
+  return L.join('\n');
+}
+function renderMonthlyConclusion(){
+  const el=document.getElementById('concl-month');if(!el)return;
+  if(!el.value){const n=new Date();const d=new Date(n.getFullYear(),n.getMonth()-1,1);el.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+  document.getElementById('concl-text').textContent=buildMonthlyConclusion(el.value);
+}
+function copyMonthlyConclusion(){
+  const t=document.getElementById('concl-text').textContent;
+  const done=()=>alert('✅ 結論已複製。\n\n可直接貼到「2026光田影音團隊規劃筆記本」的工作頁。');
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));
+  else fallbackCopy(t,done);
+}
+
 function renderInsightsGeneric(box,cfg){
   const adN=cfg.rows.filter(r=>/廣告|贊助|投放/.test(r.title||'')).length;
   const sub=(cfg.subTabs||'')+insightsToolbar(adN,false);
@@ -3249,8 +3473,8 @@ function clearForm(){ALL_FORM_FIELDS.forEach(id=>{const el=document.getElementBy
 // 影片列表
 // ============================================================
 function renderList(){
-  const s=(document.getElementById('search-input').value||'').toLowerCase(),ft=document.getElementById('filter-type').value,fc=document.getElementById('filter-cat').value,fm=document.getElementById('filter-month').value;
-  let f=activeVideos().filter(d=>{if(s&&!(d.title||'').toLowerCase().includes(s)&&!(d.planner||'').toLowerCase().includes(s)&&!(d.producer||'').toLowerCase().includes(s))return false;if(ft&&d.type!==ft)return false;if(fc&&d.cat!==fc)return false;if(fm&&!(d.date||'').startsWith(fm))return false;return true;});
+  const s=(document.getElementById('search-input').value||'').toLowerCase(),ft=document.getElementById('filter-type').value,fc=document.getElementById('filter-cat').value,fm=document.getElementById('filter-month').value,fs=document.getElementById('filter-series')?.value||'';
+  let f=activeVideos().filter(d=>{if(s&&!(d.title||'').toLowerCase().includes(s)&&!(d.planner||'').toLowerCase().includes(s)&&!(d.producer||'').toLowerCase().includes(s))return false;if(ft&&d.type!==ft)return false;if(fc&&d.cat!==fc)return false;if(fm&&!(d.date||'').startsWith(fm))return false;if(fs){if(fs==='__none__'){if(d.series)return false;}else if(d.series!==fs)return false;}return true;});
   // Sort: pending first, then collecting, then locked, then by date desc
   const statusOrder={pending:0,collecting:1,locked:2,unknown:3};
   f.sort((a,b)=>{const sa=statusOrder[getVideoStatus(a)]??3,sb=statusOrder[getVideoStatus(b)]??3;if(sa!==sb)return sa-sb;return(b.date||'').localeCompare(a.date||'');});
@@ -3259,7 +3483,7 @@ function renderList(){
   tb.innerHTML=f.map(d=>{const tv=totalViews(d),ytv=Number(d.yt_views)||0,fbv=Number(d.fb_views)||0,igv=Number(d.ig_views)||0,lk=d.yt_url||d.fb_url||d.ig_url||'';
     const st=getVideoStatus(d),sc=STATUS_CFG[st];
     const tagHtml=Array.isArray(d.tags)&&d.tags.length?`<div style="margin-top:3px;">${renderTagChips(d.tags)}</div>`:'';
-    return`<tr><td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;background:${sc.bg};color:${sc.color};">${sc.icon} ${sc.label}</span></td><td style="white-space:nowrap;">${(d.date||'').substring(0,10)||'—'}</td><td style="max-width:200px;color:#fff;">${lk?`<a href="${esc(lk)}" target="_blank" style="color:#fff;">${esc(d.title)}</a>`:esc(d.title)}${tagHtml}</td><td><span class="type-badge type-${d.type}">${d.type==='short'?'Short':'Long'}</span></td><td>${esc(d.cat||'')}</td><td><div class="views-cell"><span class="total">${tv.toLocaleString()}</span><span class="plats">${ytv?`<span style="color:var(--yt)">YT ${ytv.toLocaleString()}</span>`:''}${fbv?`<span style="color:var(--fb)">FB ${fbv.toLocaleString()}</span>`:''}${igv?`<span style="color:var(--ig)">IG ${igv.toLocaleString()}</span>`:''}</span></div></td><td style="white-space:nowrap;font-size:11px;color:var(--txt3);">${d.statsDate||'—'}</td><td>${esc(d.planner||'')}</td><td><div class="act-btns"><button class="act-btn write-only" onclick="openEdit('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button><button class="act-btn del write-only" onclick="deleteEntry('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span></button></div></td></tr>`;}).join('');
+    return`<tr><td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;background:${sc.bg};color:${sc.color};">${sc.icon} ${sc.label}</span></td><td style="white-space:nowrap;">${(d.date||'').substring(0,10)||'—'}</td><td style="max-width:200px;color:#fff;">${lk?`<a href="${esc(lk)}" target="_blank" style="color:#fff;">${esc(d.title)}</a>`:esc(d.title)}${tagHtml}</td><td>${seriesBadge(d.series)}</td><td><span class="type-badge type-${d.type}">${d.type==='short'?'Short':'Long'}</span></td><td>${esc(d.cat||'')}</td><td><div class="views-cell"><span class="total">${tv.toLocaleString()}</span><span class="plats">${ytv?`<span style="color:var(--yt)">YT ${ytv.toLocaleString()}</span>`:''}${fbv?`<span style="color:var(--fb)">FB ${fbv.toLocaleString()}</span>`:''}${igv?`<span style="color:var(--ig)">IG ${igv.toLocaleString()}</span>`:''}</span></div></td><td style="white-space:nowrap;font-size:11px;color:var(--txt3);">${d.statsDate||'—'}</td><td>${esc(d.planner||'')}</td><td><div class="act-btns"><button class="act-btn write-only" onclick="openEdit('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button><button class="act-btn del write-only" onclick="deleteEntry('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span></button></div></td></tr>`;}).join('');
 }
 function buildMonthFilter(){const ms=[...new Set(activeVideos().map(d=>(d.date||'').substring(0,7)).filter(Boolean))].sort().reverse();document.getElementById('filter-month').innerHTML='<option value="">全部月份</option>'+ms.map(m=>`<option value="${m}">${m}</option>`).join('');}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
