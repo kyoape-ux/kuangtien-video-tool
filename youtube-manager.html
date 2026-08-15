@@ -400,7 +400,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.13 · 2026-08-15 12:23</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.14 · 2026-08-15 12:40</div>
     </div>
   </nav>
 
@@ -1099,6 +1099,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
           <p>此處建立的標籤，可在影片 / IG 貼文中套用，用於跨傳達管道統計。</p>
         </div>
         <div class="page-header-right" style="display:flex;gap:8px;">
+          <button class="btn write-only" onclick="scanAutoTags()" style="background:rgba(52,211,153,.14);color:#34d399;border:1px solid rgba(52,211,153,.3);" title="掃描影片與 IG 標題，依關鍵字自動建議主題標籤，一鍵批次套用"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>自動掃描貼標</button>
           <button class="btn btn-secondary write-only" onclick="seedDefaultTags()" title="載入預設科別、中心、疾病等標籤"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>載入預設標籤組</button>
         </div>
       </div>
@@ -1951,6 +1952,108 @@ function refreshAllTagInputs(){
 // ============================================================
 // 預設標籤種子
 // ============================================================
+// ============================================================
+// 自動掃描貼標（關鍵字字典 → 建議標籤 → 一鍵確認）
+// ============================================================
+const AUTO_TAG_RULES=[
+  {tag:'心臟內科',group:'科別',kw:['心肌梗塞','心臟','胸悶','胸痛','猝死','EECP','心血管']},
+  {tag:'心肌梗塞',group:'疾病',kw:['心肌梗塞']},
+  {tag:'皮膚科',group:'科別',kw:['皮膚','肉芽','疣']},
+  {tag:'兒科',group:'科別',kw:['兒童','小孩','孩子','幼稚園','寶寶','嬰兒','育兒','新手爸媽','性早熟','兒科']},
+  {tag:'婦產科',group:'科別',kw:['婦產','子宮','月子','生理期','不孕','抹片']},
+  {tag:'腎臟內科',group:'科別',kw:['腎臟','洗腎','泡泡尿','夜尿','高血鉀','尿毒','護腎']},
+  {tag:'腸胃肝膽',group:'科別',kw:['腸胃','便祕','脹氣','腸鏡','消化','膽結石','胃食道']},
+  {tag:'大腸直腸外科',group:'科別',kw:['直腸癌','大腸癌','痔瘡','保肛','腸癌']},
+  {tag:'感染科',group:'科別',kw:['新冠','COVID','疫情','確診','流感','疫苗','腸病毒','感染']},
+  {tag:'腸病毒',group:'疾病',kw:['腸病毒']},
+  {tag:'COVID-19',group:'疾病',kw:['新冠','COVID','確診']},
+  {tag:'泌尿科',group:'科別',kw:['攝護腺','泌尿','PSA']},
+  {tag:'身心科',group:'科別',kw:['憂鬱','焦慮','壓力','情緒','內在小孩','ADHD','紓壓','心理']},
+  {tag:'神經內科',group:'科別',kw:['失智','腦中風','大腦','帕金森','腦健康']},
+  {tag:'血液腫瘤科',group:'科別',kw:['血癌','白血病','貧血']},
+  {tag:'胸腔內科',group:'科別',kw:['COPD','肺癌','肺纖維化','氣喘','六分鐘步行']},
+  {tag:'急診',group:'科別',kw:['急診','熱衰竭','中暑','CPR','AED']},
+  {tag:'運動醫學中心',group:'中心',kw:['貼紮','肌貼','連莊','排球','足弓','髕骨','運動醫學','匹克球']},
+  {tag:'營養飲食',group:'性質',kw:['營養','飲食','水果','蔬菜','血糖','熱量','粽子','荔枝','早餐','減脂','巧克力','外食']},
+  {tag:'睡眠',group:'性質',kw:['睡眠','失眠','睡姿','做夢','好眠','小夜燈']},
+  {tag:'護理職場',group:'性質',kw:['護理','護理師','徵才','職場','員工','護理長']},
+  {tag:'活動報導',group:'性質',kw:['講座','健康日','闖關','篩檢活動','GWD','globalwellnessday','報名']},
+  {tag:'季節時事',group:'性質',kw:['端午','粽子','荔枝','中暑','熱衰竭','夏天','夏季','父親節','母親節','過年','秋冬']},
+  {tag:'在地海線',group:'性質',kw:['海線','大甲','梧棲','龍井','清水']}
+];
+function autoTagSuggestFor(text,existingTags){
+  const t=String(text||'');const ex=new Set(existingTags||[]);const out=[];
+  AUTO_TAG_RULES.forEach(r=>{
+    if(ex.has(r.tag)||out.includes(r.tag))return;
+    if(r.kw.some(k=>t.toLowerCase().includes(k.toLowerCase())))out.push(r.tag);
+  });
+  return out;
+}
+let _autoTagSug=[];
+function scanAutoTags(){
+  if(typeof canWrite==='function'&&!canWrite()){alert('權限不足，請以組員或組長登入');return;}
+  _autoTagSug=[];
+  activeVideos().forEach(d=>{
+    const sug=autoTagSuggestFor(d.title,d.tags);
+    if(sug.length)_autoTagSug.push({kind:'v',id:d.id,label:'影片',title:d.title||'(無標題)',date:(d.date||'').substring(0,10),tags:sug});
+  });
+  activeIgPosts().forEach(d=>{
+    const sug=autoTagSuggestFor(d.title,d.tags);
+    if(sug.length)_autoTagSug.push({kind:'ig',id:d.id,label:'IG',title:d.title||'(無標題)',date:(d.date||'').substring(0,10),tags:sug});
+  });
+  if(!_autoTagSug.length){alert('掃描完成：沒有可建議的新標籤（可能都已貼好）。');return;}
+  let ov=document.getElementById('autotag-modal');
+  if(!ov){ov=document.createElement('div');ov.id='autotag-modal';ov.className='modal-overlay';document.body.appendChild(ov);}
+  const rows=_autoTagSug.map((s,i)=>`
+    <div style="padding:10px 0;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;">
+      <span style="flex-shrink:0;font-size:10px;padding:2px 7px;border-radius:5px;margin-top:2px;${s.kind==='v'?'background:rgba(255,68,68,.12);color:var(--yt);':'background:rgba(244,114,182,.12);color:var(--ig);'}">${s.label}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;color:var(--txt);margin-bottom:5px;"><span style="color:var(--txt3);font-size:11px;">${s.date}</span> ${esc(s.title).slice(0,48)}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${s.tags.map((t,j)=>`<label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:6px;background:var(--bg-2);border:1px solid var(--border-l);cursor:pointer;color:var(--txt2);"><input type="checkbox" checked data-i="${i}" data-j="${j}" style="accent-color:var(--accent);">${esc(t)}</label>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+  ov.innerHTML=`<div class="modal" style="max-width:820px;">
+    <button class="close-btn" onclick="document.getElementById('autotag-modal').classList.remove('show')"><span class="icon" style="width:16px;height:16px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></button>
+    <h2><span class="icon" style="color:var(--accent);"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>自動掃描貼標 — ${_autoTagSug.length} 筆建議</h2>
+    <p style="font-size:12px;color:var(--txt3);margin-bottom:8px;">依標題關鍵字自動建議，取消勾選可略過個別標籤。按「套用」批次寫入（不存在的標籤會自動建立）。</p>
+    <div style="max-height:52vh;overflow-y:auto;">${rows}</div>
+    <div class="form-actions" style="margin-top:14px;">
+      <button class="btn btn-primary" onclick="applyAutoTags()">套用勾選的標籤</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('autotag-modal').classList.remove('show')">取消</button>
+    </div>
+  </div>`;
+  ov.classList.add('show');
+}
+function applyAutoTags(){
+  const ov=document.getElementById('autotag-modal');
+  const checked={};
+  ov.querySelectorAll('input[type=checkbox]').forEach(cb=>{if(cb.checked){(checked[cb.dataset.i]=checked[cb.dataset.i]||[]).push(Number(cb.dataset.j));}});
+  let applied=0,records=0,created=0;
+  Object.entries(checked).forEach(([i,js])=>{
+    const s=_autoTagSug[Number(i)];if(!s)return;
+    const rec=s.kind==='v'?DATA.find(d=>d.id===s.id):IG_DATA.find(d=>d.id===s.id);
+    if(!rec)return;
+    if(!Array.isArray(rec.tags))rec.tags=[];
+    let touched=false;
+    js.forEach(j=>{
+      const name=s.tags[j];if(!name||rec.tags.includes(name))return;
+      if(!TAGS.find(t=>t.name===name)){
+        const rule=AUTO_TAG_RULES.find(r=>r.tag===name);
+        TAGS.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,color:TAG_COLORS[TAGS.length%TAG_COLORS.length],desc:'',group:(rule&&rule.group)||'未分類'});
+        created++;
+      }
+      rec.tags.push(name);applied++;touched=true;
+    });
+    if(touched)records++;
+  });
+  saveTags();saveData();saveIgData();
+  renderTagsPage();renderAll();renderIgAll();if(typeof refreshAllTagInputs==='function')refreshAllTagInputs();
+  ov.classList.remove('show');
+  alert(`✅ 貼標完成：${records} 筆內容、共貼上 ${applied} 個標籤${created?`（新建 ${created} 個標籤）`:''}`);
+}
+
 const DEFAULT_TAGS=[
   // ═══ 科別 ═══
   {name:'心臟內科',group:'科別'},{name:'神經內科',group:'科別'},{name:'神經外科',group:'科別'},
