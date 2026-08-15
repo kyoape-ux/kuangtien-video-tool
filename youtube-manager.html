@@ -411,7 +411,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.25 · 2026-08-15 17:25</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.26 · 2026-08-15 17:45</div>
     </div>
   </nav>
 
@@ -637,6 +637,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         </div>
       </div>
       <div class="page-body">
+      <div id="legend-video"></div>
       <div class="tbl-toolbar">
         <input type="text" id="search-input" placeholder="搜尋標題、企劃、製作..." oninput="renderList()">
         <select id="filter-type" onchange="renderList()"><option value="">全部類型</option><option value="short">Short</option><option value="long">Long</option></select>
@@ -802,6 +803,8 @@ tr:hover td{background:rgba(52,211,153,.03);}
       </div>
       <div class="page-body">
 
+      <div id="legend-fb"></div>
+
       <!-- FB KPI -->
       <div class="cards" id="fbl-kpi"></div>
 
@@ -889,6 +892,8 @@ tr:hover td{background:rgba(52,211,153,.03);}
         </div>
       </div>
       <div class="page-body">
+
+      <div id="legend-ig"></div>
 
       <!-- IG 內容類型切換 -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
@@ -1045,6 +1050,8 @@ tr:hover td{background:rgba(52,211,153,.03);}
         </div>
       </div>
       <div class="page-body">
+
+      <div id="legend-th"></div>
 
       <!-- Threads KPI -->
       <div class="cards" id="th-kpi"></div>
@@ -1679,6 +1686,35 @@ function contentStatus(dateStr,stampStr){
   if(now<cutoff)return'collecting';
   if(stampStr&&new Date(stampStr)>=cutoff)return'locked';
   return'pending';
+}
+// 狀態說明列（各平台列表上方）
+function statusLegendHtml(kind){
+  const isVideo=kind==='video';
+  const items=[
+    {label:'統計中',color:'var(--amber)',bg:'rgba(251,191,36,.12)',icon:STATUS_CFG.collecting.icon,
+     desc:'發布<b>未滿 1 個月</b>，數據還在累積 — 先不要納入月報'},
+    {label:isVideo?'待抓取':'待更新',color:'var(--red)',bg:'rgba(248,113,113,.12)',icon:STATUS_CFG.pending.icon,
+     desc:isVideo?'已滿 1 個月但<b>尚未抓過數據</b> — 請用「自動取得 YT 數據」或批次更新'
+                 :'已滿 1 個月，但目前數據是<b>滿月前</b>抓的 — 請重新匯入最新 CSV'},
+    {label:'已定案',color:'var(--accent)',bg:'rgba(52,211,153,.12)',icon:STATUS_CFG.locked.icon,
+     desc:'已滿 1 個月<b>且數據已於滿月後更新</b> — 可安心納入月報'}
+  ];
+  return `<div style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 18px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt2);font-weight:600;white-space:nowrap;padding-top:2px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>狀態說明
+    </div>
+    ${items.map(it=>`<div style="display:flex;align-items:flex-start;gap:7px;flex:1;min-width:210px;">
+      <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;background:${it.bg};color:${it.color};flex-shrink:0;">${it.icon} ${it.label}</span>
+      <span style="font-size:11px;color:var(--txt3);line-height:1.6;">${it.desc}</span>
+    </div>`).join('')}
+    <div style="width:100%;font-size:11px;color:var(--txt3);border-top:1px solid var(--border);padding-top:8px;margin-top:2px;">
+      以<b style="color:var(--txt2);">發佈日起算滿 1 個月</b>為成效統計基準；月報請以「已定案」的資料為準。
+    </div>
+  </div>`;
+}
+function renderStatusLegends(){
+  const map={'legend-video':'video','legend-fb':'other','legend-ig':'other','legend-th':'other'};
+  Object.entries(map).forEach(([id,kind])=>{const el=document.getElementById(id);if(el&&!el.innerHTML)el.innerHTML=statusLegendHtml(kind);});
 }
 function contentStatusBadge(key){
   const sc=key==='pending'
@@ -4849,7 +4885,7 @@ tr:last-child td{border-bottom:none;}tr:nth-child(even) td{background:#FAFAFA;}
 // ============================================================
 document.addEventListener('DOMContentLoaded',()=>{
   checkAuth();
-  checkSetup();loadTags();loadData();loadIgData();loadIgFollowers();renderIgAll();loadThreadsData();renderThreads();loadPlaybook();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();}});}
+  checkSetup();loadTags();loadData();loadIgData();loadIgFollowers();renderIgAll();loadThreadsData();renderThreads();loadPlaybook();renderStatusLegends();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();}});}
   initTagInput('f-tags',[]);initTagInput('ig-tags',[]);
   // 預設粉絲數輸入年月為當月
   const _ymEl=document.getElementById('igf-ym');
