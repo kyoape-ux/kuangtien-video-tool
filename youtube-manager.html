@@ -408,7 +408,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.21 · 2026-08-15 16:00</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.22 · 2026-08-15 16:30</div>
     </div>
   </nav>
 
@@ -3435,21 +3435,98 @@ function importMetricoolFb(rows){
     const m={fb_views:num(get(r,'Video Views')),fb_likes:num(get(r,'Likes')),fb_comments:num(get(r,'Comments')),fb_reach:num(get(r,'Reach'))};
     if(ex){Object.assign(ex,m);ex.statsDate=new Date().toISOString().substring(0,10);ex.updatedAt=new Date().toISOString();changed.push(ex);updated++;}
     else{
-      const firstLine=String(get(r,'Content')).split('\n').map(s=>s.trim()).filter(Boolean)[0]||'(無內文)';
-      unmatched.push({t:firstLine.slice(0,30),v:num(get(r,'Video Views'))});
+      const content=String(get(r,'Content'));
+      const firstLine=content.split('\n').map(s=>s.trim()).filter(s=>s&&!s.startsWith('#'))[0]||'(無內文)';
+      unmatched.push({t:firstLine.slice(0,40),v:m.fb_views,url,content,date:String(get(r,'Date')).substring(0,10),m});
     }
   });
-  if(updated){saveData();renderAll();}
-  let msg=`✅ Metricool FB Reels 匯入：更新 ${updated} 筆影片的 FB 數據`;
-  if(unmatched.length){
-    msg+=`\n\n⚠️ ${unmatched.length} 筆找不到對應影片（該 Reel 網址尚未填在任何影片的「FB 連結」欄）：\n`
-      +unmatched.slice(0,8).map(u=>`· ${u.t}（${u.v.toLocaleString()} 觀看）`).join('\n')
-      +(unmatched.length>8?`\n…等共 ${unmatched.length} 筆`:'')
-      +`\n\n作法：到「影片列表」編輯對應影片，把 Reel 網址貼進「FB 連結」欄，再匯入一次即會自動更新。`;
-  }
-  alert(msg);
+  if(updated){saveData();renderAll();if(typeof renderFbList==='function')renderFbList();}
   if(updated&&typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
     (async()=>{let ok=0;for(const d of changed){const r=await pushToSheets('updateVideo',{data:d});if(r)ok++;showSyncBadge(`同步影片 ${ok}/${changed.length}`);}showSyncBadge(`✅ FB 匯入已同步 ${ok}/${changed.length}`);})();
+  }
+  if(unmatched.length){openFbMatchModal(unmatched,updated);}
+  else{alert(`✅ Metricool FB Reels 匯入完成：更新 ${updated} 筆影片的 FB 數據`);}
+}
+// ── FB 智慧配對（文字相似度 + 日期接近度）──────────────
+// 機構樣板字（兩邊都常出現，會灌高假分數）
+const FB_BOILER=['光田綜合醫院','光田醫院','光田','向上院區','大甲院區','沙鹿院區','向上','沙鹿','大甲','臺中','台中','海線','綜合醫院','光小編出任務','光田e學院','預約諮詢','更多資訊','歡迎分享','立即預約'];
+function fbNormText(s){
+  let t=String(s||'').replace(/#[^\s#]+/g,'').replace(/https?:\/\/\S+/g,'').replace(/EP\.?\s*\d+/gi,'');
+  FB_BOILER.forEach(w=>{t=t.split(w).join('');});
+  return t.replace(/[\s\p{P}\p{S}\p{Emoji_Presentation}]/gu,'').slice(0,150);
+}
+function fbBigrams(s){const a=[];for(let i=0;i<s.length-1;i++)a.push(s.slice(i,i+2));return a;}
+// 重疊係數：以較短一方為基準，避免「長內文 vs 短標題」被長度差異稀釋
+function fbTextSim(a,b){
+  const A=fbBigrams(fbNormText(a)),B=fbBigrams(fbNormText(b));
+  if(!A.length||!B.length)return 0;
+  const m=new Map();B.forEach(x=>m.set(x,(m.get(x)||0)+1));
+  let hit=0;A.forEach(x=>{const c=m.get(x)||0;if(c>0){hit++;m.set(x,c-1);}});
+  return hit/Math.min(A.length,B.length);
+}
+function fbScoreCandidates(fbRow){
+  return activeVideos().map(v=>{
+    const sim=fbTextSim(fbRow.content,v.title);
+    let bonus=0;
+    if(fbRow.date&&v.date){
+      const dd=Math.abs((new Date(fbRow.date)-new Date(v.date))/86400000);
+      if(dd<=2)bonus=0.18;else if(dd<=7)bonus=0.10;else if(dd<=21)bonus=0.04;
+    }
+    if(v.fb_url)bonus-=0.05; // 已綁其他 Reel 的影片略降權
+    return {v,score:sim+bonus,sim};
+  }).sort((a,b)=>b.score-a.score);
+}
+let _fbPending=[];
+function openFbMatchModal(unmatched,updatedCount){
+  _fbPending=unmatched.map(u=>({...u,cands:fbScoreCandidates(u).slice(0,8)}));
+  let ov=document.getElementById('fbmatch-modal');
+  if(!ov){ov=document.createElement('div');ov.id='fbmatch-modal';ov.className='modal-overlay';document.body.appendChild(ov);}
+  const rows=_fbPending.map((p,i)=>{
+    const best=p.cands[0];
+    const auto=best&&best.score>=0.22;
+    const opts=['<option value="">— 不對應（略過）—</option>','<option value="__new__">＋ 建立為新影片記錄（僅 FB 數據）</option>']
+      .concat(p.cands.map((c,j)=>`<option value="${c.v.id}" ${auto&&j===0?'selected':''}>${(c.score*100).toFixed(0)}% · ${(c.v.date||'').substring(0,10)} · ${esc((c.v.title||'').slice(0,34))}</option>`));
+    return `<div style="padding:11px 0;border-top:1px solid var(--border);">
+      <div style="font-size:12px;color:var(--txt);margin-bottom:6px;"><span style="color:var(--txt3);font-size:11px;">${p.date||'—'}</span> ${esc(p.t)} <span style="color:var(--fb);font-weight:600;">${p.v.toLocaleString()} 觀看</span></div>
+      <select data-i="${i}" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;background:var(--bg-2);color:var(--txt);">${opts.join('')}</select>
+    </div>`;
+  }).join('');
+  const autoCount=_fbPending.filter(p=>p.cands[0]&&p.cands[0].score>=0.22).length;
+  ov.innerHTML=`<div class="modal" style="max-width:840px;">
+    <button class="close-btn" onclick="document.getElementById('fbmatch-modal').classList.remove('show')"><span class="icon" style="width:16px;height:16px;"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></button>
+    <h2><span class="icon" style="color:var(--fb);"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></span>FB 貼文配對 — ${_fbPending.length} 筆待確認</h2>
+    <p style="font-size:12px;color:var(--txt3);margin-bottom:6px;">${updatedCount?`已自動更新 ${updatedCount} 筆（曾配對過）。`:''}以下 FB 貼文尚未綁定影片，系統依<b style="color:var(--txt2);">內容相似度＋發佈日期</b>推薦對應影片（百分比為相似分數），已自動選好 ${autoCount} 筆高信心配對，請確認或改選。</p>
+    <p style="font-size:11px;color:var(--txt3);margin-bottom:8px;">✅ 確認後會把 FB 數據寫入該影片，並記住這個 Reel 網址 —— <b style="color:var(--accent);">下次匯入就全自動、不必再配對</b>。</p>
+    <div style="max-height:50vh;overflow-y:auto;">${rows}</div>
+    <div class="form-actions" style="margin-top:14px;">
+      <button class="btn btn-primary" onclick="applyFbMatches()">套用配對</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('fbmatch-modal').classList.remove('show')">取消</button>
+    </div>
+  </div>`;
+  ov.classList.add('show');
+}
+function applyFbMatches(){
+  const ov=document.getElementById('fbmatch-modal');
+  const today=new Date().toISOString().substring(0,10);
+  let linked=0,created=0,skipped=0;const changed=[];
+  ov.querySelectorAll('select[data-i]').forEach(sel=>{
+    const p=_fbPending[Number(sel.dataset.i)];if(!p)return;
+    const val=sel.value;
+    if(!val){skipped++;return;}
+    if(val==='__new__'){
+      const rec={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:p.t,date:(p.date||'').substring(0,10),type:'short',cat:'',tags:[],fb_url:p.url,...p.m,statsDate:today,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+      DATA.push(rec);changed.push(rec);created++;
+    }else{
+      const v=DATA.find(d=>d.id===val);if(!v){skipped++;return;}
+      Object.assign(v,p.m);v.fb_url=p.url;v.statsDate=today;v.updatedAt=new Date().toISOString();
+      changed.push(v);linked++;
+    }
+  });
+  saveData();renderAll();if(typeof renderFbList==='function')renderFbList();
+  ov.classList.remove('show');
+  alert(`✅ FB 配對完成：綁定並更新 ${linked} 筆${created?`、新建 ${created} 筆`:''}${skipped?`、略過 ${skipped} 筆`:''}\n\n已記住 Reel 網址，下次匯入同一批貼文會自動更新。`);
+  if(changed.length&&typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
+    (async()=>{let ok=0;for(const d of changed){const r=await pushToSheets('updateVideo',{data:d});if(r)ok++;showSyncBadge(`同步影片 ${ok}/${changed.length}`);}showSyncBadge(`✅ FB 配對已同步 ${ok}/${changed.length}`);})();
   }
 }
 function importMetricoolIg(text,filename){
