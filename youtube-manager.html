@@ -400,7 +400,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.12 · 2026-06-26 01:15</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.13 · 2026-08-15 12:23</div>
     </div>
   </nav>
 
@@ -634,6 +634,8 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <button class="btn btn-sm" onclick="batchUpdateYt()" style="background:rgba(255,68,68,.12);color:var(--yt);border:1px solid rgba(255,68,68,.2);">批次更新 YT 數據</button>
         <button class="btn btn-secondary btn-sm" onclick="document.getElementById('csv-import').click()">匯入 YT Studio CSV</button>
         <input type="file" id="csv-import" accept=".csv" style="display:none;" onchange="importYtStudioCSV(this)">
+        <input type="file" id="fb-import-file" accept=".csv" style="display:none;" onchange="handleMetricoolFile(this)">
+        <button class="btn btn-sm write-only" onclick="document.getElementById('fb-import-file').click()" style="background:rgba(76,139,245,.14);color:var(--fb);border:1px solid rgba(76,139,245,.3);" title="從 Metricool 匯出的 FB Reels CSV，依「FB 連結」欄比對並回填 FB 數據">匯入 Metricool FB CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="exportCSV()">匯出 CSV</button>
       </div>
       <div class="tbl-wrap">
@@ -931,6 +933,8 @@ tr:hover td{background:rgba(52,211,153,.03);}
           <h3 style="font-size:14px;color:var(--txt2);">貼文列表</h3>
           <div style="display:flex;gap:8px;">
             <button class="btn btn-secondary btn-sm" onclick="exportThreadsCSV()">匯出 CSV</button>
+            <input type="file" id="th-import-file" accept=".csv" style="display:none;" onchange="handleMetricoolFile(this)">
+            <button class="btn btn-sm write-only" onclick="document.getElementById('th-import-file').click()" style="background:rgba(167,139,250,.14);color:#A78BFA;border:1px solid rgba(167,139,250,.3);" title="從 Metricool 匯出的 Threads CSV 批次匯入"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>匯入 Metricool CSV</button>
             <button class="btn btn-sm write-only" onclick="bulkUploadThreadsToSheets()" style="background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25);" title="將本機所有 Threads 貼文上傳到 Google Sheets"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><polyline points="17,11 12,6 7,11"/><line x1="12" y1="6" x2="12" y2="18"/><path d="M5 21h14"/></svg>上傳本機→Sheets</button>
           </div>
         </div>
@@ -3000,12 +3004,96 @@ function mcExtractTitle(caption){
 }
 function normLink(u){return String(u||'').trim().replace(/[?#].*$/,'').replace(/\/$/,'').toLowerCase();}
 function triggerIgImport(){const el=document.getElementById('ig-import-file');if(el)el.click();}
-function handleIgImportFile(input){
+// 萬用 Metricool CSV 處理器：依表頭自動辨識平台（IG / Threads / FB Reels / YT）
+function handleMetricoolFile(input){
   const file=input.files&&input.files[0];if(!file)return;
   if(typeof canWrite==='function'&&!canWrite()){alert('權限不足，請以組員或組長登入');input.value='';return;}
   const reader=new FileReader();
-  reader.onload=e=>{try{importMetricoolIg(e.target.result,file.name);}catch(err){alert('匯入失敗：'+err.message);}input.value='';};
+  reader.onload=e=>{try{importMetricoolAuto(e.target.result,file.name);}catch(err){alert('匯入失敗：'+err.message);}input.value='';};
   reader.readAsText(file);
+}
+function handleIgImportFile(input){handleMetricoolFile(input);}
+function importMetricoolAuto(text,filename){
+  const rows=parseCSV(text);
+  if(rows.length<2){alert('CSV 沒有資料列');return;}
+  const headers=rows[0].map(h=>h.trim());
+  const has=n=>headers.some(h=>h.toLowerCase()===n.toLowerCase());
+  if(has('videoId')){alert('偵測到 YouTube CSV。\nYouTube 數據請用系統內建「自動取得 YT 數據」（第一手、更準），此檔不匯入。');return;}
+  if(has('PostLink')&&has('Replies')){importMetricoolThreads(rows);return;}
+  if(has('Reel Link')&&has('Video Views')){importMetricoolFb(rows);return;}
+  if(has('URL')&&(has('Content')||has('title'))){importMetricoolIg(text,filename);return;}
+  alert('無法辨識這個 CSV 的格式（支援：Metricool 匯出的 IG / Threads / FB Reels）');
+}
+function thExtractTitle(c){
+  if(!c)return '(未命名)';
+  const lines=String(c).split('\n').map(s=>s.trim()).filter(s=>s&&!s.startsWith('#')&&!s.startsWith('@')&&s!=='-');
+  return (lines[0]||String(c).trim()).slice(0,60)||'(未命名)';
+}
+function importMetricoolThreads(rows){
+  const headers=rows[0].map(h=>h.trim());
+  const idx=n=>headers.findIndex(h=>h.toLowerCase()===n.toLowerCase());
+  const get=(r,n)=>{const k=idx(n);return k>=0?(r[k]||''):'';};
+  const num=v=>{const x=Number(String(v).replace(/,/g,'').trim());return isNaN(x)?0:x;};
+  const data=rows.slice(1).filter(r=>get(r,'PostLink'));
+  if(!data.length){alert('找不到可匯入的 Threads 資料');return;}
+  const byLink=new Map(TH_DATA.filter(d=>d.link).map(d=>[normLink(d.link),d]));
+  let added=0,updated=0;const changed=[];
+  data.forEach(r=>{
+    const url=get(r,'PostLink');
+    const metrics={views:num(get(r,'Views')),likes:num(get(r,'Likes')),replies:num(get(r,'Replies')),reposts:num(get(r,'Reposts'))+num(get(r,'Quotes'))};
+    const ex=byLink.get(normLink(url));
+    if(ex){
+      Object.assign(ex,metrics);
+      if(!ex.date)ex.date=String(get(r,'Date')).substring(0,10);
+      ex.updatedAt=new Date().toISOString();changed.push(ex);updated++;
+    }else{
+      const rec={
+        id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+        title:thExtractTitle(get(r,'Content')),
+        date:String(get(r,'Date')).substring(0,10),
+        type:/VIDEO/i.test(get(r,'Type'))?'2':'1',
+        cat:'',...metrics,link:url,createdAt:new Date().toISOString()
+      };
+      TH_DATA.push(rec);byLink.set(normLink(url),rec);changed.push(rec);added++;
+    }
+  });
+  saveThreadsData();renderThreads();
+  alert(`✅ Metricool Threads 匯入完成\n　新增 ${added} 筆、更新 ${updated} 筆\n（「類別」欄請於系統內補填）`);
+  if(typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
+    (async()=>{let ok=0;for(const d of changed){const r=await pushToSheets('saveThreadsPost',{data:d});if(r)ok++;showSyncBadge(`同步 Threads ${ok}/${changed.length}`);}showSyncBadge(`✅ Threads 匯入已同步 ${ok}/${changed.length}`);})();
+  }
+}
+function importMetricoolFb(rows){
+  const headers=rows[0].map(h=>h.trim());
+  const idx=n=>headers.findIndex(h=>h.toLowerCase()===n.toLowerCase());
+  const get=(r,n)=>{const k=idx(n);return k>=0?(r[k]||''):'';};
+  const num=v=>{const x=Number(String(v).replace(/,/g,'').trim());return isNaN(x)?0:x;};
+  const data=rows.slice(1).filter(r=>get(r,'Reel Link'));
+  if(!data.length){alert('找不到可匯入的 FB Reels 資料');return;}
+  const byFbUrl=new Map(DATA.filter(d=>d.fb_url).map(d=>[normLink(d.fb_url),d]));
+  let updated=0;const unmatched=[];const changed=[];
+  data.forEach(r=>{
+    const url=get(r,'Reel Link');
+    const ex=byFbUrl.get(normLink(url));
+    const m={fb_views:num(get(r,'Video Views')),fb_likes:num(get(r,'Likes')),fb_comments:num(get(r,'Comments')),fb_reach:num(get(r,'Reach'))};
+    if(ex){Object.assign(ex,m);ex.updatedAt=new Date().toISOString();changed.push(ex);updated++;}
+    else{
+      const firstLine=String(get(r,'Content')).split('\n').map(s=>s.trim()).filter(Boolean)[0]||'(無內文)';
+      unmatched.push({t:firstLine.slice(0,30),v:num(get(r,'Video Views'))});
+    }
+  });
+  if(updated){saveData();renderAll();}
+  let msg=`✅ Metricool FB Reels 匯入：更新 ${updated} 筆影片的 FB 數據`;
+  if(unmatched.length){
+    msg+=`\n\n⚠️ ${unmatched.length} 筆找不到對應影片（該 Reel 網址尚未填在任何影片的「FB 連結」欄）：\n`
+      +unmatched.slice(0,8).map(u=>`· ${u.t}（${u.v.toLocaleString()} 觀看）`).join('\n')
+      +(unmatched.length>8?`\n…等共 ${unmatched.length} 筆`:'')
+      +`\n\n作法：到「影片列表」編輯對應影片，把 Reel 網址貼進「FB 連結」欄，再匯入一次即會自動更新。`;
+  }
+  alert(msg);
+  if(updated&&typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
+    (async()=>{let ok=0;for(const d of changed){const r=await pushToSheets('updateVideo',{data:d});if(r)ok++;showSyncBadge(`同步影片 ${ok}/${changed.length}`);}showSyncBadge(`✅ FB 匯入已同步 ${ok}/${changed.length}`);})();
+  }
 }
 function importMetricoolIg(text,filename){
   const rows=parseCSV(text);
