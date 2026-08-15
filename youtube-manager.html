@@ -411,7 +411,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.26 · 2026-08-15 17:45</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.27 · 2026-08-15 18:20</div>
     </div>
   </nav>
 
@@ -1118,6 +1118,21 @@ tr:hover td{background:rgba(52,211,153,.03);}
         </div>
         <div class="form-actions">
           <button class="btn btn-primary" onclick="openMonthlyReport()">產生月報表</button>
+        </div>
+      </div>
+
+      <!-- 成效分析簡報 -->
+      <div class="cfg-card" style="max-width:none;margin-bottom:20px;border-color:rgba(167,139,250,.3);">
+        <h3 style="display:flex;align-items:center;gap:8px;font-size:14px;">
+          <span class="icon" style="color:var(--threads);"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>成效分析簡報（組會用）
+        </h3>
+        <p style="font-size:12px;color:var(--txt3);margin:8px 0 18px;line-height:1.7;">產生 16:9 投影版簡報：期間總覽 → 爆款 vs 低效共同點 → 平台佔比 → 細主題排行 → 下一步建議。適合每兩月組會報告，可直接投影或列印成 PDF。</p>
+        <div class="form-grid" style="max-width:520px;">
+          <div class="form-group"><label>起始年月</label><input type="month" id="deck-from"></div>
+          <div class="form-group"><label>結束年月</label><input type="month" id="deck-to"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="openAnalysisDeck()">產生分析簡報</button>
         </div>
       </div>
 
@@ -2570,7 +2585,7 @@ function renderTrashList(){
 // ============================================================
 // 導覽
 // ============================================================
-function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='vidstats')renderVidStats();if(name==='fblist')renderFbList();if(name==='fbstats')renderFbStats();if(name==='insights')renderInsights();if(name==='playbook')renderPlaybook();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='vidstats')renderVidStats();if(name==='fblist')renderFbList();if(name==='fbstats')renderFbStats();if(name==='insights')renderInsights();if(name==='playbook')renderPlaybook();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();(()=>{const df=document.getElementById('deck-from'),dt=document.getElementById('deck-to');if(df&&!df.value){const e=new Date(now.getFullYear(),now.getMonth(),1),st=new Date(now.getFullYear(),now.getMonth()-1,1);df.value=`${st.getFullYear()}-${String(st.getMonth()+1).padStart(2,'0')}`;dt.value=`${e.getFullYear()}-${String(e.getMonth()+1).padStart(2,'0')}`;}})();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
 function renderAll(){renderDashboard();renderList();renderCfgForm();buildMonthFilter();}
 
 // ============================================================
@@ -4391,6 +4406,170 @@ function canDelete(){return CURRENT_ROLE==='member'||CURRENT_ROLE==='leader';}
 // 月報表
 // ============================================================
 
+// ============================================================
+// 成效分析簡報（16:9 投影版，組會用）
+// ============================================================
+function openAnalysisDeck(){
+  const f=document.getElementById('deck-from').value,t=document.getElementById('deck-to').value;
+  if(!f||!t){alert('請選擇起始與結束年月');return;}
+  if(f>t){alert('起始月份不可晚於結束月份');return;}
+  const inRange=ds=>{const k=String(ds||'').substring(0,7);return k>=f&&k<=t;};
+  const isAd=d=>/廣告|贊助|投放/.test(String(d.title||''));
+  const med=a=>{const x=a.filter(v=>!isNaN(v)).sort((p,q)=>p-q);if(!x.length)return 0;const m=Math.floor(x.length/2);return Math.round(x.length%2?x[m]:(x[m-1]+x[m])/2);};
+  const sum=(a,fn)=>a.reduce((s,d)=>s+(Number(fn(d))||0),0);
+  const vids=activeVideos().filter(d=>inRange(d.date)&&!isAd(d));
+  const igs=(typeof activeIgPosts==='function'?activeIgPosts():[]).filter(d=>inRange(d.date));
+  const ths=(typeof activeThreads==='function'?activeThreads():[]).filter(d=>inRange(d.date));
+  if(vids.length<3){alert(`此期間影片太少（${vids.length} 部），至少 3 部才能做分析簡報。`);return;}
+  const label=f===t?f.replace('-',' 年 ')+' 月':`${f.replace('-',' 年 ')} 月 ～ ${t.replace('-',' 年 ')} 月`;
+  const now=new Date().toLocaleDateString('zh-TW');
+  const TV=d=>totalViews(d);
+  const sorted=[...vids].sort((a,b)=>TV(b)-TV(a));
+  const k=Math.max(1,Math.round(sorted.length*0.25));
+  const top=sorted.slice(0,k),bot=sorted.slice(-k);
+  const shorts=vids.filter(d=>d.type==='short'),longs=vids.filter(d=>d.type!=='short');
+  const modeOf=(arr,fn)=>{const c={};arr.forEach(d=>{const x=fn(d);if(x)c[x]=(c[x]||0)+1;});const e=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];return e?`${e[0]}（${Math.round(e[1]/arr.length*100)}%）`:'—';};
+  const days=['週日','週一','週二','週三','週四','週五','週六'];
+  const pv={YouTube:sum(vids,d=>d.yt_views),Facebook:sum(vids,d=>d.fb_views),Instagram:sum(vids,d=>d.ig_views)};
+  const pvAll=pv.YouTube+pv.Facebook+pv.Instagram||1;
+  const platC={YouTube:'#FF4444',Facebook:'#4C8BF5',Instagram:'#F472B6'};
+  // 細主題（標籤優先，否則類別）
+  const gmap={};
+  const useTag=vids.some(d=>Array.isArray(d.tags)&&d.tags.length);
+  vids.forEach(d=>{
+    const keys=useTag?(Array.isArray(d.tags)&&d.tags.length?d.tags:['(未貼標)']):[d.cat||'未分類'];
+    keys.forEach(kk=>{(gmap[kk]=gmap[kk]||[]).push(d);});
+  });
+  const topics=Object.entries(gmap).filter(([,a])=>a.length>=2).map(([g,a])=>({g,n:a.length,m:med(a.map(TV)),
+    best:(()=>{const p={YT:med(a.map(d=>Number(d.yt_views)||0)),FB:med(a.map(d=>Number(d.fb_views)||0)),IG:med(a.map(d=>Number(d.ig_views)||0))};return Object.entries(p).sort((x,y)=>y[1]-x[1])[0][0];})()
+  })).sort((a,b)=>b.m-a.m).slice(0,8);
+  const tMax=Math.max(...topics.map(x=>x.m),1);
+  const domOf=d=>{const y=Number(d.yt_views)||0,fb=Number(d.fb_views)||0,g=Number(d.ig_views)||0,tt=y+fb+g;if(!tt)return null;const m=Math.max(y,fb,g);return{k:m===y?'YT':m===g?'IG':'FB',p:Math.round(m/tt*100)};};
+  const slide=(title,body,idx)=>`<section class="slide"><div class="s-head"><span class="s-title">${title}</span><span class="s-no">${idx}</span></div><div class="s-body">${body}</div></section>`;
+  let i=0;
+  const slides=[];
+  // 封面
+  slides.push(`<section class="slide cover"><div><div class="c-sub">光田綜合醫院 視覺多媒體設計組</div><h1>影片成效分析簡報</h1><div class="c-range">${label}</div><div class="c-meta">分析 ${vids.length} 支影片${igs.length?`／${igs.length} 則 IG`:''}${ths.length?`／${ths.length} 則 Threads`:''}　·　產製於 ${now}</div><div class="c-note">※ 已排除投放廣告內容，數值採中位數以避免少數爆量影響判讀</div></div></section>`);
+  // 1 總覽
+  slides.push(slide('期間總覽',`
+    <div class="big-row">
+      <div class="big"><div class="b-val">${vids.length}</div><div class="b-lbl">影片支數</div></div>
+      <div class="big"><div class="b-val">${sum(vids,TV).toLocaleString()}</div><div class="b-lbl">全平台總觀看</div></div>
+      <div class="big"><div class="b-val">${med(vids.map(TV)).toLocaleString()}</div><div class="b-lbl">觀看中位數</div></div>
+      <div class="big"><div class="b-val">${med(shorts.map(TV)).toLocaleString()}</div><div class="b-lbl">Short 中位數（${shorts.length} 支）</div></div>
+    </div>
+    <div class="callout">Short 中位數 <b>${med(shorts.map(TV)).toLocaleString()}</b>　vs　Long 中位數 <b>${med(longs.map(TV)).toLocaleString()}</b>${longs.length&&med(longs.map(TV))>0?`　→　相差約 <b>${Math.round(med(shorts.map(TV))/Math.max(med(longs.map(TV)),1))} 倍</b>`:''}<br><span class="c-small">同一醫療主題：Short 包裝＝拓新觸及；Long 包裝＝存檔與搜尋需求。兩者不應以同一標準比較。</span></div>`,++i));
+  // 2 爆款 vs 低效
+  slides.push(slide('爆款 vs 低效：共同點對照',`
+    <div class="two-col">
+      <div class="col win"><div class="col-h">🔥 前 25%（${k} 支）</div>
+        <div class="kv"><span>觀看中位數</span><b>${med(top.map(TV)).toLocaleString()}</b></div>
+        <div class="kv"><span>最常見類別</span><b>${modeOf(top,d=>d.cat||'未分類')}</b></div>
+        <div class="kv"><span>Short 佔比</span><b>${Math.round(top.filter(d=>d.type==='short').length/top.length*100)}%</b></div>
+        <div class="kv"><span>YT CTR</span><b>${(top.reduce((s,d)=>s+(Number(d.yt_ctr)||0),0)/top.length*100).toFixed(1)}%</b></div>
+        <div class="kv"><span>常發片</span><b>${modeOf(top,d=>d.date?days[new Date(d.date).getDay()]:null)}</b></div>
+        <div class="kv"><span>平均標題長度</span><b>${Math.round(top.reduce((s,d)=>s+(d.title||'').length,0)/top.length)} 字</b></div>
+      </div>
+      <div class="col lose"><div class="col-h">📉 後 25%（${k} 支）</div>
+        <div class="kv"><span>觀看中位數</span><b>${med(bot.map(TV)).toLocaleString()}</b></div>
+        <div class="kv"><span>最常見類別</span><b>${modeOf(bot,d=>d.cat||'未分類')}</b></div>
+        <div class="kv"><span>Short 佔比</span><b>${Math.round(bot.filter(d=>d.type==='short').length/bot.length*100)}%</b></div>
+        <div class="kv"><span>YT CTR</span><b>${(bot.reduce((s,d)=>s+(Number(d.yt_ctr)||0),0)/bot.length*100).toFixed(1)}%</b></div>
+        <div class="kv"><span>常發片</span><b>${modeOf(bot,d=>d.date?days[new Date(d.date).getDay()]:null)}</b></div>
+        <div class="kv"><span>平均標題長度</span><b>${Math.round(bot.reduce((s,d)=>s+(d.title||'').length,0)/bot.length)} 字</b></div>
+      </div>
+    </div>`,++i));
+  // 3 平台佔比
+  slides.push(slide('平台佔比：誰在貢獻觀看',`
+    <div class="plat3">${['YouTube','Facebook','Instagram'].map(p=>`<div class="p-card" style="border-color:${platC[p]}">
+      <div class="p-name" style="color:${platC[p]}">${p}</div>
+      <div class="p-pct" style="color:${platC[p]}">${Math.round(pv[p]/pvAll*100)}%</div>
+      <div class="p-sub">${pv[p].toLocaleString()} 觀看</div></div>`).join('')}</div>
+    <div class="s-sub">觀看最高的內容，各平台組成</div>
+    ${sorted.slice(0,6).map(d=>{const y=Number(d.yt_views)||0,fb=Number(d.fb_views)||0,g=Number(d.ig_views)||0,tt=y+fb+g||1;const dm=domOf(d);
+      return `<div class="bar-row"><span class="b-name">${(d.title||'').slice(0,26)}</span><div class="b-track"><div style="width:${y/tt*100}%;background:#FF4444"></div><div style="width:${fb/tt*100}%;background:#4C8BF5"></div><div style="width:${g/tt*100}%;background:#F472B6"></div></div><span class="b-tag" style="color:${dm?(dm.k==='YT'?'#FF4444':dm.k==='FB'?'#4C8BF5':'#F472B6'):'#999'}">${dm?dm.k+' '+dm.p+'%':'—'}</span></div>`;}).join('')}
+    <div class="callout mini">「全平台最紅」與「某平台最愛」往往不是同一件事 — 同題材建議依平台改寫開頭、標題與封面。</div>`,++i));
+  // 4 細主題排行
+  slides.push(slide(`${useTag?'細主題':'類別'}排行：什麼題材有效`,
+    topics.length?`${topics.map(x=>`<div class="topic-row">
+      <span class="t-name">${esc(x.g)}</span>
+      <div class="t-track"><div class="t-fill" style="width:${Math.max(3,x.m/tMax*100)}%"></div></div>
+      <span class="t-val">${x.m.toLocaleString()}</span>
+      <span class="t-n">${x.n} 支</span>
+      <span class="t-best" style="background:${x.best==='YT'?'#FFE8E8':x.best==='FB'?'#E8F0FF':'#FFE8F5'};color:${x.best==='YT'?'#C0313D':x.best==='FB'?'#1D4ED8':'#BE185D'}">${x.best} 最強</span>
+    </div>`).join('')}<div class="callout mini">數值為該主題的<b>觀看中位數</b>；右側標示該主題在哪個平台表現最好，可作為下一批內容的平台配置依據。</div>`
+    :`<div class="empty">尚無足夠主題資料。建議先到「標籤管理 → 自動掃描貼標」為內容貼上主題標籤，分析會更精準。</div>`,++i));
+  // 5 下一步
+  const recs=[];
+  if(shorts.length&&longs.length&&med(shorts.map(TV))>med(longs.map(TV))*3)recs.push({h:'Short 為觸及主力，Long 轉定位存檔',b:`Short 中位數 ${med(shorts.map(TV)).toLocaleString()}、Long 僅 ${med(longs.map(TV)).toLocaleString()}。建議長講座保留存檔即可，另拆成 Short 發布，不要用同一標準檢視兩者成效。`});
+  if(topics.length>1)recs.push({h:`加碼「${topics[0].g}」，檢討「${topics[topics.length-1].g}」`,b:`前者觀看中位數 ${topics[0].m.toLocaleString()}（${topics[0].n} 支）表現最佳，且在 ${topics[0].best} 最強；後者僅 ${topics[topics.length-1].m.toLocaleString()}，建議重新檢視選題角度或改變呈現方式。`});
+  const topPlat=Object.entries(pv).sort((a,b)=>b[1]-a[1])[0];
+  if(topPlat)recs.push({h:`平台分工：${topPlat[0]} 是目前主要觀看來源（${Math.round(topPlat[1]/pvAll*100)}%）`,b:'建議同一題材依平台改寫：IG 以人物與具體利益開場、YT 以「症狀＋原因＋怎麼辦」切入、FB 以家庭與在地情感連結。'});
+  recs.push({h:'選題公式',b:'一個非常具體的人 ＋ 一個非常具體的生活問題 ＋ 一個觀眾原本不知道的答案。避免泛主題與泛恐懼標題（需有具體症狀與資訊落差）。'});
+  slides.push(slide('下一步行動建議',recs.map((r,j)=>`<div class="rec"><div class="r-no">${j+1}</div><div><div class="r-h">${r.h}</div><div class="r-b">${r.b}</div></div></div>`).join(''),++i));
+
+  const html=`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>影片成效分析簡報 ${label}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;background:#E8EDF2;color:#1A1A1A;padding:24px;}
+.slide{width:1120px;height:630px;margin:0 auto 24px;background:#fff;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.1);padding:44px 56px;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.cover{background:linear-gradient(135deg,#0F6E56,#0A4F3E);color:#fff;align-items:flex-start;justify-content:center;}
+.cover h1{font-size:52px;font-weight:900;letter-spacing:1px;margin:10px 0 18px;}
+.c-sub{font-size:16px;opacity:.85;letter-spacing:2px;}
+.c-range{font-size:26px;font-weight:700;background:rgba(255,255,255,.16);display:inline-block;padding:8px 22px;border-radius:30px;}
+.c-meta{font-size:14px;opacity:.8;margin-top:26px;}
+.c-note{font-size:12px;opacity:.6;margin-top:8px;}
+.s-head{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #0F6E56;padding-bottom:12px;margin-bottom:22px;flex-shrink:0;}
+.s-title{font-size:27px;font-weight:900;color:#0F6E56;}
+.s-no{font-size:13px;color:#94A3B8;}
+.s-body{flex:1;overflow:hidden;}
+.s-sub{font-size:13px;color:#64748B;margin:18px 0 8px;font-weight:600;}
+.big-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.big{background:#F2FAF6;border:1px solid #B8DFC9;border-radius:12px;padding:22px 18px;text-align:center;}
+.b-val{font-size:38px;font-weight:900;color:#0F6E56;line-height:1.15;font-variant-numeric:tabular-nums;}
+.b-lbl{font-size:12px;color:#64748B;margin-top:6px;}
+.callout{background:#F8FAFC;border-left:5px solid #0F6E56;border-radius:8px;padding:18px 24px;font-size:19px;line-height:1.7;color:#334155;}
+.callout.mini{font-size:13px;padding:12px 18px;margin-top:18px;}
+.c-small{font-size:14px;color:#64748B;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;height:100%;}
+.col{border-radius:12px;padding:20px 24px;}
+.col.win{background:#F2FAF6;border:2px solid #0F6E56;}
+.col.lose{background:#FEF2F2;border:2px solid #C0313D;}
+.col-h{font-size:19px;font-weight:900;margin-bottom:14px;}
+.col.win .col-h{color:#0F6E56;}.col.lose .col-h{color:#C0313D;}
+.kv{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid rgba(0,0,0,.07);font-size:15px;color:#475569;}
+.kv b{font-size:17px;color:#1A1A1A;font-variant-numeric:tabular-nums;}
+.plat3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.p-card{border:2px solid;border-radius:12px;padding:18px;text-align:center;}
+.p-name{font-size:14px;font-weight:700;}
+.p-pct{font-size:40px;font-weight:900;line-height:1.2;font-variant-numeric:tabular-nums;}
+.p-sub{font-size:12px;color:#64748B;}
+.bar-row{display:flex;align-items:center;gap:12px;padding:5px 0;}
+.b-name{width:230px;font-size:12.5px;color:#334155;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.b-track{flex:1;display:flex;height:16px;border-radius:5px;overflow:hidden;background:#E2E8F0;}
+.b-tag{width:66px;text-align:right;font-size:12px;font-weight:700;}
+.topic-row{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid #F1F5F9;}
+.t-name{width:180px;font-size:14px;font-weight:600;color:#334155;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.t-track{flex:1;height:20px;background:#F1F5F9;border-radius:5px;overflow:hidden;}
+.t-fill{height:100%;background:linear-gradient(90deg,#0F6E56,#34D399);border-radius:5px;}
+.t-val{width:80px;text-align:right;font-size:15px;font-weight:800;color:#0F6E56;font-variant-numeric:tabular-nums;}
+.t-n{width:48px;text-align:right;font-size:12px;color:#94A3B8;}
+.t-best{width:78px;text-align:center;font-size:11px;font-weight:700;border-radius:5px;padding:3px 0;}
+.rec{display:flex;gap:16px;padding:15px 0;border-bottom:1px solid #F1F5F9;}
+.r-no{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:#0F6E56;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;}
+.r-h{font-size:18px;font-weight:800;color:#0F6E56;margin-bottom:4px;}
+.r-b{font-size:14px;color:#475569;line-height:1.7;}
+.empty{text-align:center;color:#94A3B8;padding:80px 20px;font-size:15px;}
+.print-btn{position:fixed;bottom:24px;right:24px;background:#0F6E56;color:#fff;border:none;border-radius:10px;padding:13px 26px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(15,110,86,.35);z-index:99;}
+@media print{body{background:#fff;padding:0;}.print-btn{display:none;}.slide{box-shadow:none;border-radius:0;margin:0;page-break-after:always;width:100%;height:100vh;}@page{size:A4 landscape;margin:0;}}
+</style></head><body>
+<button class="print-btn" onclick="window.print()">列印 / 存成 PDF</button>
+${slides.join('')}
+</body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
 function openMonthlyReport(){
   const yr=document.getElementById('rpt-year').value;
   const mo=document.getElementById('rpt-month').value;
@@ -4411,6 +4590,62 @@ function openMonthlyReport(){
   const vGoal=CFG.viewGoal||5000,cGoal=CFG.countGoal||6;
   const vRate=Math.min(Math.round(tv/vGoal*100),999),cRate=Math.min(Math.round(cnt/cGoal*100),999);
   const now=new Date().toLocaleDateString('zh-TW');
+  // ── 決策導向分析（已定案為準、排除廣告、Short/Long 分開、月對比）──
+  const isAd=d=>/廣告|贊助|投放/.test(String(d.title||''));
+  const statusOf=d=>getVideoStatus(d);
+  const mLocked=mData.filter(d=>statusOf(d)==='locked'&&!isAd(d));
+  const mCollecting=mData.filter(d=>statusOf(d)==='collecting');
+  const mAds=mData.filter(isAd);
+  const base=mLocked.length?mLocked:mData.filter(d=>!isAd(d)); // 若無定案資料則退回全部（僅供參考）
+  const usingLocked=mLocked.length>0;
+  const medOf=a=>{const x=a.filter(v=>!isNaN(v)).sort((p,q)=>p-q);if(!x.length)return 0;const m=Math.floor(x.length/2);return Math.round(x.length%2?x[m]:(x[m-1]+x[m])/2);};
+  const bShort=base.filter(d=>d.type==='short'),bLong=base.filter(d=>d.type!=='short');
+  const sumOf=(a,f)=>a.reduce((s,d)=>s+(Number(f(d))||0),0);
+  const baseViews=sumOf(base,totalViews);
+  // 上月比較（同樣以定案為準）
+  const prevYm=(()=>{const d=new Date(parseInt(yr),parseInt(mo)-2,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;})();
+  const prevData=activeVideos().filter(d=>(d.date||'').substring(0,7)===prevYm&&!isAd(d)&&getVideoStatus(d)==='locked');
+  const prevViews=sumOf(prevData,totalViews);
+  const momPct=prevViews>0?Math.round((baseViews-prevViews)/prevViews*100):null;
+  // 近 6 個月趨勢
+  const trend=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(parseInt(yr),parseInt(mo)-1-i,1);
+    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const arr=activeVideos().filter(v=>(v.date||'').substring(0,7)===key&&!isAd(v));
+    trend.push({key,label:`${d.getMonth()+1}月`,v:sumOf(arr,totalViews),n:arr.length});
+  }
+  const trendMax=Math.max(...trend.map(t=>t.v),1);
+  // 平台佔比與互動率
+  const pv={YouTube:sumOf(base,d=>d.yt_views),Facebook:sumOf(base,d=>d.fb_views),Instagram:sumOf(base,d=>d.ig_views)};
+  const pvAll=pv.YouTube+pv.Facebook+pv.Instagram;
+  const pEng={
+    YouTube:pv.YouTube?((sumOf(base,d=>d.yt_likes)+sumOf(base,d=>d.yt_comments))/pv.YouTube*100):0,
+    Facebook:pv.Facebook?((sumOf(base,d=>d.fb_likes)+sumOf(base,d=>d.fb_comments)+sumOf(base,d=>d.fb_shares))/pv.Facebook*100):0,
+    Instagram:pv.Instagram?((sumOf(base,d=>d.ig_likes)+sumOf(base,d=>d.ig_comments)+sumOf(base,d=>d.ig_shares))/pv.Instagram*100):0
+  };
+  const platC={YouTube:'#FF4444',Facebook:'#4C8BF5',Instagram:'#F472B6'};
+  const domOf=d=>{const y=Number(d.yt_views)||0,f=Number(d.fb_views)||0,g=Number(d.ig_views)||0,t=y+f+g;if(!t)return null;const m=Math.max(y,f,g);return{k:m===y?'YT':m===g?'IG':'FB',p:Math.round(m/t*100)};};
+  // 需檢討（觀看最低 3 支，排除統計中與廣告）
+  const worst=[...base].sort((a,b)=>totalViews(a)-totalViews(b)).slice(0,3);
+  const bestOne=[...base].sort((a,b)=>totalViews(b)-totalViews(a))[0];
+  // 行動建議
+  const mTips=[];
+  if(bShort.length&&bLong.length){
+    const sM=medOf(bShort.map(totalViews)),lM=medOf(bLong.map(totalViews));
+    if(sM>lM*3)mTips.push(`<b>Short 與 Long 請分開評估</b>：本月 Short 觀看中位數 ${sM.toLocaleString()}、Long 僅 ${lM.toLocaleString()}（差 ${Math.round(sM/Math.max(lM,1))} 倍）。Long 定位為存檔／搜尋需求，不應與 Short 比觀看量。`);
+  }
+  (()=>{
+    const cm={};base.forEach(d=>{const c=d.cat||'未分類';(cm[c]=cm[c]||[]).push(d);});
+    const rank=Object.entries(cm).map(([c,a])=>({c,m:medOf(a.map(totalViews)),n:a.length})).sort((a,b)=>b.m-a.m);
+    if(rank.length>1)mTips.push(`<b>選題方向</b>：「${rank[0].c}」表現最佳（中位數 ${rank[0].m.toLocaleString()}，${rank[0].n} 支）；「${rank[rank.length-1].c}」偏低（${rank[rank.length-1].m.toLocaleString()}），建議重新檢視選題或呈現方式。`);
+  })();
+  (()=>{
+    const top=Object.entries(pv).sort((a,b)=>b[1]-a[1])[0];
+    if(top&&top[1]>0)mTips.push(`<b>平台分工</b>：本月 ${top[0]} 貢獻 ${Math.round(top[1]/Math.max(pvAll,1)*100)}% 觀看。同一題材建議依平台改寫開頭與標題，而非三平台原封不動上架。`);
+  })();
+  if(mCollecting.length)mTips.push(`<b>資料說明</b>：另有 ${mCollecting.length} 支發布未滿 1 個月（統計中），數據仍在累積，將於下月報表納入計算。`);
+  if(mAds.length)mTips.push(`<b>已排除投放廣告 ${mAds.length} 支</b>，本報表數字為自然觸及成效。`);
   // IG 貼文統計
   const igPosts=showIg?activeIgPosts().filter(d=>(d.date||'').substring(0,7)===ym).sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
   const igpViews=igPosts.reduce((s,d)=>s+(Number(d.views)||0),0);
@@ -4502,12 +4737,57 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <div class="hd-l"><h1>${moLabel} 影片發布成效報告</h1><p>光田綜合醫院 視覺多媒體設計組</p></div>
     <div class="hd-r">產製日期：${now}<br>統計區間：${moLabel}<br>月觀看目標：${vGoal.toLocaleString()}</div>
   </div>
+  ${showVideo?`
+  <!-- 本月摘要 -->
+  <div style="background:#F2FAF6;border-left:4px solid #0F6E56;border-radius:8px;padding:16px 20px;margin-bottom:22px;">
+    <div style="font-size:14px;font-weight:900;color:#0F6E56;margin-bottom:8px;">本月摘要</div>
+    <div style="font-size:13px;line-height:2;color:#334155;">
+      ${moLabel}共發布 <b>${cnt}</b> 支${mCollecting.length?`（已定案 <b>${mLocked.length}</b> 支、統計中 ${mCollecting.length} 支${mAds.length?`、廣告 ${mAds.length} 支已排除`:''}）`:''}。<br>
+      ${usingLocked?'定案':'目前'}觀看合計 <b style="color:#0F6E56;font-size:15px;">${baseViews.toLocaleString()}</b>${momPct!==null?`，較上月 <b style="color:${momPct>=0?'#0F6E56':'#C0313D'};">${momPct>=0?'+':''}${momPct}%</b>`:''}。<br>
+      Short <b>${bShort.length}</b> 支／中位數 <b>${medOf(bShort.map(totalViews)).toLocaleString()}</b>　·　Long <b>${bLong.length}</b> 支／中位數 <b>${medOf(bLong.map(totalViews)).toLocaleString()}</b><br>
+      ${bestOne?`最佳表現：<b>${(bestOne.title||'').slice(0,28)}</b> ${totalViews(bestOne).toLocaleString()} 觀看${domOf(bestOne)?`（${domOf(bestOne).k} 佔 ${domOf(bestOne).p}%）`:''}`:''}
+    </div>
+  </div>
+
+  <!-- Short / Long 分開 -->
+  <div class="plat-row" style="grid-template-columns:1fr 1fr;">
+    <div class="plat" style="border:2px solid #0F6E56;background:#F2FAF6;">
+      <div style="font-size:11px;color:#0F6E56;font-weight:700;margin-bottom:4px;">SHORT 短影音 · 拓新主力</div>
+      <div class="val" style="color:#0F6E56;">${medOf(bShort.map(totalViews)).toLocaleString()}</div>
+      <div class="lbl">觀看中位數 · ${bShort.length} 支 · 合計 ${sumOf(bShort,totalViews).toLocaleString()}</div>
+    </div>
+    <div class="plat" style="border:2px solid #94A3B8;background:#F8FAFC;">
+      <div style="font-size:11px;color:#475569;font-weight:700;margin-bottom:4px;">LONG 長影片 · 存檔／搜尋</div>
+      <div class="val" style="color:#475569;">${medOf(bLong.map(totalViews)).toLocaleString()}</div>
+      <div class="lbl">觀看中位數 · ${bLong.length} 支 · 合計 ${sumOf(bLong,totalViews).toLocaleString()}</div>
+    </div>
+  </div>`:''}
   <div class="kpi-row">
     <div class="kpi"><div class="val">${cnt}</div><div class="lbl">本月上架影片（部）</div></div>
     <div class="kpi"><div class="val">${tv.toLocaleString()}</div><div class="lbl">全平台總觀看</div></div>
     <div class="kpi"><div class="val">${vRate}%</div><div class="lbl">觀看目標達成率</div></div>
     <div class="kpi"><div class="val">${cRate}%</div><div class="lbl">上架數達成率（目標 ${cGoal} 部）</div></div>
   </div>
+  ${showVideo?`
+  <!-- 近 6 個月趨勢 -->
+  <div class="sec-title">近 6 個月觀看趨勢</div>
+  <div style="display:flex;align-items:flex-end;gap:10px;height:120px;padding:10px 6px 0;border-bottom:2px solid #E2E8F0;margin-bottom:6px;">
+    ${trend.map(t=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">
+      <div style="font-size:10px;color:#64748B;margin-bottom:3px;">${t.v>=1000?(t.v/1000).toFixed(1)+'k':t.v}</div>
+      <div style="width:100%;background:${t.key===ym?'#0F6E56':'#B8DFC9'};border-radius:4px 4px 0 0;height:${Math.max(3,t.v/trendMax*88)}%;"></div>
+    </div>`).join('')}
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:20px;">${trend.map(t=>`<div style="flex:1;text-align:center;font-size:10px;color:${t.key===ym?'#0F6E56':'#94A3B8'};font-weight:${t.key===ym?'700':'400'};">${t.label}<br><span style="color:#CBD5E1;">${t.n}支</span></div>`).join('')}</div>
+
+  <!-- 平台佔比與互動率 -->
+  <div class="sec-title">各平台佔比與互動品質</div>
+  <div class="plat-row">
+    ${['YouTube','Facebook','Instagram'].map(k=>`<div class="plat" style="border:1px solid ${platC[k]}59;">
+      <div style="font-size:11px;font-weight:700;color:${platC[k]};margin-bottom:2px;">${k}</div>
+      <div class="val" style="color:${platC[k]};">${pvAll?Math.round(pv[k]/pvAll*100):0}%</div>
+      <div class="lbl">觀看 ${pv[k].toLocaleString()}　互動率 ${pEng[k].toFixed(1)}%</div>
+    </div>`).join('')}
+  </div>`:''}
   <div class="plat-row">
     <div class="plat plat-yt"><div class="val">${ytv.toLocaleString()}</div><div class="lbl">YouTube</div></div>
     <div class="plat plat-fb"><div class="val">${fbv.toLocaleString()}</div><div class="lbl">Facebook</div></div>
@@ -4526,6 +4806,23 @@ tr:nth-child(even) td{background:#FAFAFA;}
   ${showVideo?`<div class="sec-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> 本月觀看次數 TOP 5</div>
   <table><thead><tr><th style="width:40px;">排名</th><th>影片標題</th><th>類型</th><th>類別</th><th>YT 觀看</th><th>FB 觀看</th><th>IG 觀看</th><th>全平台合計</th></tr></thead>
   <tbody>${top5rows}</tbody></table>`:''}
+  ${showVideo&&worst.length?`<div class="sec-title" style="border-color:#C0313D;color:#C0313D;">需檢討的內容（觀看最低 ${worst.length} 支）</div>
+  <table><thead><tr style="background:#C0313D;"><th>發布日期</th><th>影片標題</th><th>格式</th><th>類別</th><th>全平台觀看</th><th>主導平台</th><th>YT CTR</th></tr></thead>
+  <tbody>${worst.map(d=>{const dm=domOf(d);return `<tr>
+    <td>${(d.date||'').substring(0,10)}</td>
+    <td style="text-align:left;max-width:240px;">${d.title||''}</td>
+    <td>${d.type==='short'?'Short':'Long'}</td>
+    <td>${d.cat||''}</td>
+    <td style="font-weight:700;color:#C0313D;">${totalViews(d).toLocaleString()}</td>
+    <td>${dm?dm.k+' '+dm.p+'%':'—'}</td>
+    <td>${((Number(d.yt_ctr)||0)*100).toFixed(1)}%</td>
+  </tr>`;}).join('')}</tbody></table>`:''}
+
+  ${showVideo&&mTips.length?`<div class="sec-title" style="border-color:#0F6E56;">本月分析與建議</div>
+  <div style="background:#F2FAF6;border:1px solid #B8DFC9;border-radius:8px;padding:8px 18px;margin-bottom:20px;">
+    ${mTips.map((t,i)=>`<div style="display:flex;gap:9px;padding:10px 0;${i?'border-top:1px solid #D7EDE2;':''}font-size:12.5px;line-height:1.8;color:#334155;"><span style="color:#0F6E56;font-weight:900;flex-shrink:0;">${i+1}.</span><span>${t}</span></div>`).join('')}
+  </div>`:''}
+
   ${showVideo?`<div class="sec-title">本月影片清單（共 ${cnt} 部）</div>
   <table><thead><tr><th>發布日期</th><th>影片標題</th><th>類型</th><th>類別</th><th>YT 觀看</th><th>FB 觀看</th><th>IG 觀看</th><th>全平台合計</th></tr></thead>
   <tbody>${rows}</tbody></table>`:''}
