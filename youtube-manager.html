@@ -411,7 +411,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.27 · 2026-08-15 18:20</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.28 · 2026-08-15 18:45</div>
     </div>
   </nav>
 
@@ -4876,23 +4876,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
       </tr>`).join('');
     };
     let html=followerHtml;
-    // 貼文 + 測驗
-    if(postQuiz.length>0){
-      const pV=sumOf(postQuiz,'views'),pI=sumOf(postQuiz,'interactions'),pS=sumOf(postQuiz,'shares'),pSv=sumOf(postQuiz,'saves'),pL=sumOf(postQuiz,'likes'),pC=sumOf(postQuiz,'comments');
-      html+=`<div class="sec-title" style="border-color:#F472B6;color:#BE185D;margin-top:28px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg> Instagram 貼文 + 測驗（共 ${postQuiz.length} 則）</div>
-      <div class="ig-kpi-row">
-        <div class="ig-kpi"><div class="val">${pI.toLocaleString()}</div><div class="lbl">總互動</div></div>
-        <div class="ig-kpi"><div class="val">${(pL+pC).toLocaleString()}</div><div class="lbl">按讚 + 留言</div></div>
-        <div class="ig-kpi"><div class="val">${pS.toLocaleString()}</div><div class="lbl">分享</div></div>
-        <div class="ig-kpi"><div class="val">${pSv.toLocaleString()}</div><div class="lbl">儲存</div></div>
-      </div>
-      <div class="sec-title" style="border-color:#F472B6;color:#BE185D;margin-top:14px;font-size:12px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> 貼文 + 測驗 TOP 5（依觀看）</div>
-      <table><thead><tr><th style="width:40px;">排名</th><th>標題</th><th>類別</th><th>觀看</th><th>互動</th><th>分享</th><th>儲存</th></tr></thead>
-      <tbody>${renderTopRows(postQuiz)}</tbody></table>
-      <div class="sec-title" style="border-color:#F472B6;color:#BE185D;margin-top:14px;font-size:12px;">本月清單</div>
-      <table><thead><tr><th>發布日期</th><th>標題</th><th>類別</th><th>觀看</th><th>互動</th><th>分享</th><th>儲存</th></tr></thead>
-      <tbody>${renderRows(postQuiz)}</tbody></table>`;
-    }
+    // 註：月報表只呈現 IG 影片 Reels；圖文貼文／測驗屬收藏型內容，成效模式不同，不納入月報
     // 影片 Reels
     if(reels.length>0){
       const rV=sumOf(reels,'views'),rI=sumOf(reels,'interactions'),rR=sumOf(reels,'reach'),rS=sumOf(reels,'shares'),rSv=sumOf(reels,'saves');
@@ -4911,7 +4895,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
       <table><thead><tr><th>發布日期</th><th>標題</th><th>類別</th><th>觀看</th><th>互動</th><th>分享</th><th>儲存</th></tr></thead>
       <tbody>${renderRows(reels)}</tbody></table>`;
     }
-    if(!html)html=`<div class="sec-title" style="border-color:#F472B6;color:#BE185D;margin-top:28px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg> Instagram 統計</div><p style="text-align:center;color:#aaa;padding:24px;">本月無 IG 資料</p>`;
+    if(!html)html=`<div class="sec-title" style="border-color:#F472B6;color:#BE185D;margin-top:28px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg> Instagram 影片 Reels</div><p style="text-align:center;color:#aaa;padding:24px;">本月無 IG 影片（Reels）資料。若已發布 Reels 卻顯示無資料，請至「IG 貼文列表 → 匯入 Metricool CSV」匯入 <b>Instagram Reels</b> 的匯出檔（貼文檔不含 Reels 數據）。</p>`;
     return html;
   })():''}
   ${showTh?(()=>{
