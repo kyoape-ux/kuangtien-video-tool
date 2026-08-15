@@ -408,7 +408,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.19 · 2026-08-15 15:20</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.20 · 2026-08-15 15:40</div>
     </div>
   </nav>
 
@@ -860,6 +860,13 @@ tr:hover td{background:rgba(52,211,153,.03);}
       </div>
       <div class="page-body">
 
+      <!-- IG 內容類型切換 -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+        <span style="font-size:13px;color:var(--txt2);font-weight:600;">內容類型：</span>
+        <div id="ig-kind-tabs" style="display:flex;gap:2px;background:var(--bg-2);border-radius:8px;padding:3px;border:1px solid var(--border);"></div>
+        <span style="font-size:11px;color:var(--txt3);">切換後 KPI 與列表同步過濾</span>
+      </div>
+
       <!-- IG KPI -->
       <div class="cards" id="ig-kpi"></div>
 
@@ -869,7 +876,6 @@ tr:hover td{background:rgba(52,211,153,.03);}
           <h3 style="font-size:14px;color:var(--txt2);">貼文列表</h3>
           <div style="display:flex;gap:8px;">
             <select id="ig-filter-month" onchange="renderIgList()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg-2);color:var(--txt);"><option value="">全部月份</option></select>
-            <select id="ig-filter-type" onchange="renderIgList()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg-2);color:var(--txt);"><option value="">全部類型</option><option value="1">貼文</option><option value="2">測驗</option><option value="3">影片</option></select>
             <button class="btn btn-secondary btn-sm" onclick="exportIgCSV()">匯出 CSV</button>
             <input type="file" id="ig-import-file" accept=".csv" style="display:none;" onchange="handleIgImportFile(this)">
             <button class="btn btn-sm write-only" onclick="triggerIgImport()" style="background:rgba(167,139,250,.14);color:#A78BFA;border:1px solid rgba(167,139,250,.3);" title="從 Metricool 匯出的 IG 貼文/Reels CSV 批次匯入"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>匯入 Metricool CSV</button>
@@ -2721,7 +2727,9 @@ function renderVidStats(){
 // 洞察分析（爆款/低效規律 + 建議，純本機運算）
 // ============================================================
 let insightsPlat='yt';
+let insightsIgKind='all';
 function setInsightsPlat(p){insightsPlat=p;renderInsights();}
+function setInsightsIgKind(k){insightsIgKind=k;renderInsights();}
 function renderInsightsTabs(){
   const tb=document.getElementById('insights-tabs');if(!tb)return;
   const cfg=[['yt','YouTube 影片'],['fb','Facebook'],['ig','Instagram'],['th','Threads']];
@@ -2733,14 +2741,15 @@ function renderInsights(){
   if(insightsPlat==='yt'){renderInsightsYt(box);return;}
   const cfgs={
     fb:{label:'Facebook',color:'#4C8BF5',hint:'資料來自影片記錄的 FB 欄位（互動=讚+留言+分享）',rows:activeVideos().filter(d=>(Number(d.fb_views)||0)>0).map(d=>({title:d.title||'',date:d.date||'',cat:d.cat||'未分類',typeLabel:d.type==='short'?'Short':'Long',views:Number(d.fb_views)||0,eng:(Number(d.fb_likes)||0)+(Number(d.fb_comments)||0)+(Number(d.fb_shares)||0)}))},
-    ig:{label:'Instagram',color:'#F472B6',hint:'互動=讚+留言+分享+儲存',rows:activeIgPosts().map(d=>({title:d.title||'',date:d.date||'',cat:d.cat||'未分類',typeLabel:IG_TYPE_MAP[d.type]||'貼文',views:Number(d.views)||0,eng:(Number(d.likes)||0)+(Number(d.comments)||0)+(Number(d.shares)||0)+(Number(d.saves)||0)}))},
+    ig:{label:'Instagram'+(insightsIgKind==='pq'?'（貼文+測驗）':insightsIgKind==='rl'?'（影片 Reels）':''),color:'#F472B6',hint:'互動=讚+留言+分享+儲存',subTabs:`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span style="font-size:12px;color:var(--txt2);font-weight:600;">IG 內容類型：</span><div style="display:flex;gap:2px;background:var(--bg-2);border-radius:8px;padding:3px;border:1px solid var(--border);">${[['all','全部'],['pq','貼文+測驗'],['rl','影片 Reels']].map(([k,l])=>`<button onclick="setInsightsIgKind('${k}')" style="padding:4px 12px;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;${k===insightsIgKind?'background:var(--ig);color:#fff;':'background:transparent;color:var(--txt3);'}">${l}</button>`).join('')}</div></div>`,rows:activeIgPosts().filter(d=>{const t=String(d.type);if(insightsIgKind==='pq')return t==='1'||t==='2';if(insightsIgKind==='rl')return t==='3';return true;}).map(d=>({title:d.title||'',date:d.date||'',cat:d.cat||'未分類',typeLabel:IG_TYPE_MAP[d.type]||'貼文',views:Number(d.views)||0,eng:(Number(d.likes)||0)+(Number(d.comments)||0)+(Number(d.shares)||0)+(Number(d.saves)||0)}))},
     th:{label:'Threads',color:'#A78BFA',hint:'互動=讚+回覆+轉發引用',rows:activeThreads().map(d=>({title:d.title||'',date:d.date||'',cat:d.cat||'未分類',typeLabel:TH_TYPE_MAP[d.type]||'貼文',views:Number(d.views)||0,eng:(Number(d.likes)||0)+(Number(d.replies)||0)+(Number(d.reposts)||0)}))}
   };
   renderInsightsGeneric(box,cfgs[insightsPlat]);
 }
 function renderInsightsGeneric(box,cfg){
+  const sub=cfg.subTabs||'';
   const rows=cfg.rows.filter(r=>r.views>0);
-  if(rows.length<4){box.innerHTML=`<div class="chart-box" style="text-align:center;color:var(--txt3);padding:40px;">${cfg.label} 有觀看數據的內容太少（目前 ${rows.length} 筆），至少 4 筆才能做規律分析。<br><span style="font-size:12px;">可先用「匯入 Metricool CSV」把數據補進來。</span></div>`;return;}
+  if(rows.length<4){box.innerHTML=sub+`<div class="chart-box" style="text-align:center;color:var(--txt3);padding:40px;">${cfg.label} 有觀看數據的內容太少（目前 ${rows.length} 筆），至少 4 筆才能做規律分析。<br><span style="font-size:12px;">可先用「匯入 Metricool CSV」把數據補進來。</span></div>`;return;}
   const days=['週日','週一','週二','週三','週四','週五','週六'];
   const sorted=[...rows].sort((a,b)=>b.views-a.views);
   const n=sorted.length,k=Math.max(1,Math.round(n*0.2));
@@ -2760,7 +2769,7 @@ function renderInsightsGeneric(box,cfg){
   if(dayRows.length>1)tips.push(`<b>發文時機</b>：「${dayRows[0].label}」平均觀看最高（${dayRows[0].avgV.toLocaleString()}），優先排這天。`);
   if(T.cat)tips.push(`<b>爆款主題</b>：Top 內容最常見類別是「${esc(T.cat.key)}」（佔 ${T.cat.pct}%）。`);
   if(!tips.length)tips.push('規律不明顯，建議補「類別」欄位（可用自動掃描貼標）讓分析更準。');
-  box.innerHTML=`
+  box.innerHTML=sub+`
     <div style="font-size:12px;color:var(--txt3);margin-bottom:14px;">${cfg.label} 共 <b style="color:var(--txt);">${n}</b> 筆有觀看數據 · 前 20%（${k} 筆）為爆款、後 20%（${k} 筆）為低效 · ${cfg.hint}</div>
     <div class="chart-row">
       <div class="chart-box" style="border-color:rgba(52,211,153,.3);">
@@ -3599,26 +3608,34 @@ async function submitIgEdit(){
   showSyncBadge(ok?'IG 修改已同步':USE_API()?'本機已更新，同步失敗':'已更新');
 }
 
-function renderIgAll(){renderIgKpi();renderIgList();buildIgMonthFilter();rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(document.getElementById('ig-chart-monthly'))renderIgCharts();}
+function renderIgAll(){renderIgKindTabs();renderIgKpi();renderIgList();buildIgMonthFilter();rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(document.getElementById('ig-chart-monthly'))renderIgCharts();}
 
+let igListType='';// ''=全部, '1'=貼文, '2'=測驗, '3'=影片 Reels
+function setIgListType(t){igListType=t;renderIgKindTabs();renderIgKpi();renderIgList();}
+function renderIgKindTabs(){
+  const box=document.getElementById('ig-kind-tabs');if(!box)return;
+  const cfg=[['','全部'],['1','貼文'],['2','測驗'],['3','影片 Reels']];
+  box.innerHTML=cfg.map(([k,l])=>`<button onclick="setIgListType('${k}')" style="padding:5px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:.12s;${k===igListType?'background:var(--ig);color:#fff;':'background:transparent;color:var(--txt3);'}">${l}</button>`).join('');
+}
 function renderIgKpi(){
   const now=new Date(),ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  document.getElementById('ig-month').textContent=ym;
-  const md=activeIgPosts().filter(d=>(d.date||'').startsWith(ym));
+  const kindLabel={'':'IG','1':'IG 貼文','2':'IG 測驗','3':'IG Reels'}[igListType]||'IG';
+  document.getElementById('ig-month').textContent=`${ym}${igListType?` · ${kindLabel}`:''}`;
+  const md=activeIgPosts().filter(d=>(d.date||'').startsWith(ym)&&(!igListType||String(d.type)===igListType));
   const tv=md.reduce((s,d)=>s+(Number(d.views)||0),0);
   const ti=md.reduce((s,d)=>s+(Number(d.interactions)||0),0);
   const tr=md.reduce((s,d)=>s+(Number(d.reach)||0),0);
   const ts=md.reduce((s,d)=>s+(Number(d.saves)||0),0);
   document.getElementById('ig-kpi').innerHTML=`
-    <div class="kpi-card"><div class="kpi-label">本月 IG 觀看</div><div class="kpi-val">${tv.toLocaleString()}</div><div class="kpi-sub">${md.length} 則貼文</div></div>
+    <div class="kpi-card"><div class="kpi-label">本月 ${kindLabel} 觀看</div><div class="kpi-val">${tv.toLocaleString()}</div><div class="kpi-sub">${md.length} 則</div></div>
     <div class="kpi-card"><div class="kpi-label">互動次數</div><div class="kpi-val">${ti.toLocaleString()}</div><div class="kpi-sub">按讚 + 留言 + 分享</div></div>
     <div class="kpi-card"><div class="kpi-label">觸及帳號</div><div class="kpi-val">${tr.toLocaleString()}</div><div class="kpi-sub">本月累計觸及</div></div>
-    <div class="kpi-card"><div class="kpi-label">儲存數</div><div class="kpi-val">${ts.toLocaleString()}</div><div class="kpi-sub">本月貼文被儲存次數</div></div>`;
+    <div class="kpi-card"><div class="kpi-label">儲存數</div><div class="kpi-val">${ts.toLocaleString()}</div><div class="kpi-sub">本月被儲存次數</div></div>`;
 }
 
 function renderIgList(){
   const fm=document.getElementById('ig-filter-month').value;
-  const ft=document.getElementById('ig-filter-type').value;
+  const ft=igListType;
   let f=activeIgPosts().filter(d=>{
     if(fm&&!(d.date||'').startsWith(fm))return false;
     if(ft&&String(d.type)!==ft)return false;
