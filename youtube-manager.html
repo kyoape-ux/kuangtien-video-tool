@@ -405,7 +405,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.15 · 2026-08-15 12:58</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.16 · 2026-08-15 13:15</div>
     </div>
   </nav>
 
@@ -718,8 +718,9 @@ tr:hover td{background:rgba(52,211,153,.03);}
         </div>
       </div>
       <div class="page-body">
-        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-          <button class="btn btn-sm" onclick="copyInsightBrief()" style="background:rgba(52,211,153,.14);color:#34d399;border:1px solid rgba(52,211,153,.3);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>匯出分析簡報（給 AI 大腦）</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <div id="insights-tabs" style="display:flex;gap:2px;background:var(--bg-2);border-radius:8px;padding:3px;border:1px solid var(--border);"></div>
+          <button class="btn btn-sm" onclick="copyInsightBrief()" style="background:rgba(52,211,153,.14);color:#34d399;border:1px solid rgba(52,211,153,.3);" title="匯出全平台數據＋分析提示到剪貼簿"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>匯出分析簡報（給 AI 大腦）</button>
         </div>
         <div id="insights-body"></div>
       </div>
@@ -2671,8 +2672,69 @@ function renderVidStats(){
 // ============================================================
 // 洞察分析（爆款/低效規律 + 建議，純本機運算）
 // ============================================================
+let insightsPlat='yt';
+function setInsightsPlat(p){insightsPlat=p;renderInsights();}
+function renderInsightsTabs(){
+  const tb=document.getElementById('insights-tabs');if(!tb)return;
+  const cfg=[['yt','YouTube 影片'],['fb','Facebook'],['ig','Instagram'],['th','Threads']];
+  tb.innerHTML=cfg.map(([k,l])=>`<button onclick="setInsightsPlat('${k}')" style="padding:5px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:.12s;${k===insightsPlat?'background:var(--accent);color:#000;':'background:transparent;color:var(--txt3);'}">${l}</button>`).join('');
+}
 function renderInsights(){
+  renderInsightsTabs();
   const box=document.getElementById('insights-body');if(!box)return;
+  if(insightsPlat==='yt'){renderInsightsYt(box);return;}
+  const cfgs={
+    fb:{label:'Facebook',color:'#4C8BF5',hint:'資料來自影片記錄的 FB 欄位（互動=讚+留言+分享）',rows:activeVideos().filter(d=>(Number(d.fb_views)||0)>0).map(d=>({title:d.title||'',date:d.date||'',cat:d.cat||'未分類',typeLabel:d.type==='short'?'Short':'Long',views:Number(d.fb_views)||0,eng:(Number(d.fb_likes)||0)+(Number(d.fb_comments)||0)+(Number(d.fb_shares)||0)}))},
+    ig:{label:'Instagram',color:'#F472B6',hint:'互動=讚+留言+分享+儲存',rows:activeIgPosts().map(d=>({title:d.title||'',date:d.date||'',cat:d.cat||'未分類',typeLabel:IG_TYPE_MAP[d.type]||'貼文',views:Number(d.views)||0,eng:(Number(d.likes)||0)+(Number(d.comments)||0)+(Number(d.shares)||0)+(Number(d.saves)||0)}))},
+    th:{label:'Threads',color:'#A78BFA',hint:'互動=讚+回覆+轉發引用',rows:activeThreads().map(d=>({title:d.title||'',date:d.date||'',cat:d.cat||'未分類',typeLabel:TH_TYPE_MAP[d.type]||'貼文',views:Number(d.views)||0,eng:(Number(d.likes)||0)+(Number(d.replies)||0)+(Number(d.reposts)||0)}))}
+  };
+  renderInsightsGeneric(box,cfgs[insightsPlat]);
+}
+function renderInsightsGeneric(box,cfg){
+  const rows=cfg.rows.filter(r=>r.views>0);
+  if(rows.length<4){box.innerHTML=`<div class="chart-box" style="text-align:center;color:var(--txt3);padding:40px;">${cfg.label} 有觀看數據的內容太少（目前 ${rows.length} 筆），至少 4 筆才能做規律分析。<br><span style="font-size:12px;">可先用「匯入 Metricool CSV」把數據補進來。</span></div>`;return;}
+  const days=['週日','週一','週二','週三','週四','週五','週六'];
+  const sorted=[...rows].sort((a,b)=>b.views-a.views);
+  const n=sorted.length,k=Math.max(1,Math.round(n*0.2));
+  const top=sorted.slice(0,k),bottom=sorted.slice(n-k);
+  const avg=(arr,fn)=>{const xs=arr.map(fn).filter(x=>x!=null&&!isNaN(x));return xs.length?xs.reduce((s,x)=>s+x,0)/xs.length:0;};
+  const modeOf=(arr,fn)=>{const c={};arr.forEach(d=>{const kk=fn(d);if(kk)c[kk]=(c[kk]||0)+1;});const e=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];return e?{key:e[0],pct:Math.round(e[1]/arr.length*100)}:null;};
+  const engRate=arr=>{const v=arr.reduce((s,d)=>s+d.views,0);const e=arr.reduce((s,d)=>s+d.eng,0);return v?e/v*100:0;};
+  const prof=arr=>({avgV:Math.round(avg(arr,d=>d.views)),eng:engRate(arr),cat:modeOf(arr,d=>d.cat),day:modeOf(arr,d=>d.date?days[new Date(d.date).getDay()]:null),type:modeOf(arr,d=>d.typeLabel),titleLen:Math.round(avg(arr,d=>d.title.length))});
+  const T=prof(top),B=prof(bottom);
+  const groupBy=(fn)=>{const m={};rows.forEach(r=>{const kk=fn(r);if(!kk)return;(m[kk]=m[kk]||[]).push(r);});return Object.entries(m).map(([label,arr])=>({label,cnt:arr.length,avgV:Math.round(avg(arr,d=>d.views))})).sort((a,b)=>b.avgV-a.avgV);};
+  const catRows=groupBy(r=>r.cat),typeRows=groupBy(r=>r.typeLabel),dayRows=groupBy(r=>r.date?days[new Date(r.date).getDay()]:null);
+  const bar=(rs,color)=>{const max=Math.max(...rs.map(r=>r.avgV),1);return rs.map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;"><span style="width:110px;font-size:12px;color:var(--txt2);">${esc(r.label)}</span><div style="flex:1;background:var(--bg-3);border-radius:5px;height:16px;overflow:hidden;"><div style="height:100%;width:${Math.max(3,r.avgV/max*100)}%;background:${color};border-radius:5px;"></div></div><span style="width:72px;text-align:right;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;">${r.avgV.toLocaleString()}</span><span style="width:42px;text-align:right;font-size:11px;color:var(--txt3);">${r.cnt}筆</span></div>`).join('');};
+  const tips=[];
+  if(T.eng-B.eng>=1)tips.push(`<b>爆款互動率 ${T.eng.toFixed(1)}%、低效僅 ${B.eng.toFixed(1)}%</b>：內容能不能引發互動（留言/分享）是 ${cfg.label} 擴散的關鍵，多用提問、留言引導。`);
+  if(catRows.length>1&&catRows[0].avgV>0)tips.push(`<b>加碼「${esc(catRows[0].label)}」</b>（平均 ${catRows[0].avgV.toLocaleString()} 最高）；<b>檢討「${esc(catRows[catRows.length-1].label)}」</b>（平均僅 ${catRows[catRows.length-1].avgV.toLocaleString()}）。`);
+  if(typeRows.length>1)tips.push(`<b>格式</b>：「${esc(typeRows[0].label)}」平均觀看 ${typeRows[0].avgV.toLocaleString()}，明顯優於「${esc(typeRows[typeRows.length-1].label)}」（${typeRows[typeRows.length-1].avgV.toLocaleString()}）。`);
+  if(dayRows.length>1)tips.push(`<b>發文時機</b>：「${dayRows[0].label}」平均觀看最高（${dayRows[0].avgV.toLocaleString()}），優先排這天。`);
+  if(T.cat)tips.push(`<b>爆款主題</b>：Top 內容最常見類別是「${esc(T.cat.key)}」（佔 ${T.cat.pct}%）。`);
+  if(!tips.length)tips.push('規律不明顯，建議補「類別」欄位（可用自動掃描貼標）讓分析更準。');
+  box.innerHTML=`
+    <div style="font-size:12px;color:var(--txt3);margin-bottom:14px;">${cfg.label} 共 <b style="color:var(--txt);">${n}</b> 筆有觀看數據 · 前 20%（${k} 筆）為爆款、後 20%（${k} 筆）為低效 · ${cfg.hint}</div>
+    <div class="chart-row">
+      <div class="chart-box" style="border-color:rgba(52,211,153,.3);">
+        <h3 style="color:#34D399;">🔥 爆款共同點（Top ${k}）</h3>
+        <div style="font-size:13px;line-height:2;color:var(--txt);margin-top:6px;">平均觀看 <b>${T.avgV.toLocaleString()}</b>　互動率 <b>${T.eng.toFixed(1)}%</b><br>最常見類別：<b>${T.cat?esc(T.cat.key):'—'}</b>（${T.cat?T.cat.pct:0}%）　格式：<b>${T.type?esc(T.type.key):'—'}</b><br>常發 <b>${T.day?T.day.key:'—'}</b>　平均標題 <b>${T.titleLen}</b> 字</div>
+      </div>
+      <div class="chart-box" style="border-color:rgba(248,113,113,.3);">
+        <h3 style="color:var(--red);">📉 低效共同點（Bottom ${k}）</h3>
+        <div style="font-size:13px;line-height:2;color:var(--txt);margin-top:6px;">平均觀看 <b>${B.avgV.toLocaleString()}</b>　互動率 <b>${B.eng.toFixed(1)}%</b><br>最常見類別：<b>${B.cat?esc(B.cat.key):'—'}</b>（${B.cat?B.cat.pct:0}%）　格式：<b>${B.type?esc(B.type.key):'—'}</b><br>常發 <b>${B.day?B.day.key:'—'}</b>　平均標題 <b>${B.titleLen}</b> 字</div>
+      </div>
+    </div>
+    <div class="chart-box" style="margin-top:20px;"><h3>各類別 平均觀看排行</h3><div style="margin-top:8px;">${bar(catRows,cfg.color)}</div></div>
+    <div class="chart-row" style="margin-top:20px;">
+      <div class="chart-box"><h3>格式 平均觀看</h3><div style="margin-top:8px;">${bar(typeRows,cfg.color)}</div></div>
+      <div class="chart-box"><h3>發文星期 平均觀看</h3><div style="margin-top:8px;">${bar(dayRows,'#FBBF24')}</div></div>
+    </div>
+    <div class="chart-box" style="margin-top:20px;border-color:rgba(52,211,153,.25);">
+      <h3 style="color:#34D399;">具體建議</h3>
+      <ul style="margin:8px 0 0;list-style:none;padding:0;">${tips.map(t=>`<li style="padding:9px 0;border-top:1px solid var(--border);font-size:13px;line-height:1.7;color:var(--txt2);display:flex;gap:8px;"><span style="color:#34D399;flex-shrink:0;">▸</span><span>${t}</span></li>`).join('')}</ul>
+    </div>`;
+}
+function renderInsightsYt(box){
   const AV=activeVideos();const TV=d=>totalViews(d);
   if(AV.length<4){box.innerHTML=`<div class="chart-box" style="text-align:center;color:var(--txt3);padding:40px;">影片數太少（目前 ${AV.length} 部），至少 4 部才能做規律分析。</div>`;return;}
   const sorted=AV.map(d=>({d,v:TV(d)})).sort((a,b)=>b.v-a.v);
@@ -2731,7 +2793,10 @@ function buildInsightBrief(){
   const sorted=AV.map(d=>({d,v:TV(d)})).sort((a,b)=>b.v-a.v);
   const line=d=>`${(d.date||'').substring(0,10)} | ${d.type==='short'?'Short':'Long'} | ${d.cat||'未分類'} | 觀看${TV(d).toLocaleString()} | YT${(Number(d.yt_views)||0).toLocaleString()} | CTR${((Number(d.yt_ctr)||0)*100).toFixed(1)}% | 完播${((Number(d.yt_ratio)||0)*100).toFixed(0)}% | ${(d.title||'').replace(/[\r\n]+/g,' ').slice(0,60)}`;
   const rows=sorted.map(x=>line(x.d)).join('\n');
-  return `你是資深短影音企劃顧問。以下是光田綜合醫院影片的實際成效數據，欄位為：日期 | 格式(Short/Long) | 類別 | 全平台觀看 | YT觀看 | CTR | 完播率 | 標題。
+  const igRows=(typeof activeIgPosts==='function'?activeIgPosts():[]).filter(d=>Number(d.views)>0).sort((a,b)=>(Number(b.views)||0)-(Number(a.views)||0)).map(d=>`${(d.date||'').substring(0,10)} | ${IG_TYPE_MAP[d.type]||'貼文'} | ${d.cat||'未分類'} | 觀看${(Number(d.views)||0).toLocaleString()} | 讚${Number(d.likes)||0} | 分享${Number(d.shares)||0} | 儲存${Number(d.saves)||0} | ${(d.title||'').replace(/[\r\n]+/g,' ').slice(0,50)}`).join('\n');
+  const thRows=(typeof activeThreads==='function'?activeThreads():[]).filter(d=>Number(d.views)>0).sort((a,b)=>(Number(b.views)||0)-(Number(a.views)||0)).map(d=>`${(d.date||'').substring(0,10)} | ${TH_TYPE_MAP[d.type]||'貼文'} | 瀏覽${(Number(d.views)||0).toLocaleString()} | 讚${Number(d.likes)||0} | 回覆${Number(d.replies)||0} | 轉發${Number(d.reposts)||0} | ${(d.title||'').replace(/[\r\n]+/g,' ').slice(0,50)}`).join('\n');
+  const extra=(igRows?`\n\n【Instagram 貼文】（日期 | 類型 | 類別 | 觀看 | 讚 | 分享 | 儲存 | 標題）\n${igRows}`:'')+(thRows?`\n\n【Threads 貼文】（日期 | 類型 | 瀏覽 | 讚 | 回覆 | 轉發引用 | 標題）\n${thRows}`:'');
+  return `你是資深短影音與社群企劃顧問。以下是光田綜合醫院「全平台」實際成效數據（影片含 YT/FB/IG 觀看、另附 Instagram 與 Threads 貼文），請做跨平台的細主題分析。影片欄位為：日期 | 格式(Short/Long) | 類別 | 全平台觀看 | YT觀看 | CTR | 完播率 | 標題。
 
 請做「細主題」層級的深入分析（類別欄太粗，請直接從『標題』判讀真正主題）：
 1. 逐支判讀標題的主題維度：時事性、季節性、在地化(台中/海線/大甲/沙鹿等)、具體病症或科別(如心肌梗塞、皮膚科肉芽、腎臟、睡眠…)、情緒鉤子(恐懼/實用/獵奇…)。
@@ -2739,9 +2804,10 @@ function buildInsightBrief(){
 3. 用「格式(Short/Long)」當控制變因，明確區分差異是來自「主題」還是「格式」。
 4. 給我 5 個有數據支持的「下一支 Short」主題建議，每個附上為什麼（引用具體數據）。
 5. 指出哪些主題方向已飽和或表現差、應該少做。
+6. 跨平台比較：同一主題在 YT/FB/IG/Threads 表現差異，建議每個平台各自最適合的內容型態。
 
-數據（共 ${AV.length} 部，依觀看由高到低）：
-${rows}`;
+【影片】（共 ${AV.length} 部，依觀看由高到低）：
+${rows}${extra}`;
 }
 function copyInsightBrief(){
   const t=buildInsightBrief();
