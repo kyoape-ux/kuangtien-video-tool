@@ -400,7 +400,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.11 · 2026-06-26 00:40</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.12 · 2026-06-26 01:15</div>
     </div>
   </nav>
 
@@ -711,6 +711,9 @@ tr:hover td{background:rgba(52,211,153,.03);}
         </div>
       </div>
       <div class="page-body">
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="btn btn-sm" onclick="copyInsightBrief()" style="background:rgba(52,211,153,.14);color:#34d399;border:1px solid rgba(52,211,153,.3);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>匯出分析簡報（給 AI 大腦）</button>
+        </div>
         <div id="insights-body"></div>
       </div>
     </div>
@@ -2502,6 +2505,36 @@ function renderInsights(){
       <h3 style="color:#34D399;"><span class="icon" style="color:#34D399;"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg></span>具體建議</h3>
       <ul style="margin:8px 0 0;list-style:none;padding:0;">${tips.map(t=>`<li style="padding:9px 0;border-top:1px solid var(--border);font-size:13px;line-height:1.7;color:var(--txt2);display:flex;gap:8px;"><span style="color:#34D399;flex-shrink:0;">▸</span><span>${t}</span></li>`).join('')}</ul>
     </div>`;
+}
+
+function buildInsightBrief(){
+  const AV=activeVideos();const TV=d=>totalViews(d);
+  const sorted=AV.map(d=>({d,v:TV(d)})).sort((a,b)=>b.v-a.v);
+  const line=d=>`${(d.date||'').substring(0,10)} | ${d.type==='short'?'Short':'Long'} | ${d.cat||'未分類'} | 觀看${TV(d).toLocaleString()} | YT${(Number(d.yt_views)||0).toLocaleString()} | CTR${((Number(d.yt_ctr)||0)*100).toFixed(1)}% | 完播${((Number(d.yt_ratio)||0)*100).toFixed(0)}% | ${(d.title||'').replace(/[\r\n]+/g,' ').slice(0,60)}`;
+  const rows=sorted.map(x=>line(x.d)).join('\n');
+  return `你是資深短影音企劃顧問。以下是光田綜合醫院影片的實際成效數據，欄位為：日期 | 格式(Short/Long) | 類別 | 全平台觀看 | YT觀看 | CTR | 完播率 | 標題。
+
+請做「細主題」層級的深入分析（類別欄太粗，請直接從『標題』判讀真正主題）：
+1. 逐支判讀標題的主題維度：時事性、季節性、在地化(台中/海線/大甲/沙鹿等)、具體病症或科別(如心肌梗塞、皮膚科肉芽、腎臟、睡眠…)、情緒鉤子(恐懼/實用/獵奇…)。
+2. 找出高成效 vs 低成效在這些細主題上的規律。
+3. 用「格式(Short/Long)」當控制變因，明確區分差異是來自「主題」還是「格式」。
+4. 給我 5 個有數據支持的「下一支 Short」主題建議，每個附上為什麼（引用具體數據）。
+5. 指出哪些主題方向已飽和或表現差、應該少做。
+
+數據（共 ${AV.length} 部，依觀看由高到低）：
+${rows}`;
+}
+function copyInsightBrief(){
+  const t=buildInsightBrief();
+  const done=()=>alert('✅ 分析簡報已複製到剪貼簿！\n\n貼到你的「光田影音企劃中心」或 ChatGPT / Claude，\n就能請 AI 做細主題分析＋下一支企劃建議。');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));
+  }else{fallbackCopy(t,done);}
+}
+function fallbackCopy(t,cb){
+  const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');cb();}catch(e){alert('複製失敗，請手動複製。');}
+  document.body.removeChild(ta);
 }
 
 function renderCharts(viewData){
