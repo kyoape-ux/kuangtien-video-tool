@@ -344,6 +344,9 @@ tr:hover td{background:rgba(52,211,153,.03);}
     <div class="nav-item" onclick="showPage('vidstats')">
       <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>影片成效
     </div>
+    <div class="nav-item" onclick="showPage('insights')">
+      <span class="icon"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg></span>洞察分析
+    </div>
 
     <div class="nav-section">Instagram</div>
     <div class="nav-item" onclick="showPage('igadd')">
@@ -397,7 +400,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.10 · 2026-06-26 00:10</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.11 · 2026-06-26 00:40</div>
     </div>
   </nav>
 
@@ -697,6 +700,19 @@ tr:hover td{background:rgba(52,211,153,.03);}
           <div id="vs-rank-empty" style="display:none;text-align:center;padding:36px;color:var(--txt3);">此期間無影片資料</div>
         </div>
       </div><!-- /page-body -->
+    </div>
+
+    <!-- ═══ Page: 洞察分析 ═══ -->
+    <div class="page" id="page-insights">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>洞察分析</h1>
+          <p>從你的數據自動挖出「爆款共同點、低效共同點、各維度規律」與具體建議</p>
+        </div>
+      </div>
+      <div class="page-body">
+        <div id="insights-body"></div>
+      </div>
     </div>
 
     <!-- ═══ Page: IG 貼文管理 ═══ -->
@@ -2266,7 +2282,7 @@ function renderTrashList(){
 // ============================================================
 // 導覽
 // ============================================================
-function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='vidstats')renderVidStats();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='vidstats')renderVidStats();if(name==='insights')renderInsights();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
 function renderAll(){renderDashboard();renderList();renderCfgForm();buildMonthFilter();}
 
 // ============================================================
@@ -2428,6 +2444,64 @@ function renderVidStats(){
     <td style="font-variant-numeric:tabular-nums;color:${(Number(d.yt_ratio)||0)>=0.5?'#34D399':'var(--txt)'};">${((Number(d.yt_ratio)||0)*100).toFixed(1)}%</td>
     <td style="font-variant-numeric:tabular-nums;color:var(--txt3);">${esc(d.yt_avgdur||'—')}</td>
   </tr>`).join('');
+}
+
+// ============================================================
+// 洞察分析（爆款/低效規律 + 建議，純本機運算）
+// ============================================================
+function renderInsights(){
+  const box=document.getElementById('insights-body');if(!box)return;
+  const AV=activeVideos();const TV=d=>totalViews(d);
+  if(AV.length<4){box.innerHTML=`<div class="chart-box" style="text-align:center;color:var(--txt3);padding:40px;">影片數太少（目前 ${AV.length} 部），至少 4 部才能做規律分析。</div>`;return;}
+  const sorted=AV.map(d=>({d,v:TV(d)})).sort((a,b)=>b.v-a.v);
+  const n=sorted.length,k=Math.max(1,Math.round(n*0.2));
+  const top=sorted.slice(0,k).map(x=>x.d),bottom=sorted.slice(n-k).map(x=>x.d);
+  const days=['週日','週一','週二','週三','週四','週五','週六'];
+  const avg=(arr,fn)=>{const xs=arr.map(fn).filter(x=>x!=null&&!isNaN(x));return xs.length?xs.reduce((s,x)=>s+x,0)/xs.length:null;};
+  const modeOf=(arr,fn)=>{const c={};arr.forEach(d=>{const kk=fn(d);if(kk!=null&&kk!=='')c[kk]=(c[kk]||0)+1;});const e=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];return e?{key:e[0],pct:Math.round(e[1]/arr.length*100)}:null;};
+  const profile=arr=>({cnt:arr.length,avgV:Math.round(avg(arr,TV)||0),shortPct:Math.round(arr.filter(d=>d.type==='short').length/arr.length*100),ctr:avg(arr.filter(d=>Number(d.yt_ctr)>0),d=>Number(d.yt_ctr)*100),ratio:avg(arr.filter(d=>Number(d.yt_ratio)>0),d=>Number(d.yt_ratio)*100),cat:modeOf(arr,d=>d.cat||'未分類'),day:modeOf(arr,d=>d.date?days[new Date(d.date).getDay()]:null),titleLen:Math.round(avg(arr,d=>(d.title||'').length)||0)});
+  const T=profile(top),B=profile(bottom),ALL=profile(AV);
+  const pct=x=>x==null?'—':x.toFixed(1)+'%';
+  const catMap={};AV.forEach(d=>{const c=d.cat||'未分類';(catMap[c]=catMap[c]||[]).push(d);});
+  const catRows=Object.entries(catMap).map(([c,arr])=>({label:c,cnt:arr.length,avgV:Math.round(avg(arr,TV))})).sort((a,b)=>b.avgV-a.avgV);
+  const dayMap={};AV.forEach(d=>{if(d.date){const w=days[new Date(d.date).getDay()];(dayMap[w]=dayMap[w]||[]).push(d);}});
+  const dayRows=days.filter(w=>dayMap[w]).map(w=>({label:w,cnt:dayMap[w].length,avgV:Math.round(avg(dayMap[w],TV))})).sort((a,b)=>b.avgV-a.avgV);
+  const shorts=AV.filter(d=>d.type==='short'),longs=AV.filter(d=>d.type!=='short');
+  const typeRows=[{label:'Short 短影音',cnt:shorts.length,avgV:shorts.length?Math.round(avg(shorts,TV)):0},{label:'Long 長影片',cnt:longs.length,avgV:longs.length?Math.round(avg(longs,TV)):0}].filter(r=>r.cnt>0);
+  const bar=(rows,color)=>{const max=Math.max(...rows.map(r=>r.avgV),1);return rows.map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;"><span style="width:110px;font-size:12px;color:var(--txt2);">${esc(r.label)}</span><div style="flex:1;background:var(--bg-3);border-radius:5px;height:16px;overflow:hidden;"><div style="height:100%;width:${Math.max(3,r.avgV/max*100)}%;background:${color};border-radius:5px;"></div></div><span style="width:72px;text-align:right;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;">${r.avgV.toLocaleString()}</span><span style="width:42px;text-align:right;font-size:11px;color:var(--txt3);">${r.cnt}部</span></div>`).join('');};
+  const tips=[];
+  if(T.shortPct-ALL.shortPct>=15)tips.push(`<b>多做 Short</b>：爆款有 ${T.shortPct}% 是 Short（整體 ${ALL.shortPct}%），短影音明顯更容易衝觀看。`);
+  else if(ALL.shortPct-T.shortPct>=15)tips.push(`<b>長影片是你的強項</b>：爆款多為長影片，別盲目追短。`);
+  if(T.ctr!=null&&B.ctr!=null&&T.ctr-B.ctr>=1)tips.push(`<b>標題／縮圖是關鍵</b>：爆款平均 CTR ${pct(T.ctr)}、低效只有 ${pct(B.ctr)}。低效影片先從封面標題下手。`);
+  if(B.ratio!=null&&B.ratio<40)tips.push(`<b>前段留不住人</b>：低效影片平均完播率僅 ${pct(B.ratio)}，開頭 3 秒的 hook 要更強、直接破題。`);
+  if(catRows.length>1)tips.push(`<b>加碼「${esc(catRows[0].label)}」</b>（平均觀看 ${catRows[0].avgV.toLocaleString()} 最高）；<b>檢討「${esc(catRows[catRows.length-1].label)}」</b>（平均僅 ${catRows[catRows.length-1].avgV.toLocaleString()}），重想選題或呈現。`);
+  if(dayRows.length>1)tips.push(`<b>發片時機</b>：「${dayRows[0].label}」平均觀看最高（${dayRows[0].avgV.toLocaleString()}），可優先排這天發。`);
+  if(T.cat)tips.push(`<b>爆款主題</b>：Top 影片最常見類別是「${esc(T.cat.key)}」（佔 ${T.cat.pct}%），這是觀眾最買單的方向。`);
+  if(!tips.length)tips.push('目前資料看不出明顯規律，建議多累積影片、補齊 CTR/完播率欄位，分析會更準。');
+  box.innerHTML=`
+    <div style="font-size:12px;color:var(--txt3);margin-bottom:14px;">共分析 <b style="color:var(--txt);">${n}</b> 部影片 · 取觀看前 20%（${k} 部）為「爆款」、後 20%（${k} 部）為「低效」對照</div>
+    <div class="chart-row">
+      <div class="chart-box" style="border-color:rgba(52,211,153,.3);">
+        <h3 style="color:#34D399;"><span class="icon" style="color:#34D399;"><svg viewBox="0 0 24 24"><polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/><polyline points="16,7 22,7 22,13"/></svg></span>🔥 爆款共同點（Top ${k} 部）</h3>
+        <div style="font-size:13px;line-height:2;color:var(--txt);margin-top:6px;">平均觀看 <b>${T.avgV.toLocaleString()}</b><br>最常見類別：<b>${T.cat?esc(T.cat.key):'—'}</b>（${T.cat?T.cat.pct:0}%）<br>Short 佔比 <b>${T.shortPct}%</b>　CTR <b>${pct(T.ctr)}</b>　完播率 <b>${pct(T.ratio)}</b><br>常發片 <b>${T.day?T.day.key:'—'}</b>　平均標題 <b>${T.titleLen}</b> 字</div>
+      </div>
+      <div class="chart-box" style="border-color:rgba(248,113,113,.3);">
+        <h3 style="color:var(--red);"><span class="icon" style="color:var(--red);"><svg viewBox="0 0 24 24"><polyline points="22,17 13.5,8.5 8.5,13.5 2,7"/><polyline points="16,17 22,17 22,11"/></svg></span>📉 低效共同點（Bottom ${k} 部）</h3>
+        <div style="font-size:13px;line-height:2;color:var(--txt);margin-top:6px;">平均觀看 <b>${B.avgV.toLocaleString()}</b><br>最常見類別：<b>${B.cat?esc(B.cat.key):'—'}</b>（${B.cat?B.cat.pct:0}%）<br>Short 佔比 <b>${B.shortPct}%</b>　CTR <b>${pct(B.ctr)}</b>　完播率 <b>${pct(B.ratio)}</b><br>常發片 <b>${B.day?B.day.key:'—'}</b>　平均標題 <b>${B.titleLen}</b> 字</div>
+      </div>
+    </div>
+    <div class="chart-box" style="margin-top:20px;">
+      <h3><span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>各類別 平均觀看排行</h3>
+      <div style="margin-top:8px;">${bar(catRows,'#60A5FA')}</div>
+    </div>
+    <div class="chart-row" style="margin-top:20px;">
+      <div class="chart-box"><h3><span class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></span>Short vs Long 平均觀看</h3><div style="margin-top:8px;">${bar(typeRows,'#A78BFA')}</div></div>
+      <div class="chart-box"><h3><span class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>發片星期 平均觀看</h3><div style="margin-top:8px;">${bar(dayRows,'#FBBF24')}</div></div>
+    </div>
+    <div class="chart-box" style="margin-top:20px;border-color:rgba(52,211,153,.25);">
+      <h3 style="color:#34D399;"><span class="icon" style="color:#34D399;"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg></span>具體建議</h3>
+      <ul style="margin:8px 0 0;list-style:none;padding:0;">${tips.map(t=>`<li style="padding:9px 0;border-top:1px solid var(--border);font-size:13px;line-height:1.7;color:var(--txt2);display:flex;gap:8px;"><span style="color:#34D399;flex-shrink:0;">▸</span><span>${t}</span></li>`).join('')}</ul>
+    </div>`;
 }
 
 function renderCharts(viewData){
