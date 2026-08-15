@@ -408,7 +408,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.22 · 2026-08-15 16:30</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.23 · 2026-08-15 16:20</div>
     </div>
   </nav>
 
@@ -789,14 +789,14 @@ tr:hover td{background:rgba(52,211,153,.03);}
           <table>
             <thead><tr>
               <th>狀態</th>
-              <th style="cursor:pointer;" onclick="setFbSort('date')">日期</th>
+              <th style="cursor:pointer;" onclick="setFbSort('date')" data-sk="date">日期</th>
               <th>標題</th>
               <th>類型</th>
-              <th style="cursor:pointer;" onclick="setFbSort('fb_views')">FB 觀看 ⇅</th>
-              <th style="cursor:pointer;" onclick="setFbSort('fb_likes')">讚 ⇅</th>
-              <th style="cursor:pointer;" onclick="setFbSort('fb_comments')">留言 ⇅</th>
-              <th style="cursor:pointer;" onclick="setFbSort('fb_shares')">分享 ⇅</th>
-              <th style="cursor:pointer;" onclick="setFbSort('eng')">互動率 ⇅</th>
+              <th style="cursor:pointer;" onclick="setFbSort('fb_views')" data-sk="fb_views">FB 觀看</th>
+              <th style="cursor:pointer;" onclick="setFbSort('fb_likes')" data-sk="fb_likes">讚</th>
+              <th style="cursor:pointer;" onclick="setFbSort('fb_comments')" data-sk="fb_comments">留言</th>
+              <th style="cursor:pointer;" onclick="setFbSort('fb_shares')" data-sk="fb_shares">分享</th>
+              <th style="cursor:pointer;" onclick="setFbSort('eng')" data-sk="eng">互動率</th>
               <th>操作</th>
             </tr></thead>
             <tbody id="fbs-tbody"></tbody>
@@ -2614,11 +2614,20 @@ function renderEngRanking(vd,igd,thd){
 // ============================================================
 // FB 成效（Facebook 影片/Reels 分析）
 // ============================================================
-let fbsChartMonthly=null,fbsChartTop5=null,fbsSortKey='fb_views',fbsSortDir=-1;
+let fbsChartMonthly=null,fbsChartTop5=null,fbsSortKey='date',fbsSortDir=-1;
 function fbEng(d){const v=Number(d.fb_views)||0;if(!v)return 0;return((Number(d.fb_likes)||0)+(Number(d.fb_comments)||0)+(Number(d.fb_shares)||0))/v*100;}
 function setFbSort(key){if(fbsSortKey===key){fbsSortDir=-fbsSortDir;}else{fbsSortKey=key;fbsSortDir=-1;}renderFbList();}
+function renderFbSortHeaders(){
+  document.querySelectorAll('#page-fblist thead th[data-sk]').forEach(th=>{
+    const base=th.dataset.base||(th.dataset.base=th.textContent.replace(/[ ▲▼⇅]+$/,''));
+    const active=th.dataset.sk===fbsSortKey;
+    th.textContent=base+(active?(fbsSortDir===-1?' ▼':' ▲'):' ⇅');
+    th.style.color=active?'var(--fb)':'';
+  });
+}
 function renderFbList(){
   const tb=document.getElementById('fbs-tbody');if(!tb)return;
+  renderFbSortHeaders();
   const hasFb=d=>(Number(d.fb_views)||0)>0||(Number(d.fb_likes)||0)>0;
   const vd=activeVideos().filter(hasFb);
   // 本月 KPI
