@@ -349,8 +349,11 @@ tr:hover td{background:rgba(52,211,153,.03);}
     </div>
 
     <div class="nav-section">Facebook</div>
+    <div class="nav-item" onclick="showPage('fblist')">
+      <span class="icon"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></span>FB 影片列表
+    </div>
     <div class="nav-item" onclick="showPage('fbstats')">
-      <span class="icon"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></span>FB 成效
+      <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>FB 成效
     </div>
 
     <div class="nav-section">Instagram</div>
@@ -405,7 +408,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.17 · 2026-08-15 13:30</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.18 · 2026-08-15 15:05</div>
     </div>
   </nav>
 
@@ -639,8 +642,6 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <button class="btn btn-sm" onclick="batchUpdateYt()" style="background:rgba(255,68,68,.12);color:var(--yt);border:1px solid rgba(255,68,68,.2);">批次更新 YT 數據</button>
         <button class="btn btn-secondary btn-sm" onclick="document.getElementById('csv-import').click()">匯入 YT Studio CSV</button>
         <input type="file" id="csv-import" accept=".csv" style="display:none;" onchange="importYtStudioCSV(this)">
-        <input type="file" id="fb-import-file" accept=".csv" style="display:none;" onchange="handleMetricoolFile(this)">
-        <button class="btn btn-sm write-only" onclick="document.getElementById('fb-import-file').click()" style="background:rgba(76,139,245,.14);color:var(--fb);border:1px solid rgba(76,139,245,.3);" title="從 Metricool 匯出的 FB Reels CSV，依「FB 連結」欄比對並回填 FB 數據">匯入 Metricool FB CSV</button>
         <button class="btn btn-secondary btn-sm" onclick="exportCSV()">匯出 CSV</button>
       </div>
       <div class="tbl-wrap">
@@ -759,25 +760,47 @@ tr:hover td{background:rgba(52,211,153,.03);}
           </div>
         </div>
 
-        <!-- FB 明細表 -->
-        <div class="chart-box" style="margin-top:20px;">
-          <h3><span class="icon" style="color:var(--fb);"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>FB 成效明細 <span style="font-size:11px;color:var(--txt3);font-weight:400;">點欄位標題可排序 · 僅列有 FB 數據的影片</span></h3>
-          <div class="tbl-wrap" style="margin-top:12px;">
-            <table>
-              <thead><tr>
-                <th style="cursor:pointer;" onclick="setFbSort('date')">日期</th>
-                <th>標題</th>
-                <th style="cursor:pointer;" onclick="setFbSort('fb_views')">FB 觀看 ⇅</th>
-                <th style="cursor:pointer;" onclick="setFbSort('fb_likes')">讚 ⇅</th>
-                <th style="cursor:pointer;" onclick="setFbSort('fb_comments')">留言 ⇅</th>
-                <th style="cursor:pointer;" onclick="setFbSort('fb_shares')">分享 ⇅</th>
-                <th style="cursor:pointer;" onclick="setFbSort('eng')">互動率 ⇅</th>
-              </tr></thead>
-              <tbody id="fbs-tbody"></tbody>
-            </table>
-          </div>
-          <div id="fbs-empty" style="display:none;text-align:center;padding:36px;color:var(--txt3);">此期間無 FB 數據（可先用「影片列表 → 匯入 Metricool FB CSV」回填）</div>
+      </div><!-- /page-body -->
+    </div>
+
+    <!-- ═══ Page: FB 影片列表 ═══ -->
+    <div class="page" id="page-fblist">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>FB 影片列表 <span id="fbl-month" style="font-size:14px;color:var(--txt3);font-weight:400;"></span></h1>
+          <p>Facebook 影片／Reels 數據明細（資料掛在影片記錄的 FB 欄位）</p>
         </div>
+      </div>
+      <div class="page-body">
+
+      <!-- FB KPI -->
+      <div class="cards" id="fbl-kpi"></div>
+
+      <!-- FB 列表 -->
+      <div style="margin-top:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <h3 style="font-size:14px;color:var(--txt2);">明細列表 <span style="font-size:11px;color:var(--txt3);font-weight:400;">點欄位標題可排序 · 僅列有 FB 數據的影片</span></h3>
+          <div style="display:flex;gap:8px;">
+            <input type="file" id="fb-import-file" accept=".csv" style="display:none;" onchange="handleMetricoolFile(this)">
+            <button class="btn btn-sm write-only" onclick="document.getElementById('fb-import-file').click()" style="background:rgba(76,139,245,.14);color:var(--fb);border:1px solid rgba(76,139,245,.3);" title="從 Metricool 匯出的 FB Reels CSV，依「FB 連結」欄比對並回填 FB 數據"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>匯入 Metricool CSV</button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th style="cursor:pointer;" onclick="setFbSort('date')">日期</th>
+              <th>標題</th>
+              <th style="cursor:pointer;" onclick="setFbSort('fb_views')">FB 觀看 ⇅</th>
+              <th style="cursor:pointer;" onclick="setFbSort('fb_likes')">讚 ⇅</th>
+              <th style="cursor:pointer;" onclick="setFbSort('fb_comments')">留言 ⇅</th>
+              <th style="cursor:pointer;" onclick="setFbSort('fb_shares')">分享 ⇅</th>
+              <th style="cursor:pointer;" onclick="setFbSort('eng')">互動率 ⇅</th>
+            </tr></thead>
+            <tbody id="fbs-tbody"></tbody>
+          </table>
+        </div>
+        <div id="fbs-empty" style="display:none;text-align:center;padding:36px;color:var(--txt3);">尚無 FB 數據（可用「匯入 Metricool CSV」回填）</div>
+      </div>
       </div><!-- /page-body -->
     </div>
 
@@ -2453,7 +2476,7 @@ function renderTrashList(){
 // ============================================================
 // 導覽
 // ============================================================
-function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='vidstats')renderVidStats();if(name==='fbstats')renderFbStats();if(name==='insights')renderInsights();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='vidstats')renderVidStats();if(name==='fblist')renderFbList();if(name==='fbstats')renderFbStats();if(name==='insights')renderInsights();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
 function renderAll(){renderDashboard();renderList();renderCfgForm();buildMonthFilter();}
 
 // ============================================================
@@ -2568,7 +2591,42 @@ function renderEngRanking(vd,igd,thd){
 // ============================================================
 let fbsChartMonthly=null,fbsChartTop5=null,fbsSortKey='fb_views',fbsSortDir=-1;
 function fbEng(d){const v=Number(d.fb_views)||0;if(!v)return 0;return((Number(d.fb_likes)||0)+(Number(d.fb_comments)||0)+(Number(d.fb_shares)||0))/v*100;}
-function setFbSort(key){if(fbsSortKey===key){fbsSortDir=-fbsSortDir;}else{fbsSortKey=key;fbsSortDir=-1;}renderFbStats();}
+function setFbSort(key){if(fbsSortKey===key){fbsSortDir=-fbsSortDir;}else{fbsSortKey=key;fbsSortDir=-1;}renderFbList();}
+function renderFbList(){
+  const tb=document.getElementById('fbs-tbody');if(!tb)return;
+  const hasFb=d=>(Number(d.fb_views)||0)>0||(Number(d.fb_likes)||0)>0;
+  const vd=activeVideos().filter(hasFb);
+  // 本月 KPI
+  const now=new Date(),ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const moEl=document.getElementById('fbl-month');if(moEl)moEl.textContent=ym;
+  const md=vd.filter(d=>(d.date||'').startsWith(ym));
+  const sum=(arr,k)=>arr.reduce((s,d)=>s+(Number(d[k])||0),0);
+  const mv=sum(md,'fb_views'),ml=sum(md,'fb_likes'),mc=sum(md,'fb_comments'),ms=sum(md,'fb_shares');
+  const meng=mv?((ml+mc+ms)/mv*100):0;
+  const kpi=document.getElementById('fbl-kpi');
+  if(kpi)kpi.innerHTML=`
+    <div class="kpi-card"><div class="kpi-label">本月 FB 觀看</div><div class="kpi-val">${mv.toLocaleString()}</div><div class="kpi-sub">${md.length} 部影片/Reels</div></div>
+    <div class="kpi-card"><div class="kpi-label">讚</div><div class="kpi-val">${ml.toLocaleString()}</div><div class="kpi-sub">本月累計</div></div>
+    <div class="kpi-card"><div class="kpi-label">留言 + 分享</div><div class="kpi-val">${(mc+ms).toLocaleString()}</div><div class="kpi-sub">留言 ${mc.toLocaleString()} · 分享 ${ms.toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">互動率</div><div class="kpi-val">${meng.toFixed(1)}%</div><div class="kpi-sub">(讚+留言+分享)÷觀看</div></div>`;
+  // 明細（全部有 FB 數據的影片）
+  const sorted=[...vd].sort((a,b)=>{
+    if(fbsSortKey==='date'){const av=a.date||'',bv=b.date||'';return (av<bv?-1:av>bv?1:0)*fbsSortDir;}
+    if(fbsSortKey==='eng')return (fbEng(a)-fbEng(b))*fbsSortDir;
+    return ((Number(a[fbsSortKey])||0)-(Number(b[fbsSortKey])||0))*fbsSortDir;
+  });
+  const empty=document.getElementById('fbs-empty');
+  if(empty)empty.style.display=sorted.length?'none':'block';
+  tb.innerHTML=sorted.map(d=>`<tr>
+    <td style="white-space:nowrap;">${(d.date||'').substring(0,10)}</td>
+    <td style="max-width:260px;">${d.fb_url?`<a href="${esc(d.fb_url)}" target="_blank" style="color:var(--fb);">${esc(d.title||'')}</a>`:esc(d.title||'')}</td>
+    <td style="font-variant-numeric:tabular-nums;font-weight:600;">${(Number(d.fb_views)||0).toLocaleString()}</td>
+    <td style="font-variant-numeric:tabular-nums;">${(Number(d.fb_likes)||0).toLocaleString()}</td>
+    <td style="font-variant-numeric:tabular-nums;">${(Number(d.fb_comments)||0).toLocaleString()}</td>
+    <td style="font-variant-numeric:tabular-nums;">${(Number(d.fb_shares)||0).toLocaleString()}</td>
+    <td style="font-variant-numeric:tabular-nums;color:var(--fb);font-weight:600;">${fbEng(d).toFixed(1)}%</td>
+  </tr>`).join('');
+}
 function renderFbStats(){
   const yrSel=document.getElementById('fbs-year');if(!yrSel)return;
   const AV=activeVideos();
@@ -2597,22 +2655,6 @@ function renderFbStats(){
   const top5=[...vd].sort((a,b)=>(Number(b.fb_views)||0)-(Number(a.fb_views)||0)).slice(0,5);
   if(fbsChartTop5)fbsChartTop5.destroy();
   fbsChartTop5=new Chart(document.getElementById('fbs-chart-top5'),{type:'bar',data:{labels:top5.map(d=>(d.title||'(無標題)').slice(0,16)),datasets:[{label:'FB 觀看',data:top5.map(d=>Number(d.fb_views)||0),backgroundColor:'#4C8BF5',borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
-  const tb=document.getElementById('fbs-tbody'),empty=document.getElementById('fbs-empty');
-  const sorted=[...vd].sort((a,b)=>{
-    if(fbsSortKey==='date'){const av=a.date||'',bv=b.date||'';return (av<bv?-1:av>bv?1:0)*fbsSortDir;}
-    if(fbsSortKey==='eng')return (fbEng(a)-fbEng(b))*fbsSortDir;
-    return ((Number(a[fbsSortKey])||0)-(Number(b[fbsSortKey])||0))*fbsSortDir;
-  });
-  if(empty)empty.style.display=sorted.length?'none':'block';
-  tb.innerHTML=sorted.map(d=>`<tr>
-    <td style="white-space:nowrap;">${(d.date||'').substring(0,10)}</td>
-    <td style="max-width:260px;">${d.fb_url?`<a href="${esc(d.fb_url)}" target="_blank" style="color:var(--fb);">${esc(d.title||'')}</a>`:esc(d.title||'')}</td>
-    <td style="font-variant-numeric:tabular-nums;font-weight:600;">${(Number(d.fb_views)||0).toLocaleString()}</td>
-    <td style="font-variant-numeric:tabular-nums;">${(Number(d.fb_likes)||0).toLocaleString()}</td>
-    <td style="font-variant-numeric:tabular-nums;">${(Number(d.fb_comments)||0).toLocaleString()}</td>
-    <td style="font-variant-numeric:tabular-nums;">${(Number(d.fb_shares)||0).toLocaleString()}</td>
-    <td style="font-variant-numeric:tabular-nums;color:var(--fb);font-weight:600;">${fbEng(d).toFixed(1)}%</td>
-  </tr>`).join('');
 }
 
 // ============================================================
