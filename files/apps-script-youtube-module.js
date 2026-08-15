@@ -15,6 +15,7 @@ const SHEET_ID = '1lhgsVhbfde4NA17ChK1XUkLax8S_TZmMB0rS4Z7dPDI';
 const YT_SHEET  = 'yt_videos';
 const CFG_SHEET = 'yt_config';
 const IG_SHEET  = 'ig_posts';
+const TH_SHEET  = 'threads_posts';
 
 // ── 欄位定義（與前端對應）─────────────────────────────────
 const VIDEO_HEADERS = [
@@ -31,6 +32,12 @@ const IG_HEADERS = [
   'link','createdAt','updatedAt'
 ];
 
+const TH_HEADERS = [
+  'id','title','date','type','cat',
+  'views','likes','replies','reposts',
+  'link','createdAt','updatedAt'
+];
+
 // ── doGet ────────────────────────────────────────────────────
 
 function doGet(e) {
@@ -43,6 +50,9 @@ function doGet(e) {
     }
     if (module === 'youtube' || module === 'ig') {
       if (action === 'getIgPosts') return jsonRes(getIgPosts());
+    }
+    if (module === 'youtube' || module === 'threads') {
+      if (action === 'getThreadsPosts') return jsonRes(getThreadsPosts());
     }
     return jsonRes({ error: 'Unknown action' });
   } catch(err) {
@@ -65,6 +75,9 @@ function doPost(e) {
       if (action === 'saveIgPost')       return jsonRes(saveIgPost(body.data));
       if (action === 'updateIgPost')     return jsonRes(updateIgPost(body.data));
       if (action === 'deleteIgPost')     return jsonRes(deleteIgPost(body.id));
+      if (action === 'saveThreadsPost')   return jsonRes(saveThreadsPost(body.data));
+      if (action === 'updateThreadsPost') return jsonRes(updateThreadsPost(body.data));
+      if (action === 'deleteThreadsPost') return jsonRes(deleteThreadsPost(body.id));
       if (action === 'createMonthlyReport') return jsonRes(createMonthlyReport(body.ym, body.moLabel, body.videos));
     }
     return jsonRes({ error: 'Unknown action' });
@@ -169,6 +182,11 @@ function saveIgPost(data) {
   if (!sh) { sh = ss.insertSheet(IG_SHEET); sh.appendRow(IG_HEADERS); }
   const now = new Date().toISOString();
   const id = data.id || (Date.now().toString(36) + Math.random().toString(36).slice(2,6));
+  // 已存在相同 id 則改為更新，避免重複列（批次匯入時會發生）
+  const existing = sh.getDataRange().getValues();
+  for (let i = 1; i < existing.length; i++) {
+    if (String(existing[i][0]) === String(id)) return updateIgPost(Object.assign({}, data, { id: id }));
+  }
   const row = IG_HEADERS.map(h => {
     if (h === 'id') return id;
     if (h === 'createdAt') return data.createdAt || now;
@@ -203,6 +221,76 @@ function updateIgPost(data) {
 function deleteIgPost(id) {
   const ss = SpreadsheetApp.openById(SHEET_ID);
   const sh = ss.getSheetByName(IG_SHEET);
+  if (!sh) return { success: false };
+  const rows = sh.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(id)) { sh.deleteRow(i+1); return { success: true }; }
+  }
+  return { success: false, error: 'ID not found' };
+}
+
+// ── Threads 貼文 CRUD ───────────────────────────────────────
+
+function getThreadsPosts() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sh = ss.getSheetByName(TH_SHEET);
+  if (!sh) return { posts: [] };
+  const rows = sh.getDataRange().getValues();
+  if (rows.length <= 1) return { posts: [] };
+  const headers = rows[0];
+  const posts = rows.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = fmtCell(row[i]); });
+    return obj;
+  });
+  return { posts };
+}
+
+function saveThreadsPost(data) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sh = ss.getSheetByName(TH_SHEET);
+  if (!sh) { sh = ss.insertSheet(TH_SHEET); sh.appendRow(TH_HEADERS); }
+  const now = new Date().toISOString();
+  const id = data.id || (Date.now().toString(36) + Math.random().toString(36).slice(2,6));
+  // 已存在則改為更新，避免重複
+  const rows = sh.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(id)) return updateThreadsPost(data);
+  }
+  const row = TH_HEADERS.map(h => {
+    if (h === 'id') return id;
+    if (h === 'createdAt') return data.createdAt || now;
+    if (h === 'updatedAt') return now;
+    return data[h] !== undefined ? data[h] : '';
+  });
+  sh.appendRow(row);
+  return { success: true, id };
+}
+
+function updateThreadsPost(data) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sh = ss.getSheetByName(TH_SHEET);
+  if (!sh) return saveThreadsPost(data);
+  const rows = sh.getDataRange().getValues();
+  const headers = rows[0];
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(data.id)) {
+      const now = new Date().toISOString();
+      const newRow = TH_HEADERS.map(h => {
+        if (h === 'createdAt') return rows[i][headers.indexOf('createdAt')] || '';
+        if (h === 'updatedAt') return now;
+        return data[h] !== undefined ? data[h] : '';
+      });
+      sh.getRange(i+1, 1, 1, TH_HEADERS.length).setValues([newRow]);
+      return { success: true };
+    }
+  }
+  return saveThreadsPost(data);
+}
+
+function deleteThreadsPost(id) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sh = ss.getSheetByName(TH_SHEET);
   if (!sh) return { success: false };
   const rows = sh.getDataRange().getValues();
   for (let i = 1; i < rows.length; i++) {

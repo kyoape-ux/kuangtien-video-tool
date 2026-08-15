@@ -351,14 +351,6 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>影片成效
     </div>
 
-    <div class="nav-section">Facebook</div>
-    <div class="nav-item" onclick="showPage('fblist')">
-      <span class="icon"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></span>FB 影片列表
-    </div>
-    <div class="nav-item" onclick="showPage('fbstats')">
-      <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>FB 成效
-    </div>
-
     <div class="nav-section">Instagram</div>
     <div class="nav-item" onclick="showPage('igadd')">
       <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>新增 IG 貼文
@@ -368,6 +360,14 @@ tr:hover td{background:rgba(52,211,153,.03);}
     </div>
     <div class="nav-item" onclick="showPage('igstats')">
       <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>IG 貼文成效
+    </div>
+
+    <div class="nav-section">Facebook</div>
+    <div class="nav-item" onclick="showPage('fblist')">
+      <span class="icon"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></span>FB 影片列表
+    </div>
+    <div class="nav-item" onclick="showPage('fbstats')">
+      <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>FB 成效
     </div>
 
     <div class="nav-section">Threads</div>
@@ -411,7 +411,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.28 · 2026-08-15 18:45</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.29 · 2026-08-15 19:10</div>
     </div>
   </nav>
 
@@ -913,6 +913,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
             <select id="ig-filter-month" onchange="renderIgList()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg-2);color:var(--txt);"><option value="">全部月份</option></select>
             <button class="btn btn-secondary btn-sm" onclick="exportIgCSV()">匯出 CSV</button>
             <input type="file" id="ig-import-file" accept=".csv" style="display:none;" onchange="handleIgImportFile(this)">
+            <button class="btn btn-sm write-only" onclick="cleanIgDuplicates()" style="background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);" title="依連結找出重複的貼文，保留數據最完整的一筆">清除重複</button>
             <button class="btn btn-sm write-only" onclick="triggerIgImport()" style="background:rgba(167,139,250,.14);color:#A78BFA;border:1px solid rgba(167,139,250,.3);" title="從 Metricool 匯出的 IG 貼文/Reels CSV 批次匯入"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>匯入 Metricool CSV</button>
             <button id="ig-upload-btn" class="btn btn-sm write-only" onclick="bulkUploadIgToSheets()" style="background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25);" title="將本機所有 IG 貼文上傳到 Google Sheets"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><polyline points="17,11 12,6 7,11"/><line x1="12" y1="6" x2="12" y2="18"/><path d="M5 21h14"/></svg>上傳本機→Sheets</button>
           </div>
@@ -3663,6 +3664,57 @@ function mcExtractTitle(caption){
 }
 function normLink(u){return String(u||'').trim().replace(/[?#].*$/,'').replace(/\/$/,'').toLowerCase();}
 function triggerIgImport(){const el=document.getElementById('ig-import-file');if(el)el.click();}
+// ── 清除重複 IG 貼文（同一連結多筆）──────────────────────
+function scanIgDuplicates(){
+  const groups={};
+  activeIgPosts().forEach(d=>{const k=d.link?normLink(d.link):'';if(!k)return;(groups[k]=groups[k]||[]).push(d);});
+  return Object.entries(groups).filter(([,a])=>a.length>1).map(([k,a])=>{
+    // 保留：觀看數最高者；同分則取最近更新
+    const sorted=[...a].sort((x,y)=>(Number(y.views)||0)-(Number(x.views)||0)||String(y.updatedAt||'').localeCompare(String(x.updatedAt||'')));
+    return {key:k,keep:sorted[0],drop:sorted.slice(1)};
+  });
+}
+function cleanIgDuplicates(){
+  if(typeof canDelete==='function'&&!canDelete()){alert('僅組長可執行清除');return;}
+  const dups=scanIgDuplicates();
+  if(!dups.length){alert('✅ 沒有發現重複的 IG 貼文（依連結比對）。');return;}
+  const totalDrop=dups.reduce((s,g)=>s+g.drop.length,0);
+  const preview=dups.slice(0,12).map(g=>{
+    const kept=`保留「${(g.keep.title||'(無標題)').slice(0,18)}」${(Number(g.keep.views)||0).toLocaleString()}`;
+    const dropped=g.drop.map(d=>`「${(d.title||'(無標題)').slice(0,18)}」${(Number(d.views)||0).toLocaleString()}`).join('、');
+    const diffTitle=g.drop.some(d=>String(d.title||'')!==String(g.keep.title||''));
+    return `${diffTitle?'⚠️ ':'· '}${kept}\n    刪除：${dropped}`;
+  }).join('\n');
+  const anyDiff=dups.some(g=>g.drop.some(d=>String(d.title||'')!==String(g.keep.title||'')));
+  if(!confirm(`發現 ${dups.length} 組重複（依 IG 連結比對）、共 ${totalDrop} 筆待刪除：\n\n${preview}${dups.length>12?`\n…等共 ${dups.length} 組`:''}\n\n規則：保留觀看數最高的那筆，並把其他筆的類別／標籤／對應影片合併過去。\n${anyDiff?'\n⚠️ 標示的組別中，標題不同卻共用同一連結（可能是連結填錯）。請確認要刪的不是你需要的資料。\n':''}\n系統會先自動建立快照可還原。確定執行？`))return;
+  if(typeof createSnapshot==='function')createSnapshot('清除 IG 重複前（自動）',true);
+  const dropIds=[];
+  dups.forEach(g=>{
+    // 合併類別與標籤，避免手動填的資料被刪掉
+    g.drop.forEach(d=>{
+      if(!g.keep.cat&&d.cat)g.keep.cat=d.cat;
+      if(Array.isArray(d.tags)&&d.tags.length){
+        if(!Array.isArray(g.keep.tags))g.keep.tags=[];
+        d.tags.forEach(t=>{if(!g.keep.tags.includes(t))g.keep.tags.push(t);});
+      }
+      if(!g.keep.videoId&&d.videoId)g.keep.videoId=d.videoId;
+      dropIds.push(d.id);
+    });
+    g.keep.updatedAt=new Date().toISOString();
+  });
+  IG_DATA=IG_DATA.filter(d=>!dropIds.includes(d.id));
+  saveIgData();renderIgAll();if(typeof renderAll==='function')renderAll();
+  alert(`✅ 已清除 ${dropIds.length} 筆重複，保留 ${dups.length} 筆（類別與標籤已合併）。\n\n正在同步至 Google Sheets…`);
+  if(typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
+    (async()=>{
+      let ok=0;
+      for(const id of dropIds){const r=await pushToSheets('deleteIgPost',{id});if(r)ok++;showSyncBadge(`同步刪除 ${ok}/${dropIds.length}`);}
+      for(const g of dups){await pushToSheets('updateIgPost',{data:g.keep});}
+      showSyncBadge(`✅ 重複清除已同步（刪除 ${ok}/${dropIds.length}）`);
+      setTimeout(()=>syncIgFromSheets().then(s=>{if(s)renderIgAll();}),1500);
+    })();
+  }
+}
 // 萬用 Metricool CSV 處理器：依表頭自動辨識平台（IG / Threads / FB Reels / YT）
 function handleMetricoolFile(input){
   const file=input.files&&input.files[0];if(!file)return;
@@ -3862,7 +3914,7 @@ function importMetricoolIg(text,filename){
       if(!ex.link)ex.link=url;
       if(!ex.date)ex.date=date;
       ex.updatedAt=new Date().toISOString();
-      changed.push(ex);updated++;
+      changed.push({d:ex,isNew:false});updated++;
     }else{
       const rec={
         id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
@@ -3870,13 +3922,14 @@ function importMetricoolIg(text,filename){
         type:isReels?'3':'1',cat:'',
         ...metrics,link:url,tags:[],createdAt:new Date().toISOString()
       };
-      IG_DATA.push(rec);byLink.set(normLink(url),rec);changed.push(rec);added++;
+      IG_DATA.push(rec);byLink.set(normLink(url),rec);changed.push({d:rec,isNew:true});added++;
     }
   });
   saveIgData();renderIgAll();if(typeof renderAll==='function')renderAll();
   alert(`✅ Metricool ${isReels?'Reels':'貼文'} 匯入完成\n　新增 ${added} 筆、更新 ${updated} 筆\n（「類別」欄未被覆蓋，請於系統內補填）`);
   if(typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
-    (async()=>{let ok=0;for(const d of changed){const r=await pushToSheets('saveIgPost',{data:d});if(r)ok++;showSyncBadge(`同步 IG ${ok}/${changed.length}`);}showSyncBadge(`✅ Metricool 匯入已同步 ${ok}/${changed.length}`);})();
+    // 既有資料一律用 updateIgPost（saveIgPost 在 GAS 端是無條件新增列，會造成重複）
+    (async()=>{let ok=0;for(const c of changed){const r=await pushToSheets(c.isNew?'saveIgPost':'updateIgPost',{data:c.d});if(r)ok++;showSyncBadge(`同步 IG ${ok}/${changed.length}`);}showSyncBadge(`✅ Metricool 匯入已同步 ${ok}/${changed.length}`);})();
   }
 }
 
