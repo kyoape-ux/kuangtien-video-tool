@@ -342,13 +342,13 @@ tr:hover td{background:rgba(52,211,153,.03);}
 
     <div class="nav-section">YouTube</div>
     <div class="nav-item write-only" onclick="showPage('entry')">
-      <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>新增影片
+      <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>新增 YT 影片
     </div>
     <div class="nav-item" onclick="showPage('list')">
-      <span class="icon"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>影片列表
+      <span class="icon"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>YT 影片列表
     </div>
     <div class="nav-item" onclick="showPage('vidstats')">
-      <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>影片成效
+      <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>YT 影片成效
     </div>
 
     <div class="nav-section">Instagram</div>
@@ -363,6 +363,9 @@ tr:hover td{background:rgba(52,211,153,.03);}
     </div>
 
     <div class="nav-section">Facebook</div>
+    <div class="nav-item" onclick="showPage('fbadd')">
+      <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>新增 FB 影片
+    </div>
     <div class="nav-item" onclick="showPage('fblist')">
       <span class="icon"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></span>FB 影片列表
     </div>
@@ -411,7 +414,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.30 · 2026-08-15 20:00</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.31 · 2026-08-15 20:30</div>
     </div>
   </nav>
 
@@ -546,7 +549,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
     <div class="page" id="page-entry">
       <div class="page-header">
         <div class="page-header-left">
-          <h1>新增影片</h1>
+          <h1>新增 YT 影片</h1>
           <p>填寫影片資訊與各平台數據</p>
         </div>
       </div>
@@ -635,7 +638,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
     <div class="page" id="page-list">
       <div class="page-header">
         <div class="page-header-left">
-          <h1>影片列表</h1>
+          <h1>YT 影片列表</h1>
           <p>管理與搜尋所有影片資料</p>
         </div>
       </div>
@@ -668,7 +671,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
     <div class="page" id="page-vidstats">
       <div class="page-header">
         <div class="page-header-left">
-          <h1>影片成效</h1>
+          <h1>YT 影片成效</h1>
           <p>YouTube 影片圖表分析與效率排行（觀看、CTR、完播率）</p>
         </div>
       </div>
@@ -819,6 +822,50 @@ tr:hover td{background:rgba(52,211,153,.03);}
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ═══ Page: 新增 FB 影片 ═══ -->
+    <div class="page" id="page-fbadd">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>新增 FB 影片</h1>
+          <p>新增一筆以 Facebook 為主的影片紀錄（批次請至「FB 影片列表」用「匯入 Metricool CSV」）</p>
+        </div>
+      </div>
+      <div class="page-body">
+      <div class="chart-box" style="margin-bottom:20px;">
+        <h3><span class="icon" style="color:var(--fb);"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>新增 FB 影片</h3>
+        <div id="fba-alert" class="alert"></div>
+        <div class="form-grid cols3" style="margin-top:12px;">
+          <div class="form-group full"><label>影片標題 *</label><input type="text" id="fba-title" placeholder="輸入影片標題"></div>
+          <div class="form-group"><label>發布日期 *</label><input type="date" id="fba-date"></div>
+          <div class="form-group"><label>影片類型</label>
+            <select id="fba-type"><option value="short">Short 短影音</option><option value="long">Long 長影片</option></select>
+          </div>
+          <div class="form-group"><label>影片系列</label>
+            <select id="fba-series"><option value="">— 未指定 —</option><option value="藏鏡人">藏鏡人</option><option value="光小編出任務">光小編出任務</option><option value="光田醫點通">光田醫點通</option><option value="光田e學院">光田e學院</option><option value="健康人文藝術講座">健康人文藝術講座</option><option value="其他">其他</option></select>
+          </div>
+          <div class="form-group"><label>內容類別</label>
+            <select id="fba-cat"><option value="疾病衛教">疾病衛教</option><option value="特色醫療">特色醫療</option><option value="新服務流程">新服務流程</option><option value="醫院形象">醫院形象</option><option value="員工活動">員工活動</option><option value="教學">教學</option><option value="其他">其他</option></select>
+          </div>
+          <div class="form-group"><label>負責企劃</label><input type="text" id="fba-planner" placeholder="企劃人員"></div>
+          <div class="form-group full"><label>Facebook 連結</label><input type="url" id="fba-fb_url" placeholder="https://www.facebook.com/reel/..."></div>
+          <div class="form-group"><label>FB 觀看</label><input type="number" id="fba-fb_views" min="0" placeholder="0"></div>
+          <div class="form-group"><label>FB 讚</label><input type="number" id="fba-fb_likes" min="0" placeholder="0"></div>
+          <div class="form-group"><label>FB 留言</label><input type="number" id="fba-fb_comments" min="0" placeholder="0"></div>
+          <div class="form-group"><label>FB 分享</label><input type="number" id="fba-fb_shares" min="0" placeholder="0"></div>
+          <div class="form-group"><label>FB 觸及</label><input type="number" id="fba-fb_reach" min="0" placeholder="0"></div>
+          <div class="form-group full"><label><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>屬性標籤（可多選）</label>
+            <div id="fba-tags"></div>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--txt3);margin-top:10px;">※ 此處建立的是一筆影片紀錄，之後若同一支也上了 YT／IG，可到「YT 影片列表」編輯同一筆補上其他平台數據，避免重複建立。</p>
+        <div class="form-actions" style="margin-top:12px;">
+          <button class="btn btn-primary write-only" onclick="saveFbVideo()">儲存影片</button>
+          <button class="btn btn-secondary" onclick="clearFbForm()">清除</button>
+        </div>
+      </div>
+      </div><!-- /page-body -->
     </div>
 
     <!-- ═══ Page: FB 影片列表 ═══ -->
@@ -2679,7 +2726,7 @@ function renderTrashList(){
 // ============================================================
 // 導覽
 // ============================================================
-function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='vidstats')renderVidStats();if(name==='fblist')renderFbList();if(name==='fbstats')renderFbStats();if(name==='insights')renderInsights();if(name==='playbook')renderPlaybook();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();(()=>{const df=document.getElementById('deck-from'),dt=document.getElementById('deck-to');if(df&&!df.value){const e=new Date(now.getFullYear(),now.getMonth(),1),st=new Date(now.getFullYear(),now.getMonth()-1,1);df.value=`${st.getFullYear()}-${String(st.getMonth()+1).padStart(2,'0')}`;dt.value=`${e.getFullYear()}-${String(e.getMonth()+1).padStart(2,'0')}`;}})();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{const t=n.getAttribute('onclick')||'';n.classList.toggle('active',t.includes("'"+name+"'"));});if(name==='dashboard')renderDashboard();if(name==='list')renderList();if(name==='vidstats')renderVidStats();if(name==='fbadd'){if(typeof initTagInput==='function'&&!document.getElementById('fba-tags').dataset.init){initTagInput('fba-tags',[]);document.getElementById('fba-tags').dataset.init='1';}const dt=document.getElementById('fba-date');if(dt&&!dt.value)dt.value=new Date().toISOString().slice(0,10);}if(name==='fblist')renderFbList();if(name==='fbstats')renderFbStats();if(name==='insights')renderInsights();if(name==='playbook')renderPlaybook();if(name==='config')renderCfgForm();if(name==='backup')renderBackupPage();if(name==='tags'){populateGroupDropdown();renderTagsPage();}if(name==='promotion')openPromotionReport();if(name==='igadd')rebuildVideoSelect('ig-videoId',document.getElementById('ig-videoId')?.value||'');if(name==='ig'){renderIgAll();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgAll();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='igstats'){renderIgCharts();if(USE_API()){syncIgFromSheets().then(ok=>{if(ok){renderIgCharts();showSyncBadge('IG 已同步 Sheets');}});}}if(name==='threads'){renderThreads();if(USE_API()){syncThreadsFromSheets().then(ok=>{if(ok){renderThreads();showSyncBadge('Threads 已同步 Sheets');}});}}if(name==='report'){const now=new Date();(()=>{const df=document.getElementById('deck-from'),dt=document.getElementById('deck-to');if(df&&!df.value){const e=new Date(now.getFullYear(),now.getMonth(),1),st=new Date(now.getFullYear(),now.getMonth()-1,1);df.value=`${st.getFullYear()}-${String(st.getMonth()+1).padStart(2,'0')}`;dt.value=`${e.getFullYear()}-${String(e.getMonth()+1).padStart(2,'0')}`;}})();document.getElementById('rpt-year').value=now.getFullYear();document.getElementById('rpt-month').value=String(now.getMonth()+1).padStart(2,'0');}}
 function renderAll(){renderDashboard();renderList();renderCfgForm();buildMonthFilter();}
 
 // ============================================================
@@ -2795,6 +2842,41 @@ function renderEngRanking(vd,igd,thd){
 let fbsChartMonthly=null,fbsChartTop5=null,fbsSortKey='date',fbsSortDir=-1;
 function fbEng(d){const v=Number(d.fb_views)||0;if(!v)return 0;return((Number(d.fb_likes)||0)+(Number(d.fb_comments)||0)+(Number(d.fb_shares)||0))/v*100;}
 function setFbSort(key){if(fbsSortKey===key){fbsSortDir=-fbsSortDir;}else{fbsSortKey=key;fbsSortDir=-1;}renderFbList();}
+function saveFbVideo(){
+  if(typeof canWrite==='function'&&!canWrite()){showAlert('fba-alert','您的權限不足，請以組員或組長身份登入','err');return;}
+  const g=id=>document.getElementById('fba-'+id);
+  const t=(g('title').value||'').trim(),d=g('date').value;
+  if(!t){showAlert('fba-alert','請填寫影片標題','err');return;}
+  if(!d){showAlert('fba-alert','請選擇發布日期','err');return;}
+  const url=(g('fb_url').value||'').trim();
+  if(url&&DATA.some(v=>v.fb_url&&normLink(v.fb_url)===normLink(url))){
+    if(!confirm('已有影片使用相同的 Facebook 連結，仍要新增嗎？\n（建議改到「YT 影片列表」編輯那筆，避免重複）'))return;
+  }
+  const rec={
+    id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    title:t,date:d,type:g('type').value,series:g('series').value,cat:g('cat').value,
+    planner:(g('planner').value||'').trim(),
+    fb_url:url,
+    fb_views:Number(g('fb_views').value)||0,fb_likes:Number(g('fb_likes').value)||0,
+    fb_comments:Number(g('fb_comments').value)||0,fb_shares:Number(g('fb_shares').value)||0,
+    fb_reach:Number(g('fb_reach').value)||0,
+    tags:(typeof getTagsFromInput==='function'?getTagsFromInput('fba-tags'):[]),
+    statsDate:new Date().toISOString().substring(0,10),
+    createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()
+  };
+  DATA.push(rec);saveData();renderAll();if(typeof renderFbList==='function')renderFbList();
+  showAlert('fba-alert','已儲存','ok');clearFbForm();
+  if(typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
+    pushToSheets('saveVideo',{data:rec}).then(ok=>showSyncBadge(ok?'FB 影片已同步':'FB 影片本機已儲存'));
+  }
+}
+function clearFbForm(){
+  ['title','date','planner','fb_url','fb_views','fb_likes','fb_comments','fb_shares','fb_reach'].forEach(f=>{const el=document.getElementById('fba-'+f);if(el)el.value='';});
+  const ty=document.getElementById('fba-type');if(ty)ty.value='short';
+  const se=document.getElementById('fba-series');if(se)se.value='';
+  if(typeof initTagInput==='function')initTagInput('fba-tags',[]);
+  const dt=document.getElementById('fba-date');if(dt)dt.value=new Date().toISOString().slice(0,10);
+}
 function renderFbSortHeaders(){
   document.querySelectorAll('#page-fblist thead th[data-sk]').forEach(th=>{
     const base=th.dataset.base||(th.dataset.base=th.textContent.replace(/[ ▲▼⇅]+$/,''));
