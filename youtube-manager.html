@@ -414,7 +414,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.34 · 2026-08-16 12:30</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.35 · 2026-08-16 20:05</div>
     </div>
   </nav>
 
@@ -2250,7 +2250,8 @@ function updateTag(id,name,desc,group){
 function getTagColor(name){const t=TAGS.find(x=>x.name===name);return t?t.color:'#64748B';}
 function renderTagChips(tagArr){
   if(!Array.isArray(tagArr)||tagArr.length===0)return '';
-  return tagArr.map(n=>{const c=getTagColor(n);return `<span class="tag-chip" style="background:${c}22;color:${c};border:1px solid ${c}44;">${esc(n)}</span>`;}).join(' ');
+  // 列表中的標籤一律中性灰：顏色保留給有語意的資訊（狀態/系列/類型），標籤是輔助查詢用
+  return tagArr.map(n=>`<span class="tag-chip" style="background:transparent;color:var(--txt3);border:1px solid var(--border-l);">${esc(n)}</span>`).join(' ');
 }
 
 // 標籤輸入控件 - 可多選、可新建
