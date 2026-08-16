@@ -414,7 +414,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.33 · 2026-08-16 12:05</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.34 · 2026-08-16 12:30</div>
     </div>
   </nav>
 
@@ -485,11 +485,11 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <div class="setup-banner" id="setup-banner">
           <span class="icon icon-lg"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" stroke="none"/></svg></span>
           <div class="text">
-            <b>設定 Google Sheets 後端</b>
-            <span>請貼上 Apps Script Web App URL 以啟用雲端同步</span>
+            <b>尚未連線雲端資料</b>
+            <span>向組長索取「設定字串」貼上即可（基於資安，憑證不寫在網頁裡）</span>
           </div>
-          <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec">
-          <button onclick="saveApiUrl()">連線</button>
+          <input type="text" id="api-url-input" placeholder="貼上 KTGH1:... 設定字串，或 Apps Script URL">
+          <button onclick="connectFromBanner()">連線</button>
         </div>
 
         <!-- 儀表板控制列 -->
@@ -1265,6 +1265,17 @@ tr:hover td{background:rgba(52,211,153,.03);}
           <button class="btn btn-secondary leader-only" onclick="testApi()">測試連線</button>
         </div>
         <div id="api-alert" class="alert" style="margin-top:14px;"></div>
+        <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">
+          <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px;">設定分享（給新同事）</div>
+          <p style="font-size:11px;color:var(--txt3);line-height:1.7;margin-bottom:10px;">
+            基於資安考量，連線設定<b style="color:var(--txt2);">不寫在公開網頁裡</b>，只存在各自的瀏覽器。
+            新同事第一次使用時，請用下方按鈕把設定字串傳給他（LINE／email 私訊即可），他貼上後就能連線。
+          </p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-sm btn-secondary" onclick="copySetupCode()">複製設定字串</button>
+            <button class="btn btn-sm btn-secondary" onclick="pasteSetupCode()">貼上同事給的設定</button>
+          </div>
+        </div>
       </div>
       <div class="cfg-card" style="margin-top:20px;">
         <h3>資料管理</h3>
@@ -1896,7 +1907,7 @@ let dashYear=new Date().getFullYear();
 // ============================================================
 // API
 // ============================================================
-let API_URL=localStorage.getItem('kt_yt_api')||'https://script.google.com/macros/s/AKfycbxDla5SDyCEs6ImvHR5ykCMYeZpNrwxN4-PZLHehF-Xo-k52XxKP_qgqcdPa3qgqI_1/exec';
+let API_URL=localStorage.getItem('kt_yt_api')||''; // 不寫死：此檔為公開頁面，憑證僅存於各自瀏覽器
 const USE_API=()=>!!API_URL;
 async function apiGet(a){if(!USE_API())return null;try{const r=await fetch(`${API_URL}?module=youtube&action=${a}`);return await r.json();}catch(e){console.warn('API GET:',e);return null;}}
 async function apiPost(a,p){if(!USE_API())return null;try{const r=await fetch(API_URL,{method:'POST',body:JSON.stringify({module:'youtube',action:a,...p})});return await r.json();}catch(e){console.warn('API POST:',e);return null;}}
@@ -2743,6 +2754,33 @@ function renderAll(){renderDashboard();renderList();renderCfgForm();buildMonthFi
 // ============================================================
 function checkSetup(){const b=document.getElementById('setup-banner'),inp=document.getElementById('api-url-input'),hdr=document.getElementById('sync-status-hdr');if(API_URL){b.style.display='none';inp.value=API_URL;if(hdr){hdr.innerHTML='<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>已連線</span>';}}else{b.style.display='flex';if(hdr){hdr.innerHTML='<span style="color:var(--amber);">未連線</span>';}}}
 function saveApiUrl(){const u=document.getElementById('api-url-input').value.trim();if(!u.startsWith('https://script.google.com')){alert('請輸入有效的 Apps Script URL');return;}API_URL=u;localStorage.setItem('kt_yt_api',u);checkSetup();document.getElementById('cfg-api-url').value=u;syncFromSheets().then(ok=>{if(ok){renderAll();showSyncBadge('同步完成');}});syncIgFromSheets().then(ok=>{if(ok)renderIgAll();});}
+// ── 設定分享（避免把憑證寫在公開網頁裡）──────────────
+function copySetupCode(){
+  if(!API_URL){alert('尚未設定 Apps Script URL，無法產生設定字串。');return;}
+  const code='KTGH1:'+btoa(unescape(encodeURIComponent(JSON.stringify({u:API_URL,k:YT_API_KEY||''}))));
+  const done=()=>alert('✅ 設定字串已複製。\n\n請用 LINE／email 私訊給同事，請他到「設定 → 貼上同事給的設定」。\n\n⚠️ 這串包含連線憑證，不要貼在公開頻道或文件裡。');
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code).then(done).catch(()=>fallbackCopy(code,done));
+  else fallbackCopy(code,done);
+}
+function pasteSetupCodeFrom(v){
+  v=(v||'').trim();
+  if(!v)return;
+  if(!v.startsWith('KTGH1:')){alert('格式不正確，設定字串應以 KTGH1: 開頭。');return;}
+  try{
+    const o=JSON.parse(decodeURIComponent(escape(atob(v.slice(6)))));
+    if(!o.u||!String(o.u).startsWith('https://script.google.com'))throw new Error('URL 無效');
+    API_URL=o.u;localStorage.setItem('kt_yt_api',API_URL);
+    if(o.k){YT_API_KEY=o.k;localStorage.setItem('kt_yt_apikey',YT_API_KEY);}
+    if(typeof renderCfgForm==='function')renderCfgForm();
+    checkSetup();
+    alert('✅ 設定已套用，開始同步資料…');
+    syncFromSheets().then(ok=>{if(ok){renderAll();showSyncBadge('同步完成');}});
+    syncIgFromSheets().then(ok=>{if(ok)renderIgAll();});
+    if(typeof syncThreadsFromSheets==='function')syncThreadsFromSheets().then(ok=>{if(ok)renderThreads();});
+  }catch(e){alert('設定字串解析失敗：'+e.message);}
+}
+function connectFromBanner(){const v=(document.getElementById('api-url-input').value||'').trim();if(v.startsWith('KTGH1:'))pasteSetupCodeFrom(v);else saveApiUrl();}
+function pasteSetupCode(){pasteSetupCodeFrom(prompt('請貼上同事給你的設定字串（KTGH1: 開頭）：')||'');}
 function saveApiUrlFromCfg(){const u=document.getElementById('cfg-api-url').value.trim();if(!u.startsWith('https://script.google.com')){showAlert('api-alert','請輸入有效的 URL','err');return;}API_URL=u;localStorage.setItem('kt_yt_api',u);document.getElementById('api-url-input').value=u;checkSetup();showAlert('api-alert','API URL 已儲存','ok');syncFromSheets().then(ok=>{if(ok)renderAll();});syncIgFromSheets().then(ok=>{if(ok)renderIgAll();});}
 async function testApi(){if(!USE_API()){showAlert('api-alert','請先設定 API URL','err');return;}showAlert('api-alert','測試中...','ok');try{const r=await apiGet('getVideos');if(r&&!r.error)showAlert('api-alert','連線成功！Sheets 有 '+(r.videos||[]).length+' 筆','ok');else showAlert('api-alert','連線失敗：'+(r?.error||'未知'),'err');}catch(e){showAlert('api-alert','錯誤：'+e.message,'err');}}
 
@@ -3691,7 +3729,7 @@ function showSyncBadge(msg){let b=document.getElementById('sync-badge');if(!b){b
 // ============================================================
 // YouTube Data API 一鍵匯入
 // ============================================================
-let YT_API_KEY=localStorage.getItem('kt_yt_apikey')||'AIzaSyBo4knwxXgBgzEz9_hfIZtWxSk0uOF51AQ';
+let YT_API_KEY=localStorage.getItem('kt_yt_apikey')||''; // 不寫死：同上
 
 function parseYtVideoId(url){
   if(!url)return null;
