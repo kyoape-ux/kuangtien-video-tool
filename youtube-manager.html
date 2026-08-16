@@ -414,7 +414,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.31 · 2026-08-15 20:30</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.32 · 2026-08-16 11:40</div>
     </div>
   </nav>
 
@@ -757,7 +757,11 @@ tr:hover td{background:rgba(52,211,153,.03);}
               <button class="btn btn-sm" onclick="copyMonthlyConclusion()" style="background:rgba(52,211,153,.14);color:#34d399;border:1px solid rgba(52,211,153,.3);">複製結論</button>
             </div>
           </div>
-          <pre id="concl-text" style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.9;color:var(--txt2);background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:0;"></pre>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+            <div id="concl-tabs" style="display:flex;gap:2px;background:var(--bg-2);border-radius:8px;padding:3px;border:1px solid var(--border);"></div>
+            <span id="concl-hint" style="font-size:11px;color:var(--txt3);"></span>
+          </div>
+          <pre id="concl-text" style="white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.9;color:var(--txt2);background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:0;overflow-x:auto;"></pre>
         </div>
       </div>
     </div>
@@ -3229,77 +3233,117 @@ function copySeriesTable(){
   else fallbackCopy(t,done);
 }
 // ── 每月成效結論 ──────────────────────────────────────
-function buildMonthlyConclusion(ym){
+let conclFormat='table'; // 'table' | 'short' | 'full'
+function setConclFormat(f){conclFormat=f;renderMonthlyConclusion();}
+// 分析當月數據（三種格式共用）
+function analyzeMonth(ym){
   const isAd=d=>/廣告|贊助|投放/.test(String(d.title||''));
   const med=a=>{const x=a.filter(v=>!isNaN(v)).sort((p,q)=>p-q);if(!x.length)return 0;const m=Math.floor(x.length/2);return Math.round(x.length%2?x[m]:(x[m-1]+x[m])/2);};
   const sum=(a,f)=>a.reduce((s,d)=>s+(Number(f(d))||0),0);
   const all=activeVideos().filter(d=>(d.date||'').substring(0,7)===ym);
   const vids=all.filter(d=>!isAd(d));
-  if(!vids.length)return `${ym} 尚無影片資料。`;
+  if(!vids.length)return null;
   const [y,m]=ym.split('-');
   const locked=vids.filter(d=>getVideoStatus(d)==='locked');
   const collecting=vids.filter(d=>getVideoStatus(d)==='collecting');
   const shorts=vids.filter(d=>d.type==='short'),longs=vids.filter(d=>d.type!=='short');
   const tv=sum(vids,totalViews);
-  // 上月比較
   const pd=new Date(parseInt(y),parseInt(m)-2,1);
   const prevYm=`${pd.getFullYear()}-${String(pd.getMonth()+1).padStart(2,'0')}`;
   const prev=activeVideos().filter(d=>(d.date||'').substring(0,7)===prevYm&&!isAd(d));
   const prevV=sum(prev,totalViews);
   const mom=prevV>0?Math.round((tv-prevV)/prevV*100):null;
-  const best=[...vids].sort((a,b)=>totalViews(b)-totalViews(a))[0];
-  const domOf=d=>{const a=Number(d.yt_views)||0,b=Number(d.fb_views)||0,c=Number(d.ig_views)||0,t=a+b+c;if(!t)return '';const x=Math.max(a,b,c);return `${x===a?'YouTube':x===c?'Instagram':'Facebook'} 佔 ${Math.round(x/t*100)}%`;};
-  // 系列表現
-  const sm={};vids.forEach(d=>{const s=d.series||'其他';(sm[s]=sm[s]||[]).push(d);});
-  const sRank=Object.entries(sm).map(([s,a])=>({s,n:a.length,m:med(a.map(totalViews))})).sort((a,b)=>b.m-a.m);
-  const L=[];
-  L.push(`【${y} 年 ${parseInt(m)} 月 影片成效結論】`);
-  L.push('');
-  L.push(`本月共發布 ${vids.length} 支影片（已定案 ${locked.length} 支、統計中 ${collecting.length} 支）${all.length-vids.length?`，另有 ${all.length-vids.length} 支投放廣告未列入自然成效`:''}。`);
-  L.push(`全平台觀看合計 ${tv.toLocaleString()}${mom!==null?`，較上月${mom>=0?'成長':'下降'} ${Math.abs(mom)}%`:''}。`);
-  L.push('');
-  L.push(`◆ 格式表現`);
-  L.push(`　Short ${shorts.length} 支，觀看中位數 ${med(shorts.map(totalViews)).toLocaleString()}`);
-  L.push(`　Long ${longs.length} 支，觀看中位數 ${med(longs.map(totalViews)).toLocaleString()}`);
-  if(shorts.length&&longs.length&&med(longs.map(totalViews))>0){
-    L.push(`　→ Short 約為 Long 的 ${Math.round(med(shorts.map(totalViews))/Math.max(med(longs.map(totalViews)),1))} 倍。Long 定位為存檔與搜尋需求，不與 Short 比觀看量。`);
-  }
-  if(sRank.length){
-    L.push('');
-    L.push(`◆ 系列表現（觀看中位數）`);
-    sRank.forEach(r=>L.push(`　${r.s}：${r.n} 支，中位數 ${r.m.toLocaleString()}`));
-  }
-  if(best){
-    L.push('');
-    L.push(`◆ 本月最佳`);
-    L.push(`　${best.title||''}`);
-    L.push(`　${totalViews(best).toLocaleString()} 觀看${domOf(best)?`（${domOf(best)}）`:''}`);
-  }
+  // 中位數對比（不受單支爆款影響）
+  const medNow=med(vids.map(totalViews)),medPrev=prev.length?med(prev.map(totalViews)):0;
+  const momMed=medPrev>0?Math.round((medNow-medPrev)/medPrev*100):null;
+  // 離群值偵測：任一月有單支佔該月 50% 以上，總量對比就會失真
+  const topOf=a=>a.length?[...a].sort((x,z)=>totalViews(z)-totalViews(x))[0]:null;
+  const prevTop=topOf(prev),nowTop=topOf(vids);
+  const prevTopShare=prevV>0&&prevTop?totalViews(prevTop)/prevV:0;
+  const nowTopShare=tv>0&&nowTop?totalViews(nowTop)/tv:0;
+  let momNote='';
+  if(prevTopShare>=0.5)momNote=`上月有單支 ${totalViews(prevTop).toLocaleString()} 爆款、佔上月 ${Math.round(prevTopShare*100)}%，總量對比易失真`;
+  else if(nowTopShare>=0.5)momNote=`本月有單支 ${totalViews(nowTop).toLocaleString()} 爆款、佔本月 ${Math.round(nowTopShare*100)}%，總量對比易失真`;
+  const sm={};vids.forEach(d=>{const x=d.series||'其他';(sm[x]=sm[x]||[]).push(d);});
+  const sRank=Object.entries(sm).map(([x,a])=>({s:x,n:a.length,m:med(a.map(totalViews))})).sort((a,b)=>b.m-a.m);
   const pv={YouTube:sum(vids,d=>d.yt_views),Facebook:sum(vids,d=>d.fb_views),Instagram:sum(vids,d=>d.ig_views)};
   const pAll=pv.YouTube+pv.Facebook+pv.Instagram;
-  if(pAll){
-    L.push('');
-    L.push(`◆ 平台佔比`);
-    L.push(`　YouTube ${Math.round(pv.YouTube/pAll*100)}%　Facebook ${Math.round(pv.Facebook/pAll*100)}%　Instagram ${Math.round(pv.Instagram/pAll*100)}%`);
+  const domOf=d=>{const a=Number(d.yt_views)||0,b=Number(d.fb_views)||0,c=Number(d.ig_views)||0,t=a+b+c;if(!t)return '';const x=Math.max(a,b,c);return `${x===a?'YouTube':x===c?'Instagram':'Facebook'} 佔 ${Math.round(x/t*100)}%`;};
+  const topP=pAll?Object.entries(pv).sort((a,b)=>b[1]-a[1])[0]:null;
+  return {y,m,all,vids,locked,collecting,shorts,longs,tv,mom,momMed,momNote,medNow,best:nowTop,sRank,pv,pAll,topP,domOf,med,ads:all.length-vids.length,
+    medShort:med(shorts.map(totalViews)),medLong:med(longs.map(totalViews))};
+}
+function buildMonthlyConclusion(ym,fmt){
+  const a=analyzeMonth(ym);
+  if(!a)return `${ym} 尚無影片資料。`;
+  const f=fmt||conclFormat;
+  const title=`${a.y} 年 ${parseInt(a.m)} 月 影片成效結論`;
+  const momStr=a.mom===null?'—':`${a.mom>=0?'+':''}${a.mom}%`;
+  const momMedStr=a.momMed===null?'':`；每支中位數 ${a.momMed>=0?'+':''}${a.momMed}%`;
+  const platStr=a.pAll?`YT ${Math.round(a.pv.YouTube/a.pAll*100)}％ ／ FB ${Math.round(a.pv.Facebook/a.pAll*100)}％ ／ IG ${Math.round(a.pv.Instagram/a.pAll*100)}％`:'—';
+  const dirs=[];
+  const bestSeries=a.sRank.find(r=>r.s!=='其他');
+  if(a.sRank.length>1&&bestSeries)dirs.push(`加碼${bestSeries.s}`);
+  if(a.shorts.length&&a.longs.length&&a.medShort>a.medLong*3)dirs.push('主力放 Short');
+  if(a.topP&&a.topP[1]>0)dirs.push('依平台改寫標題與開頭');
+  // ── 表格版（貼試算表）──
+  if(f==='table'){
+    const rows=[
+      ['本月重點',`${a.topP?`${a.topP[0]} 為主要觀看來源（${Math.round(a.topP[1]/a.pAll*100)}%）`:''}${a.best?`，〈${(a.best.title||'').slice(0,20)}〉${totalViews(a.best).toLocaleString()} 觀看為本月最佳`:''}`],
+      ['發布支數',`${a.vids.length} 支（已定案 ${a.locked.length}、統計中 ${a.collecting.length}${a.ads?`、廣告 ${a.ads} 支未計`:''}）`],
+      ['全平台觀看',`${a.tv.toLocaleString()}　總量較上月 ${momStr}${momMedStr}${a.momNote?`　※ ${a.momNote}`:''}`],
+      ['Short 中位數',`${a.medShort.toLocaleString()}（${a.shorts.length} 支）`],
+      ['Long 中位數',`${a.medLong.toLocaleString()}（${a.longs.length} 支）`],
+      ['最佳系列',bestSeries?`${bestSeries.s} ${bestSeries.m.toLocaleString()}（${bestSeries.n} 支）`:(a.sRank.length?'尚未指定系列':'—')],
+      ['平台佔比',platStr],
+      ['下月方向',dirs.map((d,i)=>`${['①','②','③','④'][i]||''} ${d}`).join('　')||'—']
+    ];
+    if(a.collecting.length)rows.push(['備註',`${a.collecting.length} 支發布未滿 1 個月，數據累積中，下月納入`]);
+    return title+'\n'+rows.map(r=>r.join('\t')).join('\n');
   }
+  // ── 一句話版（群組公告）──
+  if(f==='short'){
+    const L=[];
+    L.push(`${a.y}/${parseInt(a.m)} 影片成效：發布 ${a.vids.length} 支，全平台觀看 ${a.tv.toLocaleString()}，較上月 ${momStr}${momMedStr}。${a.momNote?`（${a.momNote}）`:''}`);
+    L.push(`Short 中位數 ${a.medShort.toLocaleString()}、Long ${a.medLong.toLocaleString()}；${a.topP?`${a.topP[0]} 貢獻 ${Math.round(a.topP[1]/a.pAll*100)}% 觀看`:''}。`);
+    if(a.best)L.push(`最佳：〈${(a.best.title||'').slice(0,24)}〉${totalViews(a.best).toLocaleString()} 觀看${a.domOf(a.best)?`（${a.domOf(a.best)}）`:''}。`);
+    if(dirs.length)L.push(`下月：${dirs.join('、')}。`);
+    return L.join('\n');
+  }
+  // ── 完整版 ──
+  const L=[];
+  L.push(`【${title}】`);L.push('');
+  L.push(`本月共發布 ${a.vids.length} 支影片（已定案 ${a.locked.length} 支、統計中 ${a.collecting.length} 支）${a.ads?`，另有 ${a.ads} 支投放廣告未列入自然成效`:''}。`);
+  L.push(`全平台觀看合計 ${a.tv.toLocaleString()}${a.mom!==null?`，總量較上月${a.mom>=0?'成長':'下降'} ${Math.abs(a.mom)}%`:''}。`);
+  if(a.momNote)L.push(`※ 總量變化${a.momNote}，建議以「每支中位數」比較較為公平${a.momMed!==null?`（中位數 ${a.momMed>=0?'成長':'下降'} ${Math.abs(a.momMed)}%）`:''}。`);
   L.push('');
-  L.push(`◆ 下月方向`);
-  if(sRank.length>1)L.push(`　1. 加碼「${sRank[0].s}」（本月中位數最高），檢討「${sRank[sRank.length-1].s}」的選題角度。`);
-  if(shorts.length&&longs.length&&med(shorts.map(totalViews))>med(longs.map(totalViews))*3)L.push(`　${sRank.length>1?2:1}. 觸及主力持續放在 Short；長講座保留存檔並另拆 Short 發布。`);
-  const topP=Object.entries(pv).sort((a,b)=>b[1]-a[1])[0];
-  if(topP&&topP[1]>0)L.push(`　${(sRank.length>1?1:0)+(shorts.length&&longs.length?1:0)+1}. ${topP[0]} 為主要觀看來源，同題材依平台改寫開頭與標題，避免三平台原封不動上架。`);
-  if(collecting.length)L.push('');
-  if(collecting.length)L.push(`※ ${collecting.length} 支發布未滿 1 個月，數據仍在累積，將於下月結論納入。`);
+  L.push(`◆ 格式表現`);
+  L.push(`　Short ${a.shorts.length} 支，觀看中位數 ${a.medShort.toLocaleString()}`);
+  L.push(`　Long ${a.longs.length} 支，觀看中位數 ${a.medLong.toLocaleString()}`);
+  if(a.shorts.length&&a.longs.length&&a.medLong>0)L.push(`　→ Short 約為 Long 的 ${Math.round(a.medShort/Math.max(a.medLong,1))} 倍。Long 定位為存檔與搜尋需求，不與 Short 比觀看量。`);
+  if(a.sRank.length){L.push('');L.push(`◆ 系列表現（觀看中位數）`);a.sRank.forEach(r=>L.push(`　${r.s}：${r.n} 支，中位數 ${r.m.toLocaleString()}`));}
+  if(a.best){L.push('');L.push(`◆ 本月最佳`);L.push(`　${a.best.title||''}`);L.push(`　${totalViews(a.best).toLocaleString()} 觀看${a.domOf(a.best)?`（${a.domOf(a.best)}）`:''}`);}
+  if(a.pAll){L.push('');L.push(`◆ 平台佔比`);L.push(`　${platStr}`);}
+  if(dirs.length){L.push('');L.push(`◆ 下月方向`);dirs.forEach((d,i)=>L.push(`　${i+1}. ${d}`));}
+  if(a.collecting.length){L.push('');L.push(`※ ${a.collecting.length} 支發布未滿 1 個月，數據仍在累積，將於下月結論納入。`);}
   return L.join('\n');
 }
 function renderMonthlyConclusion(){
   const el=document.getElementById('concl-month');if(!el)return;
   if(!el.value){const n=new Date();const d=new Date(n.getFullYear(),n.getMonth()-1,1);el.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+  const tabs=document.getElementById('concl-tabs');
+  if(tabs){
+    const cfg=[['table','表格版（貼試算表）'],['short','一句話版（群組公告）'],['full','完整版（月報存檔）']];
+    tabs.innerHTML=cfg.map(([k,l])=>`<button onclick="setConclFormat('${k}')" style="padding:5px 13px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:.12s;${k===conclFormat?'background:var(--accent);color:#000;':'background:transparent;color:var(--txt3);'}">${l}</button>`).join('');
+  }
+  const hint=document.getElementById('concl-hint');
+  if(hint)hint.textContent=conclFormat==='table'?'Tab 分隔，貼進 Google 試算表會自動分成兩欄':conclFormat==='short'?'2～4 行，適合貼 LINE 群組或口頭報告':'完整敘述，適合月報存檔或餵給 AI 大腦';
   document.getElementById('concl-text').textContent=buildMonthlyConclusion(el.value);
 }
 function copyMonthlyConclusion(){
   const t=document.getElementById('concl-text').textContent;
-  const done=()=>alert('✅ 結論已複製。\n\n可直接貼到「2026光田影音團隊規劃筆記本」的工作頁。');
+  const tip=conclFormat==='table'?'✅ 表格已複製（Tab 分隔）。\n\n貼到 Google 試算表會自動分成兩欄。':'✅ 結論已複製。';
+  const done=()=>alert(tip);
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));
   else fallbackCopy(t,done);
 }
