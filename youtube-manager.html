@@ -414,7 +414,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <a href="./files/視覺多媒體設計組_專案管理_v3.html">
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
-      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.36 · 2026-08-16 22:40</div>
+      <div style="font-size:11px;color:var(--txt3);padding:4px 8px;margin-top:4px;" title="此版本發佈時間，可用來確認是否為最新版">v2.37 · 2026-08-17 09:50</div>
     </div>
   </nav>
 
@@ -1004,7 +1004,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         </div>
         <div class="tbl-wrap">
           <table><thead><tr>
-            <th>狀態</th><th>日期</th><th>標題</th><th>類型</th><th>類別</th><th>觀看</th><th>互動</th><th>分享</th><th>儲存</th><th>觸及</th><th>操作</th>
+            <th>狀態</th><th>日期</th><th>標題</th><th>類型</th><th>類別</th><th style="text-align:right;">觀看</th><th style="text-align:right;">互動</th><th style="text-align:right;">分享</th><th style="text-align:right;">儲存</th><th style="text-align:right;">觸及</th><th>操作</th>
           </tr></thead>
           <tbody id="ig-tbody"></tbody></table>
         </div>
@@ -3311,6 +3311,9 @@ function analyzeMonth(ym){
   const sm={};vids.forEach(d=>{const x=d.series||'其他';(sm[x]=sm[x]||[]).push(d);});
   const sRank=Object.entries(sm).map(([x,a])=>({s:x,n:a.length,m:med(a.map(totalViews))})).sort((a,b)=>b.m-a.m);
   const pv={YouTube:sum(vids,d=>d.yt_views),Facebook:sum(vids,d=>d.fb_views),Instagram:sum(vids,d=>d.ig_views)};
+  // IG 補算：未連結影片的當月 IG Reels（連結了的已回填進影片 ig_views，避免重複計算）
+  const igUnlinked=(typeof activeIgPosts==='function'?activeIgPosts():[]).filter(p=>String(p.date||'').substring(0,7)===ym&&String(p.type)==='3'&&!p.videoId);
+  pv.Instagram+=igUnlinked.reduce((s2,p)=>s2+(Number(p.views)||0),0);
   const pAll=pv.YouTube+pv.Facebook+pv.Instagram;
   const domOf=d=>{const a=Number(d.yt_views)||0,b=Number(d.fb_views)||0,c=Number(d.ig_views)||0,t=a+b+c;if(!t)return '';const x=Math.max(a,b,c);return `${x===a?'YouTube':x===c?'Instagram':'Facebook'} 佔 ${Math.round(x/t*100)}%`;};
   const topP=pAll?Object.entries(pv).sort((a,b)=>b[1]-a[1])[0]:null;
