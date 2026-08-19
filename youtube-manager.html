@@ -49,7 +49,7 @@ a{color:var(--accent);text-decoration:none;}
 .sidebar-footer a{font-size:12px;color:var(--txt3);display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;transition:.12s;}
 .sidebar-footer a:hover{color:var(--accent);background:var(--accent-dim);}
 
-.main{margin-left:240px;flex:1;padding:0;display:flex;flex-direction:column;min-height:100vh;}
+.main{margin-left:240px;flex:1;min-width:0;padding:0;display:flex;flex-direction:column;min-height:100vh;}
 .page{display:none;flex-direction:column;flex:1;}
 .page.active{display:flex;}
 .page-header{display:flex;align-items:center;justify-content:space-between;padding:18px 36px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;background:var(--bg-0);position:sticky;top:0;z-index:40;}
@@ -65,7 +65,7 @@ a{color:var(--accent);text-decoration:none;}
 .hdr-btn-sheets{color:#34D399;border-color:rgba(52,211,153,.3);}
 .hdr-btn-sheets:hover{background:rgba(52,211,153,.1)!important;}
 .hdr-sync{font-size:11px;color:var(--txt3);display:flex;align-items:center;gap:4px;padding:0 4px;}
-.page-body{padding:24px 36px;flex:1;}
+.page-body{padding:24px 36px;flex:1;min-width:0;}
 .page-title{font-size:18px;font-weight:700;margin-bottom:22px;display:flex;align-items:center;gap:10px;color:var(--txt);}
 .page-title .icon{color:var(--accent);}
 
@@ -139,7 +139,7 @@ textarea{resize:vertical;min-height:64px;}
 .tbl-toolbar input,.tbl-toolbar select{padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg-2);color:var(--txt);outline:none;}
 .tbl-toolbar input{flex:1;min-width:180px;}
 .tbl-toolbar input:focus,.tbl-toolbar select:focus{border-color:var(--accent);}
-.tbl-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);}
+.tbl-wrap{overflow-x:auto;max-width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th{background:var(--bg-2);text-align:left;padding:12px 14px;font-weight:600;color:var(--txt3);white-space:nowrap;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
 td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
@@ -424,7 +424,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.48 · 2026-08-19 23:20</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.49 · 2026-08-19 23:40</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -671,7 +671,17 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <button class="btn btn-secondary btn-sm" onclick="exportCSV()">匯出 CSV</button>
       </div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>狀態</th><th>日期</th><th>標題</th><th>系列</th><th>類型</th><th>類別</th><th>YT 觀看</th><th>數據日期</th><th>企劃</th><th>操作</th></tr></thead>
+        <table><thead><tr>
+          <th style="cursor:pointer;" onclick="setVidListSort('')" data-vsk="">狀態</th>
+          <th style="cursor:pointer;" onclick="setVidListSort('date')" data-vsk="date">日期</th>
+          <th>標題</th><th>系列</th><th>類型</th><th>類別</th>
+          <th style="cursor:pointer;" onclick="setVidListSort('yt_views')" data-vsk="yt_views">YT 觀看</th>
+          <th style="cursor:pointer;" onclick="setVidListSort('yt_likes')" data-vsk="yt_likes">讚</th>
+          <th style="cursor:pointer;" onclick="setVidListSort('yt_comments')" data-vsk="yt_comments">留言</th>
+          <th style="cursor:pointer;" onclick="setVidListSort('eng')" data-vsk="eng">互動率</th>
+          <th style="cursor:pointer;" onclick="setVidListSort('yt_ctr')" data-vsk="yt_ctr">CTR</th>
+          <th style="cursor:pointer;" onclick="setVidListSort('yt_ratio')" data-vsk="yt_ratio">完播率</th>
+          <th>數據日期</th><th>企劃</th><th>操作</th></tr></thead>
         <tbody id="video-tbody"></tbody></table>
       </div>
       <div id="list-empty" style="display:none;text-align:center;padding:48px;color:var(--txt3);">
@@ -3725,18 +3735,38 @@ function clearForm(){ALL_FORM_FIELDS.forEach(id=>{const el=document.getElementBy
 // ============================================================
 // 影片列表
 // ============================================================
+let vlSortKey='',vlSortDir=-1;
+function setVidListSort(key){if(vlSortKey===key){vlSortDir=-vlSortDir;}else{vlSortKey=key;vlSortDir=-1;}renderList();}
+function ytEng(d){const v=Number(d.yt_views)||0;return v?((Number(d.yt_likes)||0)+(Number(d.yt_comments)||0))/v*100:0;}
+function renderVidListSortHeaders(){
+  document.querySelectorAll('#page-list thead th[data-vsk]').forEach(th=>{
+    const base=th.dataset.base||(th.dataset.base=th.textContent.replace(/[ ▲▼⇅]+$/,''));
+    const active=th.dataset.vsk===vlSortKey;
+    th.textContent=base+(th.dataset.vsk===''?(active?' ▼':' ⇅'):(active?(vlSortDir===-1?' ▼':' ▲'):' ⇅'));
+    th.style.color=active?'var(--yt)':'';
+  });
+}
 function renderList(){
+  renderVidListSortHeaders();
   const s=(document.getElementById('search-input').value||'').toLowerCase(),ft=document.getElementById('filter-type').value,fc=document.getElementById('filter-cat').value,fm=document.getElementById('filter-month').value,fs=document.getElementById('filter-series')?.value||'';
   let f=activeVideos().filter(d=>{if(s&&!(d.title||'').toLowerCase().includes(s)&&!(d.planner||'').toLowerCase().includes(s)&&!(d.producer||'').toLowerCase().includes(s))return false;if(ft&&d.type!==ft)return false;if(fc&&d.cat!==fc)return false;if(fm&&!(d.date||'').startsWith(fm))return false;if(fs){if(fs==='__none__'){if(d.series)return false;}else if(d.series!==fs)return false;}return true;});
-  // Sort: pending first, then collecting, then locked, then by date desc
-  const statusOrder={pending:0,collecting:1,locked:2,unknown:3};
-  f.sort((a,b)=>{const sa=statusOrder[getVideoStatus(a)]??3,sb=statusOrder[getVideoStatus(b)]??3;if(sa!==sb)return sa-sb;return(b.date||'').localeCompare(a.date||'');});
+  // 預設：待更新優先 → 統計中 → 已定案，同組再依日期新到舊；點欄位標題則改用該欄排序
+  if(vlSortKey==='date'){f.sort((a,b)=>((a.date||'')<(b.date||'')?-1:(a.date||'')>(b.date||'')?1:0)*vlSortDir);}
+  else if(vlSortKey==='eng'){f.sort((a,b)=>(ytEng(a)-ytEng(b))*vlSortDir);}
+  else if(vlSortKey){f.sort((a,b)=>((Number(a[vlSortKey])||0)-(Number(b[vlSortKey])||0))*vlSortDir);}
+  else{
+    const statusOrder={pending:0,collecting:1,locked:2,unknown:3};
+    f.sort((a,b)=>{const sa=statusOrder[getVideoStatus(a)]??3,sb=statusOrder[getVideoStatus(b)]??3;if(sa!==sb)return sa-sb;return(b.date||'').localeCompare(a.date||'');});
+  }
   const tb=document.getElementById('video-tbody'),em=document.getElementById('list-empty');
   if(f.length===0){tb.innerHTML='';em.style.display='block';return;}em.style.display='none';
   tb.innerHTML=f.map(d=>{const ytv=Number(d.yt_views)||0,lk=d.yt_url||d.fb_url||d.ig_url||'';
+    const num=v=>(Number(v)||0).toLocaleString();
+    const pct=v=>Number(v)>0?(Number(v)*100).toFixed(1)+'%':'<span style="color:var(--txt3);">—</span>';
+    const eng=ytEng(d);
     const st=getVideoStatus(d),sc=STATUS_CFG[st];
     const tagHtml=Array.isArray(d.tags)&&d.tags.length?`<div style="margin-top:3px;">${renderTagChips(d.tags)}</div>`:'';
-    return`<tr><td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;background:${sc.bg};color:${sc.color};">${sc.icon} ${sc.label}</span></td><td style="white-space:nowrap;">${(d.date||'').substring(0,10)||'—'}</td><td style="max-width:200px;color:#fff;">${lk?`<a href="${esc(lk)}" target="_blank" style="color:#fff;">${esc(d.title)}</a>`:esc(d.title)}${tagHtml}</td><td>${seriesBadge(d.series)}</td><td><span class="type-badge type-${d.type}">${d.type==='short'?'Short':'Long'}</span></td><td>${esc(d.cat||'')}</td><td><div class="views-cell"><span class="total">${ytv.toLocaleString()}</span></div></td><td style="white-space:nowrap;font-size:11px;color:var(--txt3);">${d.statsDate||'—'}</td><td>${esc(d.planner||'')}</td><td><div class="act-btns"><button class="act-btn write-only" onclick="openEdit('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button><button class="act-btn del write-only" onclick="deleteEntry('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span></button></div></td></tr>`;}).join('');
+    return`<tr><td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;background:${sc.bg};color:${sc.color};">${sc.icon} ${sc.label}</span></td><td style="white-space:nowrap;">${(d.date||'').substring(0,10)||'—'}</td><td style="max-width:200px;color:#fff;">${lk?`<a href="${esc(lk)}" target="_blank" style="color:#fff;">${esc(d.title)}</a>`:esc(d.title)}${tagHtml}</td><td>${seriesBadge(d.series)}</td><td><span class="type-badge type-${d.type}">${d.type==='short'?'Short':'Long'}</span></td><td>${esc(d.cat||'')}</td><td><div class="views-cell"><span class="total">${ytv.toLocaleString()}</span></div></td><td style="font-variant-numeric:tabular-nums;">${num(d.yt_likes)}</td><td style="font-variant-numeric:tabular-nums;">${num(d.yt_comments)}</td><td style="font-variant-numeric:tabular-nums;color:${eng>=2?'#34D399':'var(--txt)'};">${ytv?eng.toFixed(1)+'%':'<span style="color:var(--txt3);">—</span>'}</td><td style="font-variant-numeric:tabular-nums;">${pct(d.yt_ctr)}</td><td style="font-variant-numeric:tabular-nums;">${pct(d.yt_ratio)}</td><td style="white-space:nowrap;font-size:11px;color:var(--txt3);">${d.statsDate||'—'}</td><td>${esc(d.planner||'')}</td><td><div class="act-btns"><button class="act-btn write-only" onclick="openEdit('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button><button class="act-btn del write-only" onclick="deleteEntry('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span></button></div></td></tr>`;}).join('');
 }
 function buildMonthFilter(){const ms=[...new Set(activeVideos().map(d=>(d.date||'').substring(0,7)).filter(Boolean))].sort().reverse();document.getElementById('filter-month').innerHTML='<option value="">全部月份</option>'+ms.map(m=>`<option value="${m}">${m}</option>`).join('');}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
