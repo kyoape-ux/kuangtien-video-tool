@@ -424,7 +424,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.50 · 2026-08-20 00:05</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.51 · 2026-08-20 00:25</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -664,6 +664,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <select id="filter-cat" onchange="renderList()"><option value="">全部類別</option><option value="疾病衛教">疾病衛教</option><option value="特色醫療">特色醫療</option><option value="新服務流程">新服務流程</option><option value="醫院形象">醫院形象</option><option value="員工活動">員工活動</option><option value="教學">教學</option><option value="其他">其他</option></select>
         <select id="filter-series" onchange="renderList()"><option value="">全部系列</option><option value="藏鏡人">藏鏡人</option><option value="光小編出任務">光小編出任務</option><option value="光田醫點通">光田醫點通</option><option value="光田e學院">光田e學院</option><option value="健康人文藝術講座">健康人文藝術講座</option><option value="其他">其他</option><option value="__none__">（未指定系列）</option></select>
         <select id="filter-month" onchange="renderList()"><option value="">全部月份</option></select>
+        <button class="btn btn-sm write-only" onclick="cleanTitleHashtags()" style="background:rgba(148,163,184,.12);color:var(--txt2);border:1px solid var(--border-l);" title="移除影片標題結尾的 #標籤，讓列表清爽">清理標題 #標籤</button>
         <button class="btn btn-sm write-only" onclick="scanVideoSeries()" style="background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25);" title="依標題自動辨識影片系列，確認後批次套用">自動辨識系列</button>
         <button class="btn btn-sm" onclick="batchUpdateYt()" style="background:rgba(255,68,68,.12);color:var(--yt);border:1px solid rgba(255,68,68,.2);">批次更新 YT 數據</button>
         <button class="btn btn-secondary btn-sm" onclick="document.getElementById('csv-import').click()">匯入 YT Studio CSV</button>
@@ -3959,6 +3960,25 @@ function saveYtApiKey(){
 // ============================================================
 // YT Studio CSV 匯入
 // ============================================================
+function stripHashtags(t){
+  const raw=String(t||'');
+  const out=raw.replace(/#[^\s#]+/g,' ').replace(/\s{2,}/g,' ').replace(/[\s|｜·・,、\-–—]+$/,'').trim();
+  return out||raw.trim();   // 整串都是 hashtag 就保留原文，避免變空白
+}
+function cleanTitleHashtags(){
+  if(typeof canWrite==='function'&&!canWrite()){alert('權限不足');return;}
+  const hits=activeVideos().filter(d=>stripHashtags(d.title)!==String(d.title||'').trim());
+  if(!hits.length){alert('目前沒有標題含 # 標籤，不需要清理。');return;}
+  const eg=hits.slice(0,3).map(d=>`・${String(d.title).slice(0,34)}…\n  → ${stripHashtags(d.title)}`).join('\n');
+  if(!confirm(`共有 ${hits.length} 支影片的標題含 # 標籤，將一次移除（只改標題，其他欄位不動）。\n\n範例：\n${eg}\n\n確定要清理嗎？`))return;
+  createSnapshot('清理標題 hashtag 前（自動）',true);
+  hits.forEach(d=>{d.title=stripHashtags(d.title);d.updatedAt=new Date().toISOString();});
+  saveData();renderAll();
+  showSyncBadge(`已清理 ${hits.length} 支影片標題`);
+  if(typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
+    (async()=>{let ok=0;for(const d of hits){const r=await pushToSheets('updateVideo',{data:d});if(r)ok++;showSyncBadge(`同步 ${ok}/${hits.length}`);}showSyncBadge(`✅ 標題已同步雲端 ${ok}/${hits.length}`);})();
+  }
+}
 function importYtStudioCSV(input){
   const file=input.files[0];if(!file)return;
   const confirmText=prompt(`⚠️ 即將從 YT Studio CSV 匯入。\n新影片會新增；已存在的影片只更新「曝光、CTR、完播率、平均觀看時長」，\n標題／分類／標籤／其他平台數據都不會被動到。\n檔案：${file.name}\n\n請輸入「確認匯入」以繼續：`);
@@ -4017,7 +4037,7 @@ function importYtStudioCSV(input){
       if(!dateStr.startsWith(curYear)){oldSkipped++;continue;}   // 匯出檔含歷年舊片，只收今年的新影片
       const durSec=parseInt(row[durCol])||0;const mins=Math.floor(durSec/60),secs=durSec%60;
       const nv={
-        id:vid,title:String(row[titleCol]||'').replace(/"/g,''),date:dateStr,
+        id:vid,title:stripHashtags(String(row[titleCol]||'').replace(/"/g,'')),date:dateStr,
         type:durSec<=60?'short':'long',cat:'',planner:'',producer:'',
         dur:durSec>0?`${mins}:${String(secs).padStart(2,'0')}`:'',
         yt_url:`https://www.youtube.com/watch?v=${vid}`,
