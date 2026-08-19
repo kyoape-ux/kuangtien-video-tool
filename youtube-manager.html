@@ -415,7 +415,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.39 · 2026-08-17 12:40</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.40 · 2026-08-19 21:05</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -662,7 +662,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <button class="btn btn-secondary btn-sm" onclick="exportCSV()">匯出 CSV</button>
       </div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>狀態</th><th>日期</th><th>標題</th><th>系列</th><th>類型</th><th>類別</th><th>全平台觀看</th><th>數據日期</th><th>企劃</th><th>操作</th></tr></thead>
+        <table><thead><tr><th>狀態</th><th>日期</th><th>標題</th><th>系列</th><th>類型</th><th>類別</th><th>YT 觀看</th><th>數據日期</th><th>企劃</th><th>操作</th></tr></thead>
         <tbody id="video-tbody"></tbody></table>
       </div>
       <div id="list-empty" style="display:none;text-align:center;padding:48px;color:var(--txt3);">
@@ -696,11 +696,11 @@ tr:hover td{background:rgba(52,211,153,.03);}
 
         <div class="chart-row" style="margin-top:4px;">
           <div class="chart-box">
-            <h3><span class="icon"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></span>月度觀看趨勢</h3>
+            <h3><span class="icon"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></span>月度 YT 觀看趨勢</h3>
             <canvas id="vs-chart-monthly"></canvas>
           </div>
           <div class="chart-box">
-            <h3><span class="icon"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></span>觀看 TOP 5 影片</h3>
+            <h3><span class="icon"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></span>YT 觀看 TOP 5 影片</h3>
             <canvas id="vs-chart-top5" style="max-height:240px;"></canvas>
           </div>
         </div>
@@ -713,7 +713,6 @@ tr:hover td{background:rgba(52,211,153,.03);}
               <thead><tr>
                 <th style="cursor:pointer;" onclick="setVidSort('date')">日期</th>
                 <th>標題</th>
-                <th style="cursor:pointer;" onclick="setVidSort('views')">全平台觀看 ⇅</th>
                 <th style="cursor:pointer;" onclick="setVidSort('yt_views')">YT 觀看 ⇅</th>
                 <th style="cursor:pointer;" onclick="setVidSort('yt_ctr')">YT CTR ⇅</th>
                 <th style="cursor:pointer;" onclick="setVidSort('yt_ratio')">完播率 ⇅</th>
@@ -2842,6 +2841,7 @@ function renderDashboard(){
   const gView=CFG.viewGoal*mult,gCnt=CFG.countGoal*mult;
   const vp=Math.min(100,Math.round(tv/gView*100)),cp=Math.min(100,Math.round(cnt/gCnt*100));
   const pLabel={month:'月',quarter:'季',year:'年'}[dashMode];
+  const pshare=v=>tv>0?Math.round(v/tv*100)+'%':'0%';   // 全平台加總只在儀表板呈現，各平台頁面只看自己的數字
 
   // Pending alert
   const pendingList=_AV.filter(d=>getVideoStatus(d)==='pending');
@@ -2849,7 +2849,7 @@ function renderDashboard(){
   if(pendingList.length>0){pa.style.display='block';pa.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><span style="color:var(--red);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="var(--bg-1)"/></svg></span><div><b style="color:var(--red);">${pendingList.length} 部影片已滿 1 個月，請更新數據</b><div style="font-size:11px;color:var(--txt3);margin-top:2px;">點擊影片名稱可直接編輯並一鍵取得最新 YT 數據</div></div></div>`+pendingList.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid rgba(248,113,113,.1);font-size:12px;"><span style="color:var(--txt3);">${(d.date||'').substring(0,10)}</span><a href="#" onclick="openEdit('${d.id}');return false;" style="color:var(--red);font-weight:500;">${esc(d.title)}</a></div>`).join('');}else{pa.style.display='none';}
 
   document.getElementById('kpi-cards').innerHTML=`
-    <div class="kpi-card"><div class="kpi-label">${pLabel}度全平台觀看</div><div class="kpi-val">${tv.toLocaleString()}</div><div class="kpi-sub">${pLabel}目標 ${gView.toLocaleString()}（${vp}%）</div><div class="kpi-bar"><div class="kpi-bar-fill ${vp>=100?'kpi-ok':vp>=60?'kpi-warn':'kpi-bad'}" style="width:${vp}%"></div></div><div class="platform-breakdown"><span class="plat-tag plat-yt">YT ${ytv.toLocaleString()}</span><span class="plat-tag plat-fb">FB ${fbv.toLocaleString()}</span><span class="plat-tag plat-ig">IG ${igv.toLocaleString()}</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">${pLabel}度全平台觀看</div><div class="kpi-val">${tv.toLocaleString()}</div><div class="kpi-sub">${pLabel}目標 ${gView.toLocaleString()}（${vp}%）</div><div class="kpi-bar"><div class="kpi-bar-fill ${vp>=100?'kpi-ok':vp>=60?'kpi-warn':'kpi-bad'}" style="width:${vp}%"></div></div><div class="platform-breakdown"><span class="plat-tag plat-yt">YT ${ytv.toLocaleString()}（${pshare(ytv)}）</span><span class="plat-tag plat-fb">FB ${fbv.toLocaleString()}（${pshare(fbv)}）</span><span class="plat-tag plat-ig">IG ${igv.toLocaleString()}（${pshare(igv)}）</span></div></div>
     <div class="kpi-card"><div class="kpi-label">${pLabel}度上傳數</div><div class="kpi-val">${cnt}</div><div class="kpi-sub">${pLabel}目標 ${gCnt} 部（${cp}%）</div><div class="kpi-bar"><div class="kpi-bar-fill ${cp>=100?'kpi-ok':cp>=60?'kpi-warn':'kpi-bad'}" style="width:${cp}%"></div></div></div>
     <div class="kpi-card"><div class="kpi-label">YT 平均 CTR</div><div class="kpi-val">${(avgCtr*100).toFixed(1)}%</div><div class="kpi-sub">YouTube 點閱率</div></div>
     <div class="kpi-card"><div class="kpi-label">達標影片</div><div class="kpi-val">${star}</div><div class="kpi-sub">單片 YT ≥${CFG.personalGoal.toLocaleString()}</div></div>
@@ -3013,7 +3013,7 @@ function renderFbStats(){
 // ============================================================
 // 影片成效（YouTube 效率分析）
 // ============================================================
-let vsChartMonthly=null,vsChartTop5=null,vsSortKey='views',vsSortDir=-1;
+let vsChartMonthly=null,vsChartTop5=null,vsSortKey='yt_views',vsSortDir=-1;
 function setVidSort(key){if(vsSortKey===key){vsSortDir=-vsSortDir;}else{vsSortKey=key;vsSortDir=-1;}renderVidStats();}
 function renderVidStats(){
   const yrSel=document.getElementById('vs-year');if(!yrSel)return;
@@ -3030,34 +3030,33 @@ function renderVidStats(){
   const n=vd.length;
   const sum=k=>vd.reduce((s,d)=>s+(Number(d[k])||0),0);
   const avg=k=>n?sum(k)/n:0;
-  const tv=vd.reduce((s,d)=>s+totalViews(d),0);
+  const ytTotal=sum('yt_views');
   const avgCtr=avg('yt_ctr')*100,avgRatio=avg('yt_ratio')*100,imp=sum('yt_imp');
   document.getElementById('vs-kpi').innerHTML=`
-    <div class="kpi-card"><div class="kpi-label">影片數</div><div class="kpi-val">${n}</div><div class="kpi-sub">全平台觀看 ${tv.toLocaleString()}</div></div>
+    <div class="kpi-card"><div class="kpi-label">影片數</div><div class="kpi-val">${n}</div><div class="kpi-sub">YT 觀看 ${ytTotal.toLocaleString()}</div></div>
     <div class="kpi-card"><div class="kpi-label">平均 YT CTR</div><div class="kpi-val">${avgCtr.toFixed(1)}%</div><div class="kpi-sub">點閱率（越高越吸睛）</div></div>
     <div class="kpi-card"><div class="kpi-label">平均完播率</div><div class="kpi-val">${avgRatio.toFixed(1)}%</div><div class="kpi-sub">觀看比例（內容留得住人）</div></div>
     <div class="kpi-card"><div class="kpi-label">YT 總曝光</div><div class="kpi-val">${imp.toLocaleString()}</div><div class="kpi-sub">影片被推播次數</div></div>`;
   const months=[];for(let i=1;i<=12;i++)months.push(`${yr}-${String(i).padStart(2,'0')}`);
   const mv=k=>months.map(m=>AV.filter(d=>(d.date||'').startsWith(m)).reduce((s,d)=>s+(Number(d[k])||0),0));
-  const mYt=mv('yt_views'),mFb=mv('fb_views'),mIg=mv('ig_views');
+  const mYt=mv('yt_views');
   if(vsChartMonthly)vsChartMonthly.destroy();
-  vsChartMonthly=new Chart(document.getElementById('vs-chart-monthly'),{type:'bar',data:{labels:months.map(m=>m.substring(5)+'月'),datasets:[{label:'YouTube',data:mYt,backgroundColor:'#FF4444',borderRadius:3},{label:'Facebook',data:mFb,backgroundColor:'#4C8BF5',borderRadius:3},{label:'Instagram',data:mIg,backgroundColor:'#F472B6',borderRadius:3}]},options:{responsive:true,scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true}},plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:12,padding:14}}}}});
-  const top5=[...vd].sort((a,b)=>totalViews(b)-totalViews(a)).slice(0,5);
+  vsChartMonthly=new Chart(document.getElementById('vs-chart-monthly'),{type:'bar',data:{labels:months.map(m=>m.substring(5)+'月'),datasets:[{label:'YT 觀看',data:mYt,backgroundColor:'#FF4444',borderRadius:3}]},options:{responsive:true,scales:{x:{grid:{display:false}},y:{beginAtZero:true}},plugins:{legend:{display:false}}}});
+  const top5=[...vd].sort((a,b)=>(Number(b.yt_views)||0)-(Number(a.yt_views)||0)).slice(0,5);
   if(vsChartTop5)vsChartTop5.destroy();
-  vsChartTop5=new Chart(document.getElementById('vs-chart-top5'),{type:'bar',data:{labels:top5.map(d=>(d.title||'(無標題)').slice(0,16)),datasets:[{label:'全平台觀看',data:top5.map(d=>totalViews(d)),backgroundColor:'#34D399',borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
+  vsChartTop5=new Chart(document.getElementById('vs-chart-top5'),{type:'bar',data:{labels:top5.map(d=>(d.title||'(無標題)').slice(0,16)),datasets:[{label:'YT 觀看',data:top5.map(d=>Number(d.yt_views)||0),backgroundColor:'#FF4444',borderRadius:4}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
   const tb=document.getElementById('vs-rank-tbody'),empty=document.getElementById('vs-rank-empty');
   const sorted=[...vd].sort((a,b)=>{
     if(vsSortKey==='date'){const av=a.date||'',bv=b.date||'';return (av<bv?-1:av>bv?1:0)*vsSortDir;}
-    const av=vsSortKey==='views'?totalViews(a):(Number(a[vsSortKey])||0);
-    const bv=vsSortKey==='views'?totalViews(b):(Number(b[vsSortKey])||0);
+    const av=Number(a[vsSortKey])||0;
+    const bv=Number(b[vsSortKey])||0;
     return (av-bv)*vsSortDir;
   });
   if(empty)empty.style.display=sorted.length?'none':'block';
   tb.innerHTML=sorted.map(d=>`<tr>
     <td style="white-space:nowrap;">${(d.date||'').substring(0,10)}</td>
     <td style="max-width:240px;">${esc(d.title||'')}</td>
-    <td style="font-variant-numeric:tabular-nums;font-weight:600;">${totalViews(d).toLocaleString()}</td>
-    <td style="font-variant-numeric:tabular-nums;">${(Number(d.yt_views)||0).toLocaleString()}</td>
+    <td style="font-variant-numeric:tabular-nums;font-weight:600;">${(Number(d.yt_views)||0).toLocaleString()}</td>
     <td style="font-variant-numeric:tabular-nums;">${((Number(d.yt_ctr)||0)*100).toFixed(1)}%</td>
     <td style="font-variant-numeric:tabular-nums;color:${(Number(d.yt_ratio)||0)>=0.5?'#34D399':'var(--txt)'};">${((Number(d.yt_ratio)||0)*100).toFixed(1)}%</td>
     <td style="font-variant-numeric:tabular-nums;color:var(--txt3);">${esc(d.yt_avgdur||'—')}</td>
@@ -3679,10 +3678,10 @@ function renderList(){
   f.sort((a,b)=>{const sa=statusOrder[getVideoStatus(a)]??3,sb=statusOrder[getVideoStatus(b)]??3;if(sa!==sb)return sa-sb;return(b.date||'').localeCompare(a.date||'');});
   const tb=document.getElementById('video-tbody'),em=document.getElementById('list-empty');
   if(f.length===0){tb.innerHTML='';em.style.display='block';return;}em.style.display='none';
-  tb.innerHTML=f.map(d=>{const tv=totalViews(d),ytv=Number(d.yt_views)||0,fbv=Number(d.fb_views)||0,igv=Number(d.ig_views)||0,lk=d.yt_url||d.fb_url||d.ig_url||'';
+  tb.innerHTML=f.map(d=>{const ytv=Number(d.yt_views)||0,lk=d.yt_url||d.fb_url||d.ig_url||'';
     const st=getVideoStatus(d),sc=STATUS_CFG[st];
     const tagHtml=Array.isArray(d.tags)&&d.tags.length?`<div style="margin-top:3px;">${renderTagChips(d.tags)}</div>`:'';
-    return`<tr><td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;background:${sc.bg};color:${sc.color};">${sc.icon} ${sc.label}</span></td><td style="white-space:nowrap;">${(d.date||'').substring(0,10)||'—'}</td><td style="max-width:200px;color:#fff;">${lk?`<a href="${esc(lk)}" target="_blank" style="color:#fff;">${esc(d.title)}</a>`:esc(d.title)}${tagHtml}</td><td>${seriesBadge(d.series)}</td><td><span class="type-badge type-${d.type}">${d.type==='short'?'Short':'Long'}</span></td><td>${esc(d.cat||'')}</td><td><div class="views-cell"><span class="total">${tv.toLocaleString()}</span><span class="plats">${ytv?`<span style="color:var(--yt)">YT ${ytv.toLocaleString()}</span>`:''}${fbv?`<span style="color:var(--fb)">FB ${fbv.toLocaleString()}</span>`:''}${igv?`<span style="color:var(--ig)">IG ${igv.toLocaleString()}</span>`:''}</span></div></td><td style="white-space:nowrap;font-size:11px;color:var(--txt3);">${d.statsDate||'—'}</td><td>${esc(d.planner||'')}</td><td><div class="act-btns"><button class="act-btn write-only" onclick="openEdit('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button><button class="act-btn del write-only" onclick="deleteEntry('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span></button></div></td></tr>`;}).join('');
+    return`<tr><td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;background:${sc.bg};color:${sc.color};">${sc.icon} ${sc.label}</span></td><td style="white-space:nowrap;">${(d.date||'').substring(0,10)||'—'}</td><td style="max-width:200px;color:#fff;">${lk?`<a href="${esc(lk)}" target="_blank" style="color:#fff;">${esc(d.title)}</a>`:esc(d.title)}${tagHtml}</td><td>${seriesBadge(d.series)}</td><td><span class="type-badge type-${d.type}">${d.type==='short'?'Short':'Long'}</span></td><td>${esc(d.cat||'')}</td><td><div class="views-cell"><span class="total">${ytv.toLocaleString()}</span></div></td><td style="white-space:nowrap;font-size:11px;color:var(--txt3);">${d.statsDate||'—'}</td><td>${esc(d.planner||'')}</td><td><div class="act-btns"><button class="act-btn write-only" onclick="openEdit('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button><button class="act-btn del write-only" onclick="deleteEntry('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span></button></div></td></tr>`;}).join('');
 }
 function buildMonthFilter(){const ms=[...new Set(activeVideos().map(d=>(d.date||'').substring(0,7)).filter(Boolean))].sort().reverse();document.getElementById('filter-month').innerHTML='<option value="">全部月份</option>'+ms.map(m=>`<option value="${m}">${m}</option>`).join('');}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
