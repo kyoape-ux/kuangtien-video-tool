@@ -424,7 +424,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.45 · 2026-08-19 22:30</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.46 · 2026-08-19 22:45</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -552,7 +552,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       </div>
       <div class="chart-row" style="grid-template-columns:1fr;">
         <div class="chart-box">
-          <h3><span class="icon"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></span>Top 5 ＆ 倒數 5 名 <span style="font-size:11px;color:var(--txt3);font-weight:400;">全平台觀看總數 · 色塊為各平台貢獻（YT / IG / FB）</span></h3>
+          <h3><span class="icon"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></span>Top 5 影片 <span style="font-size:11px;color:var(--txt3);font-weight:400;">全平台觀看總數 · 色塊為各平台貢獻（YT / IG / FB）</span></h3>
           <div id="top5-list"></div>
         </div>
       </div>
@@ -1501,7 +1501,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
             <li><b>各平台觀看占比</b> — 圓餅圖，YT / FB / IG 各平台占比</li>
             <li><b>類別分布</b> — 圓餅圖，依內容類別分布</li>
             <li><b>影片類型分布</b> — 圓餅圖，Long vs Short</li>
-            <li><b>Top 5 ＆ 倒數 5 名</b> — 全平台觀看總數排行，色塊顯示 YT / IG / FB 各平台貢獻</li>
+            <li><b>Top 5 影片</b> — 全平台觀看總數排行，色塊顯示 YT / IG / FB 各平台貢獻</li>
           </ul>
           <div class="gtip"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v1"/><path d="M12 7a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.4V16H10v-1.6A4 4 0 0 1 12 7z"/></svg>發布超過 1 個月但觀看數為 0 的影片會出現紅色「待處理提醒」。</div>
         </div>
@@ -3682,7 +3682,7 @@ function renderCharts(viewData){
   chartType=new Chart(document.getElementById('chart-type'),{type:'doughnut',data:{labels:['Long（長片）','Short（短片/Reels）'],datasets:[{data:[longCnt,shortCnt],backgroundColor:['#FBBF24','#818CF8'],borderWidth:0}]},options:{responsive:true,cutout:'65%',plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:16}},tooltip:{callbacks:{label:ctx=>{const tot=longCnt+shortCnt;const pct=tot>0?Math.round(ctx.raw/tot*100):0;return ` ${ctx.label}: ${ctx.raw} 部（${pct}%）`;}}}}}});
   // Top 5
   const top5=[...viewData].sort((a,b)=>totalViews(b)-totalViews(a)).slice(0,5);
-  // 前五名與倒數五名共用同一套列樣式；平台順序固定 YT > IG > FB
+  // Top 5 列樣式；平台順序固定 YT > IG > FB
   const T5P=[['yt','YT','#FF4444'],['ig','IG','#F472B6'],['fb','FB','#4C8BF5']];
   const t5Rows=(arr,maxV)=>arr.map((d,i)=>{
     const tot=totalViews(d);
@@ -3697,19 +3697,9 @@ function renderCharts(viewData){
       +'<div style="margin:7px 26px 6px;"><div style="display:flex;height:10px;border-radius:3px;overflow:hidden;background:var(--bg-2);width:'+Math.max(4,tot/maxV*100).toFixed(1)+'%;">'+bar+'</div></div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:14px;margin-left:26px;">'+nums+'</div></div>';
   }).join('');
-  const secTitle=(txt,color,hint)=>'<div style="display:flex;align-items:baseline;gap:8px;margin:4px 0 2px;"><span style="font-size:12px;font-weight:600;color:'+color+';">'+txt+'</span><span style="font-size:10px;color:var(--txt3);">'+hint+'</span></div>';
   const t5Max=Math.max(1,...top5.map(d=>totalViews(d)));
-  // 倒數五名排除已在前五名的影片，資料太少時就不重複顯示
-  const worstPool=viewData.filter(d=>!top5.includes(d));
-  const bottom5=[...worstPool].sort((a,b)=>totalViews(a)-totalViews(b)).slice(0,5);
-  const bMax=Math.max(1,...bottom5.map(d=>totalViews(d)));
-  const t5El=document.getElementById('top5-list');
-  if(!top5.length){t5El.innerHTML='<div style="color:var(--txt3);font-size:12px;padding:12px 0;">此期間尚無影片資料</div>';}
-  else{
-    t5El.innerHTML=secTitle('前 5 名','#34D399','觀看最高')+t5Rows(top5,t5Max)
-      +(bottom5.length?'<div style="height:1px;background:var(--border-l);margin:16px 0 10px;"></div>'
-        +secTitle('倒數 5 名','var(--amber)','觀看最低 · 條長以本區最高者為基準')+t5Rows(bottom5,bMax):'');
-  }
+  document.getElementById('top5-list').innerHTML=top5.length?t5Rows(top5,t5Max)
+    :'<div style="color:var(--txt3);font-size:12px;padding:12px 0;">此期間尚無影片資料</div>';
 }
 
 // ============================================================
