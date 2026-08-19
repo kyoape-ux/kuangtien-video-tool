@@ -424,7 +424,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.46 · 2026-08-19 22:45</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.47 · 2026-08-19 23:00</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -2273,34 +2273,48 @@ function initTagInput(containerId,initialTags){
   const box=document.getElementById(containerId);if(!box)return;
   const selected=Array.isArray(initialTags)?[...initialTags]:[];
   box.dataset.tags=JSON.stringify(selected);
-  const render=()=>{
+  // 外框只建立一次。搜尋框若跟著重繪，注音組字會被打斷、清單也會閃掉，
+  // 所以打字時只更新「候選清單」，加減標籤時才另外更新「已選標籤」。
+  box.dataset.kw='';box.dataset.open='';
+  const inpCss='flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg-2);color:var(--txt);';
+  box.innerHTML='<div class="tag-chips-row" data-chips></div>'
+    +'<div style="display:flex;gap:6px;margin-top:6px;">'
+    +'<input type="text" data-tagsearch="1" placeholder="搜尋標籤" oninput="tagPickSearch(\''+containerId+'\',this.value)" onfocus="tagPickOpen(\''+containerId+'\')" onblur="tagPickBlur(\''+containerId+'\')" onkeydown="tagPickKey(\''+containerId+'\',event)" style="'+inpCss+'">'
+    +'<input type="text" placeholder="或輸入新標籤 Enter 新增" onkeydown="if(event.key===\'Enter\'&&!event.isComposing){event.preventDefault();addNewTagToInput(\''+containerId+'\',this.value);this.value=\'\';}" style="'+inpCss+'">'
+    +'</div><div data-taglist></div>';
+  const chipsEl=box.querySelector('[data-chips]'),searchEl=box.querySelector('[data-tagsearch]'),listEl=box.querySelector('[data-taglist]');
+  const esq=n=>esc(n).replace(/'/g,"\\'");
+  const renderChips=()=>{
     const cur=JSON.parse(box.dataset.tags||'[]');
-    const chips=cur.map(n=>{const c=getTagColor(n);return `<span class="tag-chip tag-chip-rm" style="background:${c}22;color:${c};border:1px solid ${c}44;" onclick="removeTagFromInput('${containerId}','${esc(n).replace(/'/g,'\\\'')}')">${esc(n)} <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="vertical-align:middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;}).join(' ');
-    const avail=TAGS.filter(t=>!cur.includes(t.name));
-    // 標籤多時用捲的找太慢，改成打關鍵字即時過濾（名稱或分類都能搜）
-    const kw=(box.dataset.kw||'').trim().toLowerCase();
-    const hit=kw?avail.filter(t=>(t.name||'').toLowerCase().includes(kw)||String(t.group||'').toLowerCase().includes(kw)):avail;
-    const open=box.dataset.open==='1'||!!kw;
-    const esq=n=>esc(n).replace(/'/g,"\\'");
-    const hitGroups=[...new Set(hit.map(t=>t.group||'未分類'))].sort((a,b)=>{const ai=TAG_GROUPS.indexOf(a),bi=TAG_GROUPS.indexOf(b);return(ai<0?99:ai)-(bi<0?99:bi);});
-    const listHtml=!open?'':`<div class="tagpick-list">${hit.length?hitGroups.map(g=>`<div class="tagpick-group">${esc(g)}</div>`+hit.filter(t=>(t.group||'未分類')===g).map(t=>{const c=getTagColor(t.name);return `<div class="tagpick-item" onmousedown="event.preventDefault();addTagToInput('${containerId}','${esq(t.name)}')"><span class="dot" style="background:${c};"></span>${esc(t.name)}<span class="grp">${esc(t.group||'未分類')}</span></div>`;}).join('')).join(''):`<div class="tagpick-empty">找不到含「${esc(kw)}」的標籤 — 可用右邊欄位直接新增</div>`}</div>`;
-    box.innerHTML=`<div class="tag-chips-row">${chips||'<span style="color:var(--txt3);font-size:11px;">尚未選擇標籤</span>'}</div>
-      <div style="display:flex;gap:6px;margin-top:6px;">
-        <input type="text" data-tagsearch="1" value="${esc(box.dataset.kw||'')}" placeholder="搜尋標籤（共 ${avail.length} 個可選）" oninput="tagPickSearch('${containerId}',this.value)" onfocus="tagPickOpen('${containerId}')" onblur="tagPickBlur('${containerId}')" onkeydown="tagPickKey('${containerId}',event)" style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg-2);color:var(--txt);">
-        <input type="text" placeholder="或輸入新標籤 Enter 新增" onkeydown="if(event.key==='Enter'){event.preventDefault();addNewTagToInput('${containerId}',this.value);this.value='';}" style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg-2);color:var(--txt);">
-      </div>${listHtml}`;
-    if(open){const si=box.querySelector('[data-tagsearch]');if(si&&box.dataset.focus==='1'){si.focus();si.setSelectionRange(si.value.length,si.value.length);}}
+    chipsEl.innerHTML=cur.map(n=>{const c=getTagColor(n);return `<span class="tag-chip tag-chip-rm" style="background:${c}22;color:${c};border:1px solid ${c}44;" onclick="removeTagFromInput('${containerId}','${esq(n)}')">${esc(n)} <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="vertical-align:middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`;}).join(' ')
+      ||'<span style="color:var(--txt3);font-size:11px;">尚未選擇標籤</span>';
   };
-  box._render=render;
-  render();
+  const renderList=()=>{
+    const cur=JSON.parse(box.dataset.tags||'[]');
+    const avail=TAGS.filter(t=>!cur.includes(t.name));
+    searchEl.placeholder='搜尋標籤（共 '+avail.length+' 個可選）';
+    const kw=(box.dataset.kw||'').trim().toLowerCase();
+    if(box.dataset.open!=='1'&&!kw){listEl.innerHTML='';return;}
+    // 名稱或分類都能搜
+    const hit=kw?avail.filter(t=>(t.name||'').toLowerCase().includes(kw)||String(t.group||'').toLowerCase().includes(kw)):avail;
+    if(!hit.length){listEl.innerHTML='<div class="tagpick-list"><div class="tagpick-empty">找不到含「'+esc(kw)+'」的標籤 — 可用右邊欄位直接新增</div></div>';return;}
+    const groups=[...new Set(hit.map(t=>t.group||'未分類'))].sort((a,b)=>{const ai=TAG_GROUPS.indexOf(a),bi=TAG_GROUPS.indexOf(b);return(ai<0?99:ai)-(bi<0?99:bi);});
+    listEl.innerHTML='<div class="tagpick-list">'+groups.map(g=>`<div class="tagpick-group">${esc(g)}</div>`
+      +hit.filter(t=>(t.group||'未分類')===g).map(t=>{const c=getTagColor(t.name);
+        return `<div class="tagpick-item" onmousedown="event.preventDefault();addTagToInput('${containerId}','${esq(t.name)}')"><span class="dot" style="background:${c};"></span>${esc(t.name)}<span class="grp">${esc(t.group||'未分類')}</span></div>`;}).join('')).join('')+'</div>';
+  };
+  box._renderChips=renderChips;box._renderList=renderList;
+  box._render=()=>{renderChips();renderList();};
+  box._render();
 }
-function tagPickSearch(containerId,v){const box=document.getElementById(containerId);if(!box)return;box.dataset.kw=v;box.dataset.open='1';box.dataset.focus='1';box._render&&box._render();}
-function tagPickOpen(containerId){const box=document.getElementById(containerId);if(!box||box.dataset.open==='1')return;box.dataset.open='1';box.dataset.focus='1';box._render&&box._render();}
-function tagPickBlur(containerId){const box=document.getElementById(containerId);if(!box)return;setTimeout(()=>{if(!box.isConnected)return;box.dataset.open='';box.dataset.focus='';box._render&&box._render();},120);}
+function tagPickSearch(containerId,v){const box=document.getElementById(containerId);if(!box)return;box.dataset.kw=v;box.dataset.open='1';box._renderList&&box._renderList();}
+function tagPickOpen(containerId){const box=document.getElementById(containerId);if(!box||box.dataset.open==='1')return;box.dataset.open='1';box._renderList&&box._renderList();}
+function tagPickBlur(containerId){const box=document.getElementById(containerId);if(!box)return;setTimeout(()=>{if(!box.isConnected)return;box.dataset.open='';box._renderList&&box._renderList();},150);}
 function tagPickKey(containerId,e){
   const box=document.getElementById(containerId);if(!box)return;
-  if(e.key==='Escape'){e.preventDefault();box.dataset.kw='';box.dataset.open='';box.dataset.focus='';box._render&&box._render();return;}
-  if(e.key!=='Enter')return;
+  const si=box.querySelector('[data-tagsearch]');
+  if(e.key==='Escape'){e.preventDefault();box.dataset.kw='';box.dataset.open='';if(si)si.value='';box._renderList&&box._renderList();return;}
+  if(e.key!=='Enter'||e.isComposing)return;   // 注音組字中的 Enter 是選字，不能當成加標籤
   e.preventDefault();
   const first=box.querySelector('.tagpick-item');
   if(first)first.dispatchEvent(new MouseEvent('mousedown',{bubbles:true}));
@@ -2311,7 +2325,6 @@ function addTagToInput(containerId,name){
   const cur=JSON.parse(box.dataset.tags||'[]');
   if(!cur.includes(name))cur.push(name);
   box.dataset.tags=JSON.stringify(cur);
-  box.dataset.focus='1';   // 連續加標籤時，游標留在搜尋框
   box._render&&box._render();
 }
 function addNewTagToInput(containerId,name){
