@@ -424,7 +424,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.49 · 2026-08-19 23:40</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.50 · 2026-08-20 00:05</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -3980,12 +3980,17 @@ function importYtStudioCSV(input){
       viewsCol=col('觀看次數','Views','views'),impCol=col('曝光次數','Impressions'),
       ctrCol=col('曝光點閱率(%)','曝光點擊率(%)','Impressionsclick-throughrate(%)'),
       ratioCol=col('平均觀看百分比(%)','平均觀看比例(%)','Averagepercentageviewed(%)'),
-      durAvgCol=col('平均觀看時間長度','平均觀看時長','Averageviewduration');
+      durAvgCol=col('平均觀看時間','平均觀看時間長度','平均觀看時長','Averageviewduration');
     if(idCol<0||titleCol<0){alert('找不到必要欄位（內容／影片標題）。\n請確認匯出的是 YT Studio 的「影片」報表。');return;}
     if(impCol<0&&ctrCol<0)alert('提醒：這份 CSV 沒有「曝光次數／曝光點閱率」欄位，CTR 仍會是空的。\nYT Studio 匯出時請選含曝光數據的報表。');
     const pctVal=v=>{const n=parseFloat(String(v||'').replace(/[%"\s]/g,''));return isNaN(n)?null:Math.round(n/100*10000)/10000;};
     const intVal=v=>{const n=parseInt(String(v||'').replace(/[,"\s]/g,''));return isNaN(n)?null:n;};
-    let imported=0,updated=0,skipped=0;const touched=[];
+    const ytIdOf=v=>{const m=String(v.yt_url||'').match(/(?:v=|youtu\.be\/|\/shorts\/|\/embed\/)([A-Za-z0-9_-]{11})/);return m?m[1]:'';};
+    const idx={};
+    DATA.forEach(d=>{idx[String(d.id)]=d;});
+    DATA.forEach(d=>{const k=ytIdOf(d);if(k)idx[k]=d;});   // 網址優先
+    const curYear=String(new Date().getFullYear());
+    let imported=0,updated=0,skipped=0,oldSkipped=0;const touched=[];
     for(let i=1;i<lines.length;i++){
       const row=[];let cur='',inQ=false;
       for(const ch of lines[i]){if(ch==='"'){inQ=!inQ;}else if(ch===','&&!inQ){row.push(cur.trim());cur='';}else{cur+=ch;}}
@@ -3995,7 +4000,7 @@ function importYtStudioCSV(input){
       const ctr=ctrCol>=0?pctVal(row[ctrCol]):null;
       const ratio=ratioCol>=0?pctVal(row[ratioCol]):null;
       const avgdur=durAvgCol>=0?String(row[durAvgCol]||'').replace(/"/g,''):'';
-      const exist=DATA.find(d=>d.id===vid);
+      const exist=idx[vid];
       if(exist){
         // 只補 API 拿不到的分析數據；觀看數維持 API 的累計值（CSV 只有匯出期間的數字）
         let changed=false;
@@ -4009,6 +4014,7 @@ function importYtStudioCSV(input){
       }
       let dateStr='';try{const d=new Date(String(row[pubCol]||'').replace(/"/g,''));dateStr=d.toISOString().slice(0,10);}catch(e){skipped++;continue;}
       if(!dateStr){skipped++;continue;}
+      if(!dateStr.startsWith(curYear)){oldSkipped++;continue;}   // 匯出檔含歷年舊片，只收今年的新影片
       const durSec=parseInt(row[durCol])||0;const mins=Math.floor(durSec/60),secs=durSec%60;
       const nv={
         id:vid,title:String(row[titleCol]||'').replace(/"/g,''),date:dateStr,
@@ -4025,7 +4031,8 @@ function importYtStudioCSV(input){
       DATA.push(nv);touched.push({d:nv,isNew:true});imported++;
     }
     saveData();renderAll();
-    showSyncBadge(`匯入完成：新增 ${imported} 部、更新 ${updated} 部${skipped?'、略過 '+skipped+' 部（無新數據）':''}`);
+    const msg=`匯入完成：新增 ${imported} 部、更新 ${updated} 部` + (skipped?`、略過 ${skipped} 部（無新數據）`:'') + (oldSkipped?`、未收錄 ${oldSkipped} 部${curYear} 年以前的舊片`:'');
+    showSyncBadge(msg);alert('✅ '+msg);
     // 匯入結果要同步上雲端，否則只有這台電腦看得到
     if(touched.length&&typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
       (async()=>{let ok=0;for(const t of touched){const r=await pushToSheets(t.isNew?'saveVideo':'updateVideo',{data:t.d});if(r)ok++;showSyncBadge(`同步雲端 ${ok}/${touched.length}`);}showSyncBadge(`✅ 已同步雲端 ${ok}/${touched.length}`);})();
