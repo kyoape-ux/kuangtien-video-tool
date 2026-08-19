@@ -417,7 +417,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.41 · 2026-08-19 21:20</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.43 · 2026-08-19 21:45</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -545,8 +545,8 @@ tr:hover td{background:rgba(52,211,153,.03);}
       </div>
       <div class="chart-row" style="grid-template-columns:1fr;">
         <div class="chart-box">
-          <h3><span class="icon"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></span>Top 5 影片</h3>
-          <canvas id="chart-top5" style="max-height:200px;"></canvas>
+          <h3><span class="icon"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg></span>Top 5 影片 <span style="font-size:11px;color:var(--txt3);font-weight:400;">全平台觀看總數 · 色塊為各平台貢獻</span></h3>
+          <div id="top5-list"></div>
         </div>
       </div>
       </div><!-- /page-body -->
@@ -1985,7 +1985,7 @@ async function syncThreadsFromSheets(){
 // 資料層
 // ============================================================
 let DATA=[];let CFG={viewGoal:5000,countGoal:6,personalGoal:2000};
-let chartMonthly=null,chartPlatform=null,chartCat=null,chartTop5=null,chartType=null;
+let chartMonthly=null,chartPlatform=null,chartCat=null,chartType=null;
 function saveData(){DATA.sort((a,b)=>(b.date||'').localeCompare(a.date||''));localStorage.setItem('kt_yt_data',JSON.stringify(DATA));}
 async function loadData(){try{DATA=JSON.parse(localStorage.getItem('kt_yt_data')||'[]');}catch(e){DATA=[];}try{CFG={...CFG,...JSON.parse(localStorage.getItem('kt_yt_cfg')||'{}')};}catch(e){}renderAll();if(USE_API()){showSyncBadge('雲端資料載入中…');createSnapshot('GAS 同步前（自動）',true);const [s]=await Promise.all([syncFromSheets(),syncConfigFromSheets()]);if(s){renderAll();showSyncBadge('已同步 Sheets');}renderCfgForm();}}
 
@@ -3658,8 +3658,21 @@ function renderCharts(viewData){
   chartType=new Chart(document.getElementById('chart-type'),{type:'doughnut',data:{labels:['Long（長片）','Short（短片/Reels）'],datasets:[{data:[longCnt,shortCnt],backgroundColor:['#FBBF24','#818CF8'],borderWidth:0}]},options:{responsive:true,cutout:'65%',plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:16}},tooltip:{callbacks:{label:ctx=>{const tot=longCnt+shortCnt;const pct=tot>0?Math.round(ctx.raw/tot*100):0;return ` ${ctx.label}: ${ctx.raw} 部（${pct}%）`;}}}}}});
   // Top 5
   const top5=[...viewData].sort((a,b)=>totalViews(b)-totalViews(a)).slice(0,5);
-  if(chartTop5)chartTop5.destroy();
-  chartTop5=new Chart(document.getElementById('chart-top5'),{type:'bar',data:{labels:top5.map(d=>(d.title||'').substring(0,18)+((d.title||'').length>18?'…':'')),datasets:[{label:'YT',data:top5.map(d=>Number(d.yt_views)||0),backgroundColor:'rgba(255,68,68,0.7)',borderRadius:3},{label:'FB',data:top5.map(d=>Number(d.fb_views)||0),backgroundColor:'rgba(76,139,245,0.7)',borderRadius:3},{label:'IG',data:top5.map(d=>Number(d.ig_views)||0),backgroundColor:'rgba(244,114,182,0.7)',borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,beginAtZero:true,grid:{display:false}},y:{stacked:true,grid:{display:false}}},plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:10,padding:12}}}}});
+  const t5Max=Math.max(1,...top5.map(d=>totalViews(d)));
+  const T5P=[['yt','YT','#FF4444'],['fb','FB','#4C8BF5'],['ig','IG','#F472B6']];
+  document.getElementById('top5-list').innerHTML=top5.map((d,i)=>{
+    const tot=totalViews(d);
+    const seg=T5P.map(([k,l,c])=>({l:l,c:c,v:Number(d[k+'_views'])||0}));
+    const bar=seg.filter(x=>x.v>0).map(x=>'<span style="width:'+(x.v/tot*100).toFixed(2)+'%;background:'+x.c+';"></span>').join('');
+    const nums=seg.map(x=>'<span style="font-size:11px;font-variant-numeric:tabular-nums;color:'+(x.v>0?x.c:'var(--txt3)')+';"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px;background:'+(x.v>0?x.c:'var(--border-l)')+';"></span>'+x.l+' '+x.v.toLocaleString()+'</span>').join('');
+    return '<div style="padding:10px 0;'+(i?'border-top:1px solid var(--border);':'')+'">'
+      +'<div style="display:flex;align-items:baseline;gap:10px;">'
+      +'<span style="font-size:11px;color:var(--txt3);width:16px;flex-shrink:0;">'+(i+1)+'</span>'
+      +'<span style="flex:1;font-size:12px;color:var(--txt);line-height:1.5;">'+esc(d.title||'(無標題)')+'</span>'
+      +'<span style="font-size:15px;font-weight:700;color:var(--txt);font-variant-numeric:tabular-nums;white-space:nowrap;">'+tot.toLocaleString()+'</span></div>'
+      +'<div style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--bg-2);margin:7px 0 6px 26px;width:'+Math.max(6,tot/t5Max*100).toFixed(1)+'%;">'+bar+'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-left:26px;">'+nums+'</div></div>';
+  }).join('')||'<div style="color:var(--txt3);font-size:12px;padding:12px 0;">此期間尚無影片資料</div>';
 }
 
 // ============================================================
