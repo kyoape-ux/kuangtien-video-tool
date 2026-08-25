@@ -93,8 +93,8 @@ a{color:var(--accent);text-decoration:none;}
 .kpi-ok{background:var(--accent);}
 .kpi-warn{background:var(--amber);}
 .kpi-bad{background:var(--red);}
-.platform-breakdown{display:flex;gap:8px;margin-top:8px;font-size:11px;}
-.plat-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:6px;font-weight:500;font-variant-numeric:tabular-nums;}
+.platform-breakdown{display:flex;flex-direction:column;gap:4px;margin-top:10px;font-size:11px;align-items:stretch;}
+.plat-tag{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 9px;border-radius:6px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;}
 .plat-yt{background:rgba(255,68,68,.12);color:var(--yt);}
 .plat-fb{background:rgba(76,139,245,.12);color:var(--fb);}
 .plat-ig{background:rgba(244,114,182,.12);color:var(--ig);}
@@ -432,7 +432,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.56 · 2026-08-25 20:47</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.57 · 2026-08-25 20:53</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -526,6 +526,10 @@ tr:hover td{background:rgba(52,211,153,.03);}
           </select>
           <div id="quarter-switcher" style="display:flex;gap:4px;"></div>
           <span id="dash-label" style="font-size:12px;color:var(--txt3);"></span>
+          <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--txt2);cursor:pointer;margin-left:auto;" title="預設只統計影片（YT／FB／IG 影片）。勾選後把 IG 圖文貼文與 Threads 也併入總覽">
+            <input type="checkbox" id="dash-include-nonvideo" onchange="dashIncludeNonVideo=this.checked;renderDashboard();" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer;">
+            併入 IG 圖文與 Threads
+          </label>
         </div>
 
         <!-- 待處理提醒 -->
@@ -1260,6 +1264,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <div style="display:flex;gap:2px;background:var(--bg-2);border-radius:8px;padding:3px;border:1px solid var(--border);">
           <button class="rpt-scope-btn active" onclick="setRptScope('all',this)">全部</button>
           <button class="rpt-scope-btn" onclick="setRptScope('youtube',this)">YouTube</button>
+          <button class="rpt-scope-btn" onclick="setRptScope('facebook',this)">Facebook</button>
           <button class="rpt-scope-btn" onclick="setRptScope('instagram',this)">Instagram</button>
         </div>
         <input type="hidden" id="rpt-scope" value="all">
@@ -2063,6 +2068,7 @@ async function syncThreadsFromSheets(){
 // ============================================================
 // 資料層
 // ============================================================
+let dashIncludeNonVideo=false;   // 預設只算影片；打開才把 IG 圖文與 Threads 併入總覽
 let DATA=[];let CFG={viewGoal:5000,countGoal:6,personalGoal:2000,goalYt:500,goalFb:8000,goalIgReel:3000,goalIgPost:600};
 let chartMonthly=null,chartPlatform=null,chartCat=null,chartType=null;
 function saveData(){DATA.sort((a,b)=>(b.date||'').localeCompare(a.date||''));localStorage.setItem('kt_yt_data',JSON.stringify(DATA));}
@@ -2953,10 +2959,13 @@ function renderDashboard(){
   };
   const igAll=igStandalone().filter(d=>inPeriod(d.date));   // 已對應到影片的 IG 貼文不重複計算
   const thd=(typeof activeThreads==='function'?activeThreads():[]).filter(d=>inPeriod(d.date));
-  const igReels=igAll.filter(d=>String(d.type)==='3'),igPosts=igAll.filter(d=>String(d.type)!=='3');
+  const igReels=igAll.filter(d=>String(d.type)==='3');
+  const igPostsAll=igAll.filter(d=>String(d.type)!=='3');
+  const igPosts=dashIncludeNonVideo?igPostsAll:[];   // 圖文貼文預設不混進影片統計
+  const thUse=dashIncludeNonVideo?thd:[];
   const N=(a,k)=>a.reduce((s,d)=>s+(Number(d[k])||0),0);
   const ytv=N(vd,'yt_views'),fbv=N(vd,'fb_views'),igv=N(vd,'ig_views');
-  const igReelV=N(igReels,'views'),igPostV=N(igPosts,'views'),thV=N(thd,'views');
+  const igReelV=N(igReels,'views'),igPostV=N(igPosts,'views'),thV=N(thUse,'views');
   const tv=ytv+fbv+igv+igReelV+igPostV+thV;   // 全平台＝影片三平台＋IG 原生貼文＋Threads
   const embedV=vd.reduce((s,d)=>s+(Number(d.embed_views)||0),0),webPV=vd.reduce((s,d)=>s+(Number(d.web_pageviews)||0),0);
   const embedRate=ytv>0?Math.round(embedV/ytv*100):0;
@@ -2967,13 +2976,13 @@ function renderDashboard(){
   const hitYt=vd.filter(d=>(Number(d.yt_views)||0)>=gY).length;
   const hitFb=vd.filter(d=>(Number(d.fb_views)||0)>=gF).length;
   const hitReel=igReels.filter(d=>(Number(d.views)||0)>=gR).length;
-  const hitPost=igPosts.filter(d=>(Number(d.views)||0)>=gP).length;
-  const star=hitYt+hitFb+hitReel+hitPost;
-  const totalPieces=cnt+igAll.length+thd.length;
+  const hitPost=igPostsAll.filter(d=>(Number(d.views)||0)>=gP).length;
+  const star=hitYt+hitFb+hitReel+(dashIncludeNonVideo?hitPost:0);
+  const totalPieces=cnt+igReels.length+igPosts.length+thUse.length;
   // 全平台互動率：各平台互動總和 ÷ 觀看總和
   const engAll=vd.reduce((s,d)=>s+(Number(d.yt_likes)||0)+(Number(d.yt_comments)||0)+(Number(d.fb_likes)||0)+(Number(d.fb_comments)||0)+(Number(d.fb_shares)||0)+(Number(d.ig_likes)||0)+(Number(d.ig_comments)||0)+(Number(d.ig_shares)||0),0)
-    + igAll.reduce((s,d)=>s+(Number(d.likes)||0)+(Number(d.comments)||0)+(Number(d.shares)||0)+(Number(d.saves)||0),0)
-    + thd.reduce((s,d)=>s+(Number(d.likes)||0)+(Number(d.replies)||0)+(Number(d.reposts)||0),0);
+    + igReels.concat(igPosts).reduce((s,d)=>s+(Number(d.likes)||0)+(Number(d.comments)||0)+(Number(d.shares)||0)+(Number(d.saves)||0),0)
+    + thUse.reduce((s,d)=>s+(Number(d.likes)||0)+(Number(d.replies)||0)+(Number(d.reposts)||0),0);
   const engRate=tv>0?engAll/tv*100:0;
   const gView=CFG.viewGoal*mult,gCnt=CFG.countGoal*mult;
   const vp=Math.min(100,Math.round(tv/gView*100)),cp=Math.min(100,Math.round(cnt/gCnt*100));
@@ -2986,13 +2995,13 @@ function renderDashboard(){
   if(pendingList.length>0){pa.style.display='block';pa.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><span style="color:var(--red);"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="var(--bg-1)"/></svg></span><div><b style="color:var(--red);">${pendingList.length} 部影片已滿 1 個月，請更新數據</b><div style="font-size:11px;color:var(--txt3);margin-top:2px;">點擊影片名稱可直接編輯並一鍵取得最新 YT 數據</div></div></div>`+pendingList.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid rgba(248,113,113,.1);font-size:12px;"><span style="color:var(--txt3);">${(d.date||'').substring(0,10)}</span><a href="#" onclick="openEdit('${d.id}');return false;" style="color:var(--red);font-weight:500;">${esc(d.title)}</a></div>`).join('');}else{pa.style.display='none';}
 
   document.getElementById('kpi-cards').innerHTML=`
-    <div class="kpi-card"><div class="kpi-label">${pLabel}度全平台觀看</div><div class="kpi-val">${tv.toLocaleString()}</div><div class="kpi-sub">${pLabel}目標 ${gView.toLocaleString()}（${vp}%）</div><div class="kpi-bar"><div class="kpi-bar-fill ${vp>=100?'kpi-ok':vp>=60?'kpi-warn':'kpi-bad'}" style="width:${vp}%"></div></div><div class="platform-breakdown"><span class="plat-tag plat-yt">YT ${ytv.toLocaleString()}（${pshare(ytv)}）</span><span class="plat-tag plat-fb">FB ${fbv.toLocaleString()}（${pshare(fbv)}）</span><span class="plat-tag plat-ig">IG 影片 ${(igv+igReelV).toLocaleString()}（${pshare(igv+igReelV)}）</span>${igPostV?`<span class="plat-tag" style="background:rgba(244,114,182,.08);color:#F9A8D4;">IG 圖文 ${igPostV.toLocaleString()}（${pshare(igPostV)}）</span>`:''}${thV?`<span class="plat-tag" style="background:rgba(167,139,250,.12);color:#A78BFA;">Threads ${thV.toLocaleString()}（${pshare(thV)}）</span>`:''}</div></div>
-    <div class="kpi-card"><div class="kpi-label">${pLabel}度產出量</div><div class="kpi-val">${totalPieces}</div><div class="kpi-sub">影片 ${cnt} 支（目標 ${gCnt}，${cp}%）</div><div class="kpi-bar"><div class="kpi-bar-fill ${cp>=100?'kpi-ok':cp>=60?'kpi-warn':'kpi-bad'}" style="width:${cp}%"></div></div><div class="platform-breakdown"><span class="plat-tag" style="background:rgba(148,163,184,.12);color:var(--txt2);">IG 影片 ${igReels.length}</span><span class="plat-tag" style="background:rgba(148,163,184,.12);color:var(--txt2);">IG 圖文 ${igPosts.length}</span>${thd.length?`<span class="plat-tag" style="background:rgba(167,139,250,.12);color:#A78BFA;">Threads ${thd.length}</span>`:''}</div></div>
+    <div class="kpi-card"><div class="kpi-label">${pLabel}度${dashIncludeNonVideo?"全平台觀看":"影片全平台觀看"}</div><div class="kpi-val">${tv.toLocaleString()}</div><div class="kpi-sub">${pLabel}目標 ${gView.toLocaleString()}（${vp}%）</div><div class="kpi-bar"><div class="kpi-bar-fill ${vp>=100?'kpi-ok':vp>=60?'kpi-warn':'kpi-bad'}" style="width:${vp}%"></div></div><div class="platform-breakdown"><span class="plat-tag plat-yt"><span>YT</span><span>${ytv.toLocaleString()}　${pshare(ytv)}</span></span><span class="plat-tag plat-fb"><span>FB</span><span>${fbv.toLocaleString()}　${pshare(fbv)}</span></span><span class="plat-tag plat-ig"><span>IG 影片</span><span>${(igv+igReelV).toLocaleString()}　${pshare(igv+igReelV)}</span></span>${igPostV?`<span class="plat-tag" style="background:rgba(244,114,182,.08);color:#F9A8D4;"><span>IG 圖文</span><span>${igPostV.toLocaleString()}　${pshare(igPostV)}</span></span>`:''}${thV?`<span class="plat-tag" style="background:rgba(167,139,250,.12);color:#A78BFA;"><span>Threads</span><span>${thV.toLocaleString()}　${pshare(thV)}</span></span>`:''}</div></div>
+    <div class="kpi-card"><div class="kpi-label">${pLabel}度產出量</div><div class="kpi-val">${totalPieces}</div><div class="kpi-sub">影片 ${cnt} 支（目標 ${gCnt}，${cp}%）</div><div class="kpi-bar"><div class="kpi-bar-fill ${cp>=100?'kpi-ok':cp>=60?'kpi-warn':'kpi-bad'}" style="width:${cp}%"></div></div><div class="platform-breakdown"><span class="plat-tag" style="background:rgba(148,163,184,.12);color:var(--txt2);"><span>IG 影片</span><span>${igReels.length} 則</span></span>${dashIncludeNonVideo?`<span class="plat-tag" style="background:rgba(148,163,184,.12);color:var(--txt2);"><span>IG 圖文</span><span>${igPosts.length} 則</span></span>`:''}${thUse.length?`<span class="plat-tag" style="background:rgba(167,139,250,.12);color:#A78BFA;"><span>Threads</span><span>${thUse.length} 則</span></span>`:''}</div></div>
     <div class="kpi-card"><div class="kpi-label">全平台互動率</div><div class="kpi-val">${engRate.toFixed(1)}%</div><div class="kpi-sub">${engAll.toLocaleString()} 互動 ÷ ${tv.toLocaleString()} 觀看</div><div class="platform-breakdown"><span class="plat-tag plat-yt">YT CTR ${(avgCtr*100).toFixed(1)}%</span></div></div>
-    <div class="kpi-card"><div class="kpi-label">達標件數</div><div class="kpi-val">${star}</div><div class="kpi-sub">各平台門檻分開計算（可於系統設定調整）</div><div class="platform-breakdown"><span class="plat-tag plat-yt">YT ${hitYt}／≥${gY.toLocaleString()}</span><span class="plat-tag plat-fb">FB ${hitFb}／≥${gF.toLocaleString()}</span><span class="plat-tag plat-ig">IG 影片 ${hitReel}／≥${gR.toLocaleString()}</span><span class="plat-tag" style="background:rgba(244,114,182,.08);color:#F9A8D4;">IG 圖文 ${hitPost}／≥${gP.toLocaleString()}</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">達標件數</div><div class="kpi-val">${star}</div><div class="kpi-sub">各平台門檻分開計算（可於系統設定調整）</div><div class="platform-breakdown"><span class="plat-tag plat-yt"><span>YT ≥${gY.toLocaleString()}</span><span>${hitYt} 支</span></span><span class="plat-tag plat-fb"><span>FB ≥${gF.toLocaleString()}</span><span>${hitFb} 支</span></span><span class="plat-tag plat-ig"><span>IG 影片 ≥${gR.toLocaleString()}</span><span>${hitReel} 則</span></span>${dashIncludeNonVideo?`<span class="plat-tag" style="background:rgba(244,114,182,.08);color:#F9A8D4;"><span>IG 圖文 ≥${gP.toLocaleString()}</span><span>${hitPost} 則</span></span>`:''}</div></div>
     <div class="kpi-card" style="border-color:rgba(52,211,153,.25);"><div class="kpi-label" style="color:#34D399;">官網曝光（內部歸因）</div><div class="kpi-val">${embedV.toLocaleString()}</div><div class="kpi-sub">YT 外部嵌入觀看 · 佔 YT ${embedRate}%</div><div class="platform-breakdown"><span class="plat-tag" style="background:rgba(52,211,153,.1);color:#34D399;">官網 PV ${webPV.toLocaleString()}</span></div></div>`;
 
-  renderEngRanking(vd,igAll,thd);
+  renderEngRanking(vd,igReels.concat(igPosts),thUse);
   renderCharts(vd);
 }
 function renderEngRanking(vd,igd,thd){
@@ -3943,7 +3952,8 @@ function renderCharts(viewData){
   for(let i=1;i<=12;i++)months.push(`${yr}-${String(i).padStart(2,'0')}`);
   const mYt=months.map(m=>_AV.filter(d=>(d.date||'').startsWith(m)).reduce((s,d)=>s+(Number(d.yt_views)||0),0));
   const mFb=months.map(m=>_AV.filter(d=>(d.date||'').startsWith(m)).reduce((s,d)=>s+(Number(d.fb_views)||0),0));
-  const _IG=igStandalone(),_TH=(typeof activeThreads==='function'?activeThreads():[]);   // 去重後才不會與影片的 IG 欄重複
+  const _IGall=igStandalone(),_TH=dashIncludeNonVideo?(typeof activeThreads==='function'?activeThreads():[]):[];
+  const _IG=dashIncludeNonVideo?_IGall:_IGall.filter(d=>String(d.type)==='3');   // 去重＋預設只算影片
   const mIg=months.map(m=>_AV.filter(d=>(d.date||'').startsWith(m)).reduce((s,d)=>s+(Number(d.ig_views)||0),0)
     +_IG.filter(d=>String(d.date||'').startsWith(m)&&String(d.type)==='3').reduce((s,d)=>s+(Number(d.views)||0),0));
   const mIgP=months.map(m=>_IG.filter(d=>String(d.date||'').startsWith(m)&&String(d.type)!=='3').reduce((s,d)=>s+(Number(d.views)||0),0));
@@ -5487,9 +5497,10 @@ function openMonthlyReport(){
   const scope=document.getElementById('rpt-scope').value||'all';
   const showVideo=scope==='all'||scope==='youtube';
   const showIg=scope==='all'||scope==='instagram';
+  const showFb=scope==='all'||scope==='facebook';
   const showTh=scope==='all';
   const ym=`${yr}-${mo}`;
-  const mData=showVideo?activeVideos().filter(d=>(d.date||'').substring(0,7)===ym).sort((a,b)=>(a.date||'').localeCompare(b.date||'')):[];
+  const mData=(showVideo||showFb)?activeVideos().filter(d=>(d.date||'').substring(0,7)===ym).sort((a,b)=>(a.date||'').localeCompare(b.date||'')):[];
   const moLabel=`${yr} 年 ${parseInt(mo)} 月`;
   const tv=mData.reduce((s,d)=>s+totalViews(d),0);
   const ytv=mData.reduce((s,d)=>s+(Number(d.yt_views)||0),0);
@@ -5610,7 +5621,7 @@ function openMonthlyReport(){
     <td>${(Number(d.saves)||0).toLocaleString()}</td>
   </tr>`).join(''):`<tr><td colspan="8" style="text-align:center;color:#aaa;padding:24px;">本月無 IG 貼文資料</td></tr>`;
 
-  const rows=mData.length>0?mData.map((d,i)=>`<tr>
+  const rows=(showVideo?mData:[]).length>0?mData.map((d,i)=>`<tr>
     <td>${(d.date||'').substring(0,10)}</td>
     <td style="text-align:left;max-width:240px;">${d.title||''}</td>
     <td>${d.type==='short'?'Short':'Long'}</td>
@@ -5775,7 +5786,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
   <table><thead><tr><th>發布日期</th><th>影片標題</th><th>類型</th><th>類別</th><th>YT 觀看</th><th>FB 觀看</th><th>IG 觀看</th><th>全平台合計</th></tr></thead>
   <tbody>${rows}</tbody></table>`:''}
 
-  ${mxTable?`<div class="sec-title">跨平台總表（本月每則內容 × 各平台，共 ${mxAll.length} 則）</div>${mxTable}`:''}
+  ${(scope==='all'&&mxTable)?`<div class="sec-title">跨平台總表（本月每則內容 × 各平台，共 ${mxAll.length} 則）</div>${mxTable}`:''}
   ${showIg?(()=>{
     const postQuiz=igPosts.filter(d=>String(d.type)==='1'||String(d.type)==='2');
     const reels=igPosts.filter(d=>String(d.type)==='3');
@@ -5848,7 +5859,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
     if(!html)html=`<div class="sec-title" style="border-color:#F472B6;color:#BE185D;margin-top:28px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg> Instagram 影片 Reels</div><p style="text-align:center;color:#aaa;padding:24px;">本月無 IG 影片（Reels）資料。若已發布 Reels 卻顯示無資料，請至「IG 貼文列表 → 匯入 Metricool CSV」匯入 <b>Instagram Reels</b> 的匯出檔（貼文檔不含 Reels 數據）。</p>`;
     return html;
   })():''}
-  ${(()=>{
+  ${showFb?(()=>{
     // ── Facebook 專屬區塊（資料來自影片記錄的 FB 欄位）
     const fbData=mData.filter(d=>(Number(d.fb_views)||0)>0||(Number(d.fb_likes)||0)>0)
       .sort((a,b)=>(Number(b.fb_views)||0)-(Number(a.fb_views)||0));
@@ -5878,7 +5889,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <table>${th}<tbody>${fbData.slice(0,5).map(row).join('')}</tbody></table>
     <div class="sec-title" style="border-color:${FBB};color:${FB};margin-top:14px;font-size:12px;">本月 FB 清單</div>
     <table>${th}<tbody>${fbData.map(row).join('')}</tbody></table>`;
-  })()}
+  })():''}
   ${showTh?(()=>{
     const TH_TYPE_LABEL={'1':'貼文','2':'影片'};
     const thPosts=(typeof activeThreads==='function'?activeThreads():[]).filter(d=>(d.date||'').substring(0,7)===ym).sort((a,b)=>(Number(b.views)||0)-(Number(a.views)||0));
