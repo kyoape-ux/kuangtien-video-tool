@@ -432,7 +432,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.59 · 2026-08-25 21:11</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.60 · 2026-08-25 21:22</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -4286,49 +4286,70 @@ function stripHashtags(t){
   const out=raw.replace(/#[^\s#]+/g,' ').replace(/\s{2,}/g,' ').replace(/[\s|｜·・,、\-–—]+$/,'').trim();
   return out||raw.trim();   // 整串都是 hashtag 就保留原文，避免變空白
 }
-// ── 同一支影片被拆成多筆（YT 一筆、FB 匯入又建一筆）→ 偵測並合併
+// ── 重複影片偵測：①同一支影片存了多筆（網址相同）②同一支被拆成 YT/FB 兩筆
 let _splitPairs=[];
+function urlKey(u){
+  const s=String(u||'').trim(); if(!s)return '';
+  const yt=s.match(/(?:v=|youtu\.be\/|\/shorts\/|\/embed\/)([A-Za-z0-9_-]{11})/);
+  if(yt)return 'yt:'+yt[1];
+  return s.replace(/[?#].*$/,'').replace(/\/+$/,'').toLowerCase();
+}
 function scanSplitRecords(){
   if(typeof canWrite==='function'&&!canWrite()){alert('權限不足');return;}
   const n=x=>Number(x)||0;
   const V=activeVideos();
-  const has=(d,p)=>n(d[p+'_views'])>0||!!d[p+'_url'];
-  const pairs=[];const used=new Set();
+  const groups=[];const claimed=new Set();
+
+  // ① 完全重複：同一支影片網址出現在多筆記錄
+  const byKey={};
+  V.forEach(d=>{['yt_url','fb_url','ig_url'].forEach(f=>{const k=urlKey(d[f]);if(k)(byKey[k]=byKey[k]||[]).push(d);});});
+  Object.entries(byKey).forEach(([k,arr])=>{
+    const uniq=[...new Set(arr)];
+    if(uniq.length<2)return;
+    if(uniq.some(d=>claimed.has(d.id)))return;
+    uniq.forEach(d=>claimed.add(d.id));
+    groups.push({kind:'exact',items:uniq,note:`同一支${k.startsWith('yt:')?' YouTube ':' '}影片存了 ${uniq.length} 筆記錄`});
+  });
+
+  // ② 拆開記錄：平台互補、日期相近、標題相似
   V.forEach(a=>{
-    if(used.has(a.id))return;
+    if(claimed.has(a.id))return;
     V.forEach(b=>{
-      if(a===b||used.has(b.id)||used.has(a.id))return;
+      if(a===b||claimed.has(b.id)||claimed.has(a.id))return;
       const dd=Math.abs(new Date(a.date)-new Date(b.date))/864e5;
-      if(!(dd<=14))return;                       // 同一支通常兩週內陸續上架
-      const platsA=['yt','fb','ig'].filter(p=>has(a,p)),platsB=['yt','fb','ig'].filter(p=>has(b,p));
-      if(platsA.some(p=>platsB.includes(p)))return;   // 平台重疊代表是不同影片
+      if(!(dd<=14))return;
+      const has=(d,p)=>n(d[p+'_views'])>0||!!d[p+'_url'];
+      const pa=['yt','fb','ig'].filter(p=>has(a,p)),pb=['yt','fb','ig'].filter(p=>has(b,p));
+      if(pa.some(p=>pb.includes(p)))return;
       const sim=fbTextSim(a.title,b.title);
       const sameType=a.type===b.type;
-      // 同型式＝很可能是同一支被拆記錄；型式不同＝可能是長片與短版剪輯，屬於兩支素材
       if(sim<(sameType?0.30:0.34))return;
-      pairs.push({a,b,sim,days:Math.round(dd),sameType});used.add(a.id);used.add(b.id);
+      claimed.add(a.id);claimed.add(b.id);
+      groups.push({kind:'split',items:[a,b],sim,days:Math.round(dd),sameType,
+        note:`標題相似度 ${(sim*100).toFixed(0)}%・相隔 ${Math.round(dd)} 天${sameType?'・型式相同 → 幾乎確定是同一支被拆成兩筆':'・<b>型式不同（Long／Short）：可能是長片與它的短版剪輯，屬於兩支素材，確認後再勾選</b>'}`});
     });
   });
-  if(!pairs.length){alert('沒有偵測到被拆開的重複影片。');return;}
-  _splitPairs=pairs;
-  pairs.sort((x,y)=>(y.sameType-x.sameType)||(y.sim-x.sim));
-  const html=pairs.map((x,i)=>{
-    const line=d=>`${(d.date||'').slice(0,10)}｜${d.type==='short'?'Short':'Long'}｜YT ${n(d.yt_views).toLocaleString()}・FB ${n(d.fb_views).toLocaleString()}・IG ${n(d.ig_views).toLocaleString()}<br><span style="color:var(--txt3);">${esc(String(d.title||'').slice(0,40))}</span>`;
+
+  if(!groups.length){alert('沒有偵測到重複或被拆開的影片。');return;}
+  groups.sort((x,y)=>(x.kind==='exact'?0:1)-(y.kind==='exact'?0:1)||(y.sameType-x.sameType));
+  _splitPairs=groups;
+  const line=d=>`${(d.date||'').slice(0,10)}｜${d.type==='short'?'Short':'Long'}｜YT ${n(d.yt_views).toLocaleString()}・FB ${n(d.fb_views).toLocaleString()}・IG ${n(d.ig_views).toLocaleString()}<br><span style="color:var(--txt3);">${esc(String(d.title||'').slice(0,38))}</span>`;
+  const html=groups.map((g,i)=>{
+    const autoCheck=g.kind==='exact'||g.sameType;
     return `<div style="padding:12px 0;border-top:1px solid var(--border);">
       <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;">
-        <input type="checkbox" data-sp="${i}" ${x.sameType?'checked':''} style="margin-top:3px;width:15px;height:15px;accent-color:var(--accent);">
+        <input type="checkbox" data-sp="${i}" ${autoCheck?'checked':''} style="margin-top:3px;width:15px;height:15px;accent-color:var(--accent);">
         <div style="flex:1;font-size:12px;line-height:1.7;">
-          <div style="color:var(--txt);">${line(x.a)}</div>
-          <div style="color:var(--accent);margin:4px 0;">＋</div>
-          <div style="color:var(--txt);">${line(x.b)}</div>
-          <div style="font-size:11px;margin-top:5px;color:${x.sameType?'var(--txt3)':'var(--amber)'};">標題相似度 ${(x.sim*100).toFixed(0)}%・相隔 ${x.days} 天${x.sameType?'・型式相同 → 幾乎確定是同一支被拆成兩筆':'・<b>型式不同（Long／Short）：可能是長片與它的短版剪輯，屬於兩支素材，確認後再勾選</b>'}</div>
+          ${g.kind==='exact'?`<div style="display:inline-block;font-size:10px;font-weight:700;color:#F87171;background:rgba(248,113,113,.12);padding:2px 7px;border-radius:5px;margin-bottom:6px;">完全重複</div>`:''}
+          ${g.items.map(line).join('<div style="color:var(--accent);margin:4px 0;">＋</div>')}
+          <div style="font-size:11px;margin-top:5px;color:${autoCheck?'var(--txt3)':'var(--amber)'};">${g.note}　→　合併後保留資料最完整的一筆</div>
         </div></label></div>`;}).join('');
   const ov=document.createElement('div');
   ov.id='split-modal';
   ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px;';
   ov.innerHTML=`<div style="background:var(--card);border:1px solid var(--border-l);border-radius:14px;max-width:640px;width:100%;max-height:80vh;overflow-y:auto;padding:22px;">
-    <h3 style="margin:0 0 6px;font-size:15px;color:var(--txt);">偵測到 ${pairs.length} 組被拆開的影片</h3>
-    <p style="margin:0 0 10px;font-size:12px;color:var(--txt3);line-height:1.7;">同一支影片如果 YT 一筆、FB 一筆，報表會出現「YT 觀看 0」、支數灌水、TOP 5 失真。<br><b style="color:var(--accent);">型式相同的組合已預設勾選</b>；長片與短版剪輯的組合預設不勾，請自行判斷是否為同一支。</p>
+    <h3 style="margin:0 0 6px;font-size:15px;color:var(--txt);">偵測到 ${groups.length} 組需要處理</h3>
+    <p style="margin:0 0 10px;font-size:12px;color:var(--txt3);line-height:1.7;">重複記錄會讓觀看被算兩次、支數灌水、TOP 5 失真。<br><b style="color:var(--accent);">完全重複與型式相同的組合已預設勾選</b>；長片與短版剪輯預設不勾，請自行判斷。</p>
     ${html}
     <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
       <button class="btn btn-secondary btn-sm" onclick="document.getElementById('split-modal').remove()">取消</button>
@@ -4342,30 +4363,46 @@ function applySplitMerge(){
   if(!picks.length){alert('沒有勾選任何組合');return;}
   createSnapshot('合併重複影片前（自動）',true);
   const removed=[],kept=[];
-  picks.forEach(({a,b})=>{
-    const keep=(a.date<=b.date)?a:b, drop=(keep===a)?b:a;
-    ['yt','fb','ig'].forEach(p=>{
-      if(n(drop[p+'_views'])>n(keep[p+'_views'])){
-        [p+'_views',p+'_likes',p+'_comments',p+'_shares',p+'_reach',p+'_url'].forEach(f=>{if(drop[f]!==undefined&&drop[f]!=='')keep[f]=drop[f];});
-      }else if(!keep[p+'_url']&&drop[p+'_url']){keep[p+'_url']=drop[p+'_url'];}
+  picks.forEach(g=>{
+    const items=[...g.items];
+    // 保留資料最完整的一筆（跨平台觀看總和最高，其次日期較早）
+    items.sort((a,b)=>totalViews(b)-totalViews(a)||String(a.date).localeCompare(String(b.date)));
+    const keep=items[0],drops=items.slice(1);
+    drops.forEach(drop=>{
+      ['yt','fb','ig'].forEach(p=>{
+        const sameUrl=urlKey(keep[p+'_url'])&&urlKey(keep[p+'_url'])===urlKey(drop[p+'_url']);
+        if(n(drop[p+'_views'])>n(keep[p+'_views'])||(!n(keep[p+'_views'])&&n(drop[p+'_views']))){
+          [p+'_views',p+'_likes',p+'_comments',p+'_shares',p+'_reach'].forEach(f=>{if(drop[f]!==undefined&&drop[f]!=='')keep[f]=drop[f];});
+        }
+        if(!keep[p+'_url']&&drop[p+'_url'])keep[p+'_url']=drop[p+'_url'];
+        if(!sameUrl&&drop[p+'_url']&&keep[p+'_url']&&n(drop[p+'_views'])&&p!=='yt'){
+          // 同一支內容在該平台發了兩則不同貼文 → 觀看相加才是真實總量
+          keep[p+'_views']=n(keep[p+'_views'])+n(drop[p+'_views']);
+          keep[p+'_likes']=n(keep[p+'_likes'])+n(drop[p+'_likes']);
+          keep[p+'_comments']=n(keep[p+'_comments'])+n(drop[p+'_comments']);
+          keep[p+'_shares']=n(keep[p+'_shares'])+n(drop[p+'_shares']);
+        }
+      });
+      ['yt_imp','yt_ctr','yt_ratio','yt_avgdur'].forEach(f=>{if(!n(keep[f])&&drop[f])keep[f]=drop[f];});
+      if(!keep.series&&drop.series)keep.series=drop.series;
+      if(!keep.cat&&drop.cat)keep.cat=drop.cat;
+      if(!keep.planner&&drop.planner)keep.planner=drop.planner;
+      if(Array.isArray(drop.tags)&&drop.tags.length)keep.tags=[...new Set([...(keep.tags||[]),...drop.tags])];
+      removed.push(drop.id);
     });
-    ['yt_imp','yt_ctr','yt_ratio','yt_avgdur'].forEach(f=>{if(!n(keep[f])&&drop[f])keep[f]=drop[f];});
-    if(!keep.series&&drop.series)keep.series=drop.series;
-    if(!keep.cat&&drop.cat)keep.cat=drop.cat;
-    if(Array.isArray(drop.tags)&&drop.tags.length){keep.tags=[...new Set([...(keep.tags||[]),...drop.tags])];}
     keep.updatedAt=new Date().toISOString();
-    kept.push(keep);removed.push(drop.id);
+    kept.push(keep);
   });
   DATA=DATA.filter(d=>!removed.includes(d.id));
   saveData();renderAll();
   document.getElementById('split-modal')?.remove();
-  alert(`已合併 ${picks.length} 組，刪除 ${removed.length} 筆重複記錄。`);
+  alert(`已處理 ${picks.length} 組，刪除 ${removed.length} 筆重複記錄。`);
   if(typeof USE_API==='function'&&USE_API()&&typeof pushToSheets==='function'){
     (async()=>{
       let ok=0;
       for(const d of kept){const r=await pushToSheets('updateVideo',{data:d});if(r)ok++;showSyncBadge(`同步 ${ok}/${kept.length}`);}
       for(const id of removed){await pushToSheets('deleteVideo',{id});}
-      showSyncBadge(`✅ 合併結果已同步雲端`);
+      showSyncBadge('✅ 合併結果已同步雲端');
     })();
   }
 }
