@@ -432,7 +432,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.60 · 2026-08-25 21:22</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.61 · 2026-08-25 21:28</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -665,7 +665,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <div class="page-header">
         <div class="page-header-left">
           <h1>YT 影片列表</h1>
-          <p>管理與搜尋所有影片資料</p>
+          <p>影片總表 — 含各平台數據；FB／IG 匯入的記錄也會出現在此，可用「全部平台」篩選</p>
         </div>
       </div>
       <div class="page-body">
@@ -676,6 +676,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <select id="filter-cat" onchange="renderList()"><option value="">全部類別</option><option value="疾病衛教">疾病衛教</option><option value="特色醫療">特色醫療</option><option value="新服務流程">新服務流程</option><option value="醫院形象">醫院形象</option><option value="員工活動">員工活動</option><option value="教學">教學</option><option value="其他">其他</option></select>
         <select id="filter-series" onchange="renderList()"><option value="">全部系列</option><option value="藏鏡人">藏鏡人</option><option value="光小編出任務">光小編出任務</option><option value="光田醫點通">光田醫點通</option><option value="光田e學院">光田e學院</option><option value="健康人文藝術講座">健康人文藝術講座</option><option value="其他">其他</option><option value="__none__">（未指定系列）</option></select>
         <select id="filter-month" onchange="renderList()"><option value="">全部月份</option></select>
+        <select id="filter-plat" onchange="renderList()" title="這張表是影片總表，FB／IG 匯入的記錄也在其中"><option value="">全部平台</option><option value="yt">有 YT 數據</option><option value="noyt">缺 YT 數據</option><option value="fb">有 FB 數據</option><option value="ig">有 IG 數據</option></select>
         <button class="btn btn-sm write-only" onclick="scanSplitRecords()" style="background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.25);" title="找出同一支影片被拆成 YT 一筆、FB 一筆的情況，合併成單筆跨平台記錄">合併重複影片</button>
         <button class="btn btn-sm write-only" onclick="cleanTitleHashtags()" style="background:rgba(148,163,184,.12);color:var(--txt2);border:1px solid var(--border-l);" title="移除影片標題結尾的 #標籤，讓列表清爽">清理標題 #標籤</button>
         <button class="btn btn-sm write-only" onclick="scanVideoSeries()" style="background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25);" title="依標題自動辨識影片系列，確認後批次套用">自動辨識系列</button>
@@ -4045,8 +4046,14 @@ function renderVidListSortHeaders(){
 }
 function renderList(){
   renderVidListSortHeaders();
-  const s=(document.getElementById('search-input').value||'').toLowerCase(),ft=document.getElementById('filter-type').value,fc=document.getElementById('filter-cat').value,fm=document.getElementById('filter-month').value,fs=document.getElementById('filter-series')?.value||'';
-  let f=activeVideos().filter(d=>{if(s&&!(d.title||'').toLowerCase().includes(s)&&!(d.planner||'').toLowerCase().includes(s)&&!(d.producer||'').toLowerCase().includes(s))return false;if(ft&&d.type!==ft)return false;if(fc&&d.cat!==fc)return false;if(fm&&!(d.date||'').startsWith(fm))return false;if(fs){if(fs==='__none__'){if(d.series)return false;}else if(d.series!==fs)return false;}return true;});
+  const s=(document.getElementById('search-input').value||'').toLowerCase(),ft=document.getElementById('filter-type').value,fc=document.getElementById('filter-cat').value,fm=document.getElementById('filter-month').value,fs=document.getElementById('filter-series')?.value||'',fp=document.getElementById('filter-plat')?.value||'';
+  let f=activeVideos().filter(d=>{if(s&&!(d.title||'').toLowerCase().includes(s)&&!(d.planner||'').toLowerCase().includes(s)&&!(d.producer||'').toLowerCase().includes(s))return false;if(ft&&d.type!==ft)return false;if(fc&&d.cat!==fc)return false;if(fm&&!(d.date||'').startsWith(fm))return false;if(fs){if(fs==='__none__'){if(d.series)return false;}else if(d.series!==fs)return false;}
+    if(fp){const hv=k=>(Number(d[k+'_views'])||0)>0||!!d[k+'_url'];
+      if(fp==='yt'&&!hv('yt'))return false;
+      if(fp==='noyt'&&hv('yt'))return false;
+      if(fp==='fb'&&!hv('fb'))return false;
+      if(fp==='ig'&&!hv('ig'))return false;}
+    return true;});
   // 預設：待更新優先 → 統計中 → 已定案，同組再依日期新到舊；點欄位標題則改用該欄排序
   if(vlSortKey==='date'){f.sort((a,b)=>((a.date||'')<(b.date||'')?-1:(a.date||'')>(b.date||'')?1:0)*vlSortDir);}
   else if(vlSortKey==='eng'){f.sort((a,b)=>(ytEng(a)-ytEng(b))*vlSortDir);}
@@ -4063,8 +4070,14 @@ function renderList(){
     const eng=ytEng(d);
     const st=getVideoStatus(d),sc=STATUS_CFG[st];
     const tagHtml=Array.isArray(d.tags)&&d.tags.length?`<div style="margin-top:3px;">${renderTagChips(d.tags)}</div>`:'';
-    const meta=[d.series?seriesBadge(d.series):'',d.cat?`<span style="color:var(--txt3);">${esc(d.cat)}</span>`:'',d.planner?`<span style="color:var(--txt3);">企劃 ${esc(d.planner)}</span>`:''].filter(Boolean).join('<span style="color:var(--border-l);">·</span>');
-    return`<tr><td style="white-space:nowrap;"><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;background:${sc.bg};color:${sc.color};">${sc.icon} ${sc.label}</span><div style="font-size:10px;color:var(--txt3);margin-top:3px;">數據 ${d.statsDate||'—'}</div></td><td style="white-space:nowrap;">${(d.date||'').substring(0,10)||'—'}</td><td style="max-width:330px;color:#fff;">${lk?`<a href="${esc(lk)}" target="_blank" style="color:#fff;">${esc(d.title)}</a>`:esc(d.title)}${meta?`<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px;font-size:11px;">${meta}</div>`:''}${tagHtml}</td><td><span class="type-badge type-${d.type}">${d.type==='short'?'Short':'Long'}</span></td><td><div class="views-cell"><span class="total">${ytv.toLocaleString()}</span></div></td><td style="font-variant-numeric:tabular-nums;color:${eng>=2?'#34D399':'var(--txt)'};" title="讚 ${num(d.yt_likes)}・留言 ${num(d.yt_comments)}">${ytv?eng.toFixed(1)+'%':'<span style="color:var(--txt3);">—</span>'}</td><td style="font-variant-numeric:tabular-nums;">${pct(d.yt_ctr)}</td><td style="font-variant-numeric:tabular-nums;">${pct(d.yt_ratio)}</td><td><div class="act-btns"><button class="act-btn write-only" onclick="openEdit('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button><button class="act-btn del write-only" onclick="deleteEntry('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span></button></div></td></tr>`;}).join('');
+    // 標題只連 YouTube；沒有 YT 的記錄不做成連結，改以徽章標示實際在哪些平台
+    const P=[['yt','YT','var(--yt)',d.yt_url],['fb','FB','var(--fb)',d.fb_url],['ig','IG','var(--ig)',d.ig_url]];
+    const platBadges=P.filter(([k,,,u])=>Number(d[k+'_views'])>0||u).map(([k,l,c,u])=>
+      u?`<a href="${esc(u)}" target="_blank" title="在 ${l} 開啟" style="text-decoration:none;"><span style="display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;border:1px solid ${c};color:${c};">${l}↗</span></a>`
+       :`<span style="display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;border:1px solid var(--border-l);color:var(--txt3);">${l}</span>`).join(' ');
+    const noYt=!d.yt_url&&!(Number(d.yt_views)||0);
+    const meta=[platBadges,noYt?'<span style="font-size:10px;color:var(--amber);">未含 YT</span>':'',d.series?seriesBadge(d.series):'',d.cat?`<span style="color:var(--txt3);">${esc(d.cat)}</span>`:'',d.planner?`<span style="color:var(--txt3);">企劃 ${esc(d.planner)}</span>`:''].filter(Boolean).join('<span style="color:var(--border-l);">·</span>');
+    return`<tr><td style="white-space:nowrap;"><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;background:${sc.bg};color:${sc.color};">${sc.icon} ${sc.label}</span><div style="font-size:10px;color:var(--txt3);margin-top:3px;">數據 ${d.statsDate||'—'}</div></td><td style="white-space:nowrap;">${(d.date||'').substring(0,10)||'—'}</td><td style="max-width:330px;color:#fff;">${d.yt_url?`<a href="${esc(d.yt_url)}" target="_blank" style="color:#fff;">${esc(d.title)}</a>`:esc(d.title)}${meta?`<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px;font-size:11px;">${meta}</div>`:''}${tagHtml}</td><td><span class="type-badge type-${d.type}">${d.type==='short'?'Short':'Long'}</span></td><td><div class="views-cell"><span class="total">${ytv.toLocaleString()}</span></div></td><td style="font-variant-numeric:tabular-nums;color:${eng>=2?'#34D399':'var(--txt)'};" title="讚 ${num(d.yt_likes)}・留言 ${num(d.yt_comments)}">${ytv?eng.toFixed(1)+'%':'<span style="color:var(--txt3);">—</span>'}</td><td style="font-variant-numeric:tabular-nums;">${pct(d.yt_ctr)}</td><td style="font-variant-numeric:tabular-nums;">${pct(d.yt_ratio)}</td><td><div class="act-btns"><button class="act-btn write-only" onclick="openEdit('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button><button class="act-btn del write-only" onclick="deleteEntry('${d.id}')"><span class="icon"><svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span></button></div></td></tr>`;}).join('');
 }
 function buildMonthFilter(){const ms=[...new Set(activeVideos().map(d=>(d.date||'').substring(0,7)).filter(Boolean))].sort().reverse();document.getElementById('filter-month').innerHTML='<option value="">全部月份</option>'+ms.map(m=>`<option value="${m}">${m}</option>`).join('');}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
@@ -4330,7 +4343,16 @@ function scanSplitRecords(){
     });
   });
 
-  if(!groups.length){alert('沒有偵測到重複或被拆開的影片。');return;}
+  // ③ 缺 YT 數據的記錄（多半是 FB 匯入另建的），列出同期候選讓人工配對
+  const orphans=V.filter(d=>!claimed.has(d.id)&&!d.yt_url&&!n(d.yt_views)&&(n(d.fb_views)||n(d.ig_views)));
+  const orphanRows=orphans.map(o=>{
+    const cands=V.filter(c=>c!==o&&(c.yt_url||n(c.yt_views))&&Math.abs(new Date(c.date)-new Date(o.date))/864e5<=21)
+      .map(c=>({c,sim:fbTextSim(o.title,c.title),dd:Math.abs(new Date(c.date)-new Date(o.date))/864e5}))
+      .sort((a,b)=>(b.sim-a.sim)||(a.dd-b.dd)).slice(0,5);   // 標題相似度相同時，日期最接近的排前面
+    return {o,cands};
+  }).filter(x=>x.cands.length);
+
+  if(!groups.length&&!orphanRows.length){alert('沒有偵測到重複或被拆開的影片。');return;}
   groups.sort((x,y)=>(x.kind==='exact'?0:1)-(y.kind==='exact'?0:1)||(y.sameType-x.sameType));
   _splitPairs=groups;
   const line=d=>`${(d.date||'').slice(0,10)}｜${d.type==='short'?'Short':'Long'}｜YT ${n(d.yt_views).toLocaleString()}・FB ${n(d.fb_views).toLocaleString()}・IG ${n(d.ig_views).toLocaleString()}<br><span style="color:var(--txt3);">${esc(String(d.title||'').slice(0,38))}</span>`;
@@ -4351,6 +4373,16 @@ function scanSplitRecords(){
     <h3 style="margin:0 0 6px;font-size:15px;color:var(--txt);">偵測到 ${groups.length} 組需要處理</h3>
     <p style="margin:0 0 10px;font-size:12px;color:var(--txt3);line-height:1.7;">重複記錄會讓觀看被算兩次、支數灌水、TOP 5 失真。<br><b style="color:var(--accent);">完全重複與型式相同的組合已預設勾選</b>；長片與短版剪輯預設不勾，請自行判斷。</p>
     ${html}
+    ${orphanRows.length?`<div style="margin-top:18px;padding-top:14px;border-top:2px solid var(--border-l);">
+      <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:4px;">缺 YT 數據的記錄（${orphanRows.length} 筆）</div>
+      <div style="font-size:11px;color:var(--txt3);line-height:1.7;margin-bottom:8px;">這些多半是 FB 匯入時另建的記錄，標題與 YT 版不同所以自動比對抓不到。若確定是同一支，選擇要合併進去的 YT 記錄；本來就只發 FB 的請留白。</div>
+      ${orphanRows.map((x,i)=>`<div style="padding:10px 0;border-top:1px solid var(--border);font-size:12px;">
+        <div style="color:var(--txt);line-height:1.6;">${(x.o.date||'').slice(0,10)}｜FB ${n(x.o.fb_views).toLocaleString()}・IG ${n(x.o.ig_views).toLocaleString()}<br><span style="color:var(--txt3);">${esc(String(x.o.title||'').slice(0,38))}</span></div>
+        <select data-orphan="${esc(String(x.o.id))}" style="margin-top:6px;width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--bg-2);color:var(--txt);">
+          <option value="">— 不合併（本來就只發 FB／IG）—</option>
+          ${x.cands.map(c=>`<option value="${esc(String(c.c.id))}">${(c.c.date||'').slice(0,10)}｜YT ${n(c.c.yt_views).toLocaleString()}｜相似 ${(c.sim*100).toFixed(0)}%・相隔 ${Math.round(c.dd)} 天｜${esc(String(c.c.title||'').slice(0,26))}</option>`).join('')}
+        </select></div>`).join('')}
+    </div>`:''}
     <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
       <button class="btn btn-secondary btn-sm" onclick="document.getElementById('split-modal').remove()">取消</button>
       <button class="btn btn-sm" style="background:var(--accent);color:#000;" onclick="applySplitMerge()">確認合併</button>
@@ -4360,7 +4392,13 @@ function scanSplitRecords(){
 function applySplitMerge(){
   const n=x=>Number(x)||0;
   const picks=[...document.querySelectorAll('#split-modal input[data-sp]')].filter(c=>c.checked).map(c=>_splitPairs[Number(c.dataset.sp)]);
-  if(!picks.length){alert('沒有勾選任何組合');return;}
+  // 人工配對的孤兒記錄
+  [...document.querySelectorAll('#split-modal select[data-orphan]')].forEach(sel=>{
+    if(!sel.value)return;
+    const o=DATA.find(d=>String(d.id)===sel.dataset.orphan),t=DATA.find(d=>String(d.id)===sel.value);
+    if(o&&t)picks.push({kind:'manual',items:[t,o],note:'人工指定合併'});
+  });
+  if(!picks.length){alert('沒有勾選任何組合，也沒有指定要合併的記錄');return;}
   createSnapshot('合併重複影片前（自動）',true);
   const removed=[],kept=[];
   picks.forEach(g=>{
