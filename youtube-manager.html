@@ -432,7 +432,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.58 · 2026-08-25 21:04</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.59 · 2026-08-25 21:11</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -1341,6 +1341,10 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <h3>績效目標</h3>
         <div class="form-grid" style="margin-top:14px;">
           <div class="form-group"><label>月觀看目標（全平台）</label><input type="number" id="cfg-viewGoal" placeholder="5000"></div>
+          <div class="form-group full" style="margin-top:2px;">
+            <button class="btn btn-sm btn-secondary" onclick="suggestGoals()" title="依近 6 個月實績自動算出合理的月目標與各平台門檻">依實績建議目標</button>
+            <span id="goal-hint" style="font-size:11px;color:var(--txt3);margin-left:8px;"></span>
+          </div>
           <div class="form-group full" style="margin-top:4px;"><label style="color:var(--txt2);">單則達標門檻（各平台分開，預設值取自你們實際數據的前 30% 水準）</label></div>
           <div class="form-group"><label>YT 單片達標</label><input type="number" id="cfg-goalYt" placeholder="500"></div>
           <div class="form-group"><label>FB 單片達標</label><input type="number" id="cfg-goalFb" placeholder="8000"></div>
@@ -4087,6 +4091,30 @@ async function deleteEntry(id){
 // 設定
 // ============================================================
 function renderCfgForm(){document.getElementById('cfg-viewGoal').value=CFG.viewGoal;document.getElementById('cfg-countGoal').value=CFG.countGoal;document.getElementById('cfg-personalGoal').value=CFG.personalGoal;['goalYt','goalFb','goalIgReel','goalIgPost'].forEach(k=>{const el=document.getElementById('cfg-'+k);if(el)el.value=CFG[k];});document.getElementById('cfg-api-url').value=API_URL;document.getElementById('cfg-yt-key').value=YT_API_KEY;}
+function suggestGoals(){
+  const n=x=>Number(x)||0;
+  const now=new Date();
+  const months=[];for(let i=1;i<=6;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}
+  const V=activeVideos();
+  const mv=months.map(m=>{const a=V.filter(d=>String(d.date||'').startsWith(m));
+    return {views:a.reduce((s,d)=>s+totalViews(d),0),cnt:a.length};}).filter(x=>x.cnt>0);
+  if(mv.length<2){showAlert('cfg-alert','近 6 個月資料不足，無法建議目標','err');return;}
+  const med=a=>{const x=[...a].sort((p,q)=>p-q),m=x.length>>1;return x.length%2?x[m]:Math.round((x[m-1]+x[m])/2);};
+  const roundTo=(v,u)=>Math.max(u,Math.round(v/u)*u);
+  const vGoal=roundTo(med(mv.map(x=>x.views))*0.9,5000);   // 取中位數的 9 成，讓目標可達又不灌水
+  const cGoal=Math.max(1,Math.round(med(mv.map(x=>x.cnt))));
+  const pct=(arr,p)=>{if(!arr.length)return 0;const x=[...arr].sort((a,b)=>a-b);return x[Math.min(x.length-1,Math.floor(x.length*p))];};
+  const recent=V.filter(d=>String(d.date||'')>=months[months.length-1]);
+  const IG=(typeof activeIgPosts==='function'?activeIgPosts():[]).filter(d=>String(d.date||'')>=months[months.length-1]);
+  const gY=roundTo(pct(recent.filter(d=>n(d.yt_views)>0).map(d=>n(d.yt_views)),0.7),100);
+  const gF=roundTo(pct(recent.filter(d=>n(d.fb_views)>0).map(d=>n(d.fb_views)),0.7),1000);
+  const gR=roundTo(pct(IG.filter(d=>String(d.type)==='3'&&n(d.views)>0).map(d=>n(d.views)),0.7),500);
+  const gP=roundTo(pct(IG.filter(d=>String(d.type)!=='3'&&n(d.views)>0).map(d=>n(d.views)),0.7),100);
+  const set=(id,v)=>{const el=document.getElementById(id);if(el&&v)el.value=v;};
+  set('cfg-viewGoal',vGoal);set('cfg-countGoal',cGoal);
+  set('cfg-goalYt',gY);set('cfg-goalFb',gF);set('cfg-goalIgReel',gR);set('cfg-goalIgPost',gP);
+  document.getElementById('goal-hint').textContent=`依近 ${mv.length} 個月實績算出（月觀看中位數 ${med(mv.map(x=>x.views)).toLocaleString()}、月產出中位數 ${med(mv.map(x=>x.cnt))} 支）— 確認後請按「儲存設定」`;
+}
 async function saveCfg(){if(!canDelete()){showAlert('cfg-alert','僅組長可修改設定','err');return;}CFG.viewGoal=Number(document.getElementById('cfg-viewGoal').value)||5000;CFG.countGoal=Number(document.getElementById('cfg-countGoal').value)||6;CFG.personalGoal=Number(document.getElementById('cfg-personalGoal').value)||2000;CFG.goalYt=Number(document.getElementById('cfg-goalYt').value)||500;CFG.goalFb=Number(document.getElementById('cfg-goalFb').value)||8000;CFG.goalIgReel=Number(document.getElementById('cfg-goalIgReel').value)||3000;CFG.goalIgPost=Number(document.getElementById('cfg-goalIgPost').value)||600;localStorage.setItem('kt_yt_cfg',JSON.stringify(CFG));showAlert('cfg-alert','設定已儲存','ok');renderDashboard();await pushToSheets('saveConfig',{data:CFG});}
 async function forceSync(){if(!USE_API()){alert('請先設定 API URL');return;}createSnapshot('GAS 同步前（強制同步）',true);showSyncBadge('同步中...');const hdr=document.getElementById('sync-status-hdr');if(hdr)hdr.innerHTML='<span style="color:var(--txt3);">同步中...</span>';const ok=await syncFromSheets();await syncConfigFromSheets();await syncIgFromSheets();await syncThreadsFromSheets();renderAll();renderIgAll();renderThreads();showSyncBadge(ok?'同步完成':'同步失敗');if(hdr&&ok){const t=new Date();const ts=t.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});hdr.innerHTML=`<span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>已同步 ${ts}</span>`;}}
 function clearAllData(){if(!canDelete()){alert('僅組長可清除本機資料');return;}if(!confirm('確定要清除所有本機資料？（會先建立快照）'))return;createSnapshot('清除本機前（自動）',true);DATA=[];IG_DATA=[];TH_DATA=[];localStorage.removeItem('kt_yt_data');localStorage.removeItem('kt_ig_data');localStorage.removeItem('kt_th_data');renderAll();renderIgAll();renderThreads();showSyncBadge('本機資料已清除（快照已保留）');}
@@ -5694,6 +5722,43 @@ function openMonthlyReport(){
       +`<td>${Math.round(r.views/platTotalV*100)}%</td><td>${r.eng.toLocaleString()}</td><td>${r.views?(r.eng/r.views*100).toFixed(1):'0.0'}%</td>`
       +`<td>${r.goal?`${r.hit} 則（≥${r.goal.toLocaleString()}）`:'—'}</td></tr>`).join('')
     +`<tr style="background:#F1F5F9;font-weight:700;"><td>合計</td><td>${platRows.reduce((s,r)=>s+r.cnt,0)}</td><td>${platTotalV.toLocaleString()}</td><td>100%</td><td>${platRows.reduce((s,r)=>s+r.eng,0).toLocaleString()}</td><td>${(platRows.reduce((s,r)=>s+r.eng,0)/platTotalV*100).toFixed(1)}%</td><td>${platRows.reduce((s,r)=>s+r.hit,0)} 則</td></tr></tbody></table>`:'';
+  // ── ① 數據成熟度：全部還在統計中就必須標明，否則主管會把未成熟數字當定案
+  const matureRate=cnt?Math.round(mLocked.length/cnt*100):0;
+  const maturityBanner=cnt?`<div style="background:${mLocked.length?'#FFF7ED':'#FEF2F2'};border:1px solid ${mLocked.length?'#FDBA74':'#FCA5A5'};border-left:4px solid ${mLocked.length?'#EA580C':'#DC2626'};border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;line-height:1.8;color:#7F1D1D;">
+    <b>數據成熟度：${mLocked.length} / ${cnt} 支已定案（${matureRate}%）</b><br>
+    ${mLocked.length?`本報表以${usingLocked?'已定案':'全部'}資料計算；統計中的 ${mCollecting.length} 支發布未滿 1 個月，數字仍會成長。`
+      :`⚠️ 本月<b>尚無任何影片滿 1 個月</b>，以下數字全部屬於「累積中」，下月同期回看會更高。跨月比較請以「已定案」為準。`}
+  </div>`:'';
+  // ── ② 平台集中度：單一平台佔比過高是風險，不是成績
+  const concShare=platRows.length?Math.max(...platRows.map(r=>r.views))/platTotalV*100:0;
+  const concName=platRows.length?platRows.reduce((a,b)=>a.views>b.views?a:b).name:'—';
+  const concLevel=concShare>=80?{t:'高度集中',c:'#DC2626',bg:'#FEF2F2',msg:'單一平台演算法變動就會讓整體聲量腰斬，建議刻意分配資源到次要平台'}
+    :concShare>=60?{t:'偏집中',c:'#EA580C',bg:'#FFF7ED',msg:'仍偏重單一平台，建議觀察次要平台的成長曲線'}
+    :{t:'分散良好',c:'#0F6E56',bg:'#F2FAF6',msg:'流量來源分散，抗風險能力佳'};
+  // ── ③ 內容品質指標（不只看聲量）
+  const ctrArr=base.filter(d=>_n(d.yt_ctr)>0),ratioArr=base.filter(d=>_n(d.yt_ratio)>0);
+  const avgCtrR=ctrArr.length?ctrArr.reduce((s,d)=>s+_n(d.yt_ctr),0)/ctrArr.length*100:null;
+  const avgRatioR=ratioArr.length?ratioArr.reduce((s,d)=>s+_n(d.yt_ratio),0)/ratioArr.length*100:null;
+  const engTotal=platRows.reduce((s,r)=>s+r.eng,0),engRateR=platTotalV?engTotal/platTotalV*100:0;
+  const fbReachMissing=mData.some(d=>_n(d.fb_views)>0)&&!mData.some(d=>_n(d.fb_reach)>0);
+  // ── ④ 下月行動建議：加碼／停做／待解，全部從數據推出
+  const catStat={};
+  base.forEach(d=>{const k=d.cat||'（未分類）';(catStat[k]=catStat[k]||[]).push(totalViews(d));});
+  const catRank=Object.entries(catStat).map(([k,a])=>({k,n:a.length,med:medOf(a)})).sort((a,b)=>b.med-a.med);
+  const seriesStat={};
+  base.forEach(d=>{const k=d.series||'（未指定系列）';(seriesStat[k]=seriesStat[k]||[]).push(totalViews(d));});
+  const seriesRank=Object.entries(seriesStat).map(([k,a])=>({k,n:a.length,med:medOf(a)})).sort((a,b)=>b.med-a.med);
+  const allMed=medOf(base.map(totalViews))||1;
+  const pushList=[...catRank.filter(x=>x.med>=allMed*1.3),...seriesRank.filter(x=>x.med>=allMed*1.5&&x.k!=='（未指定系列）')].slice(0,3);
+  const stopList=[...catRank.filter(x=>x.med<allMed*0.4&&x.n>=1),...seriesRank.filter(x=>x.med<allMed*0.3&&x.k!=='（未指定系列）')].slice(0,3);
+  const issues=[];
+  if(concShare>=80)issues.push(`流量 ${concShare.toFixed(0)}% 集中在 ${concName}，需要建立第二來源`);
+  if(fbReachMissing)issues.push('FB 觸及數據缺漏（Metricool 匯出檔不含觸及），需從粉專後台補');
+  if(!mLocked.length)issues.push('本月尚無定案數據，跨月比較僅供參考');
+  if(avgRatioR===null)issues.push('多數影片缺完播率，請匯入 YT Studio「表格資料.csv」補齊');
+  const zeroYt=mData.filter(d=>!_n(d.yt_views)).length;
+  if(zeroYt>=Math.ceil(cnt*0.4))issues.push(`${zeroYt} 支沒有 YT 數據，可能是同一支影片被拆成兩筆記錄（可用「合併重複影片」檢查）`);
+
   // ── 跨平台總表：每則內容在各平台的表現
   const mxAll=(typeof mxRows==='function'?mxRows():[]).filter(r=>String(r.date||'').substring(0,7)===ym)
     .filter(r=>rptNonVideo||(r.type!=='IG 圖文'&&r.type!=='Threads')).sort((a,b)=>b.total-a.total);
@@ -5786,6 +5851,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <div class="hd-l"><h1>${moLabel} 影片發布成效報告</h1><p>光田綜合醫院 視覺多媒體設計組</p></div>
     <div class="hd-r">產製日期：${now}<br>統計區間：${moLabel}<br>月觀看目標：${vGoal.toLocaleString()}</div>
   </div>
+  ${showVideo?maturityBanner:''}
   ${showVideo?`
   <!-- 本月摘要 -->
   <div style="background:#F2FAF6;border-left:4px solid #0F6E56;border-radius:8px;padding:16px 20px;margin-bottom:22px;">
@@ -5814,12 +5880,31 @@ tr:nth-child(even) td{background:#FAFAFA;}
   <div class="kpi-row">
     <div class="kpi"><div class="val">${cnt}</div><div class="lbl">本月上架影片（部）</div></div>
     <div class="kpi"><div class="val">${tv.toLocaleString()}</div><div class="lbl">全平台總觀看</div></div>
-    <div class="kpi"><div class="val">${vRate}%</div><div class="lbl">觀看目標達成率</div></div>
-    <div class="kpi"><div class="val">${cRate}%</div><div class="lbl">上架數達成率（目標 ${cGoal} 部）</div></div>
+    <div class="kpi"><div class="val" style="${vRate>=300?'font-size:26px;':''}">${vRate>=300?(tv/vGoal).toFixed(1)+' 倍':vRate+'%'}</div><div class="lbl">觀看目標達成（目標 ${vGoal.toLocaleString()}）${vRate>=300?'<br><span style="color:#EA580C;">目標偏低，建議上修</span>':''}</div></div>
+    <div class="kpi"><div class="val" style="${cRate>=300?'font-size:26px;':''}">${cRate>=300?(cnt/cGoal).toFixed(1)+' 倍':cRate+'%'}</div><div class="lbl">上架數達成（目標 ${cGoal} 部）${cRate>=300?'<br><span style="color:#EA580C;">目標偏低，建議上修</span>':''}</div></div>
   </div>
   ${showVideo?`
   <!-- 近 6 個月趨勢 -->
   ${platTable?`<div class="sec-title">${rptNonVideo?"全平台成效總覽（含 IG 圖文與 Threads）":"影片成效總覽（YT／FB／IG 影片，IG 已去重）"}</div>${platTable}`:''}
+
+  ${platRows.length?`<div class="sec-title">內容品質與風險指標　<span style="font-weight:400;color:#64748B;font-size:11px;">聲量之外，主管更該看的三件事</span></div>
+  <div class="plat-row" style="grid-template-columns:repeat(3,1fr);">
+    <div class="plat" style="border:2px solid ${concLevel.c};background:${concLevel.bg};">
+      <div style="font-size:11px;font-weight:700;color:${concLevel.c};margin-bottom:4px;">平台集中度 · ${concLevel.t}</div>
+      <div class="val" style="color:${concLevel.c};">${concShare.toFixed(0)}%</div>
+      <div class="lbl">觀看集中於 ${concName}<br><span style="color:#64748B;">${concLevel.msg}</span></div>
+    </div>
+    <div class="plat" style="border:2px solid #0F6E56;background:#F2FAF6;">
+      <div style="font-size:11px;font-weight:700;color:#0F6E56;margin-bottom:4px;">內容留得住人嗎 · 完播率</div>
+      <div class="val" style="color:#0F6E56;">${avgRatioR===null?'—':avgRatioR.toFixed(1)+'%'}</div>
+      <div class="lbl">${avgRatioR===null?'尚無完播資料，請匯入 YT Studio 表格資料.csv':`YT 平均完播率　·　平均 CTR ${avgCtrR===null?'—':avgCtrR.toFixed(1)+'%'}`}</div>
+    </div>
+    <div class="plat" style="border:2px solid #4C8BF5;background:#EFF6FF;">
+      <div style="font-size:11px;font-weight:700;color:#1D4ED8;margin-bottom:4px;">觀眾願意互動嗎 · 互動率</div>
+      <div class="val" style="color:#1D4ED8;">${engRateR.toFixed(1)}%</div>
+      <div class="lbl">${engTotal.toLocaleString()} 互動 ÷ ${platTotalV.toLocaleString()} 觀看${fbReachMissing?'<br><span style="color:#EA580C;">FB 觸及資料缺漏，互動率可能低估</span>':''}</div>
+    </div>
+  </div>`:''}
 
   <div class="sec-title">近 6 個月觀看趨勢</div>
   <div style="display:flex;align-items:flex-end;gap:10px;height:120px;padding:10px 6px 0;border-bottom:2px solid #E2E8F0;margin-bottom:6px;">
@@ -5877,6 +5962,13 @@ tr:nth-child(even) td{background:#FAFAFA;}
   ${showVideo?`<div class="sec-title">本月影片清單（共 ${cnt} 部）</div>
   <table><thead><tr><th>發布日期</th><th>影片標題</th><th>類型</th><th>類別</th><th>YT 觀看</th><th>FB 觀看</th><th>IG 觀看</th><th>全平台合計</th></tr></thead>
   <tbody>${rows}</tbody></table>`:''}
+
+  ${showVideo?`<div class="sec-title" style="border-color:#0F6E56;">下月行動建議　<span style="font-weight:400;color:#64748B;font-size:11px;">依本月數據自動導出，主管可據此裁示</span></div>
+  <table><thead><tr><th style="width:90px;">方向</th><th>依據與建議</th></tr></thead><tbody>
+    <tr><td style="font-weight:700;color:#0F6E56;">加碼</td><td style="text-align:left;line-height:1.9;">${pushList.length?pushList.map(x=>`<b>${x.k}</b>（${x.n} 支・中位數 ${x.med.toLocaleString()}，高於整體中位數 ${allMed.toLocaleString()}）`).join('<br>')+'<br><span style="color:#64748B;">建議下月此類題材增加 2～3 支，並優先配置到 '+concName+' 以外的平台測試</span>':'本月尚無明顯高於整體水準的題材，建議維持現有配置再觀察一個月'}</td></tr>
+    <tr><td style="font-weight:700;color:#C0313D;">停做／調整</td><td style="text-align:left;line-height:1.9;">${stopList.length?stopList.map(x=>`<b>${x.k}</b>（${x.n} 支・中位數 ${x.med.toLocaleString()}，僅整體的 ${Math.round(x.med/allMed*100)}%）`).join('<br>')+'<br><span style="color:#64748B;">建議重新檢視選題角度或呈現方式；若屬必要衛教內容，改以較低製作成本產出</span>':'本月無明顯低效類別'}</td></tr>
+    <tr><td style="font-weight:700;color:#EA580C;">待解問題</td><td style="text-align:left;line-height:1.9;">${issues.length?issues.map((x,i)=>`${i+1}. ${x}`).join('<br>'):'目前無重大資料缺口'}</td></tr>
+  </tbody></table>`:''}
 
   ${(scope==='all'&&mxTable)?`<div class="sec-title">跨平台總表（本月每則內容 × 各平台，共 ${mxAll.length} 則）</div>${mxTable}`:''}
   ${showIg?(()=>{
