@@ -387,7 +387,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
       <span class="icon"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></span>FB 影片列表
     </div>
     <div class="nav-item" onclick="showPage('fbstats')">
-      <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>FB 成效
+      <span class="icon"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>FB 影片成效
     </div>
 
     <div class="nav-section">Threads</div>
@@ -432,7 +432,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.63 · 2026-08-25 22:58</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.64 · 2026-08-27 16:30</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -820,7 +820,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
     <div class="page" id="page-fbstats">
       <div class="page-header">
         <div class="page-header-left">
-          <h1>FB 成效</h1>
+          <h1>FB 影片成效</h1>
           <p>Facebook 影片／Reels 成效分析（資料來自影片記錄的 FB 欄位，可用「匯入 Metricool FB CSV」批次更新）</p>
         </div>
       </div>
@@ -3316,7 +3316,7 @@ function renderFbList(){
     <td style="font-variant-numeric:tabular-nums;">${(Number(d.fb_comments)||0).toLocaleString()}</td>
     <td style="font-variant-numeric:tabular-nums;">${(Number(d.fb_shares)||0).toLocaleString()}</td>
     <td style="font-variant-numeric:tabular-nums;color:var(--fb);font-weight:600;">${fbEng(d).toFixed(1)}%</td>
-    <td><div class="act-btns"><button class="act-btn write-only" onclick="openEdit('${d.id}','fb')" title="編輯此影片的 Facebook 數據（可展開其他平台）"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button></div></td>
+    <td><div class="act-btns"><button class="act-btn write-only" onclick="openEdit('${d.id}','fb')" title="編輯此影片的 Facebook 數據（可展開其他平台）"><span class="icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span></button><button class="act-btn del write-only" onclick="deleteEntry('${d.id}')" title="刪除這筆影片記錄（含其他平台數據）"><span class="icon"><svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span></button></div></td>
   </tr>`;}).join('');
 }
 function renderFbStats(){
@@ -5971,7 +5971,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
       <div class="lbl">觀看中位數 · ${bLong.length} 支 · 合計 ${sumOf(bLong,totalViews).toLocaleString()}</div>
     </div>
   </div>`:''}
-  <div class="kpi-row">
+  ${(showVideo||showFb)?`<div class="kpi-row">
     <div class="kpi"><div class="val">${cnt}</div><div class="lbl">本月上架影片（部）</div></div>
     <div class="kpi"><div class="val">${tv.toLocaleString()}</div><div class="lbl">全平台總觀看</div></div>
     <div class="kpi"><div class="val" style="${vRate>=300?'font-size:26px;':''}">${vRate>=300?(tv/vGoal).toFixed(1)+' 倍':vRate+'%'}</div><div class="lbl">觀看目標達成（目標 ${vGoal.toLocaleString()}）${vRate>=300?'<br><span style="color:#EA580C;">目標偏低，建議上修</span>':''}</div></div>
@@ -6032,7 +6032,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
   <div class="prog-row">
     <div class="prog"><div class="prog-lbl"><span>觀看目標（${vGoal.toLocaleString()} 次）</span><span>${tv.toLocaleString()} / ${vGoal.toLocaleString()}</span></div><div class="prog-bg"><div class="prog-fill" style="width:${Math.min(100,vRate)}%"></div></div></div>
     <div class="prog"><div class="prog-lbl"><span>上架目標（${cGoal} 部）</span><span>${cnt} / ${cGoal}</span></div><div class="prog-bg"><div class="prog-fill" style="width:${Math.min(100,cRate)}%"></div></div></div>
-  </div>
+  </div>`:''}
   ${showVideo?`<div class="sec-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> 本月觀看次數 TOP 5</div>
   <table><thead><tr><th style="width:40px;">排名</th><th>影片標題</th><th>類型</th><th>類別</th><th>YT 觀看</th><th>FB 觀看</th><th>IG 觀看</th><th>全平台合計</th></tr></thead>
   <tbody>${top5rows}</tbody></table>`:''}
