@@ -310,6 +310,32 @@ footer a{color:var(--indigo2);text-decoration:none}
 /* ── c-aqua （音訊降噪）── */
 .c-aqua::before{background:linear-gradient(90deg,#0e7490,#0891b2)}.c-aqua:hover{box-shadow:0 0 24px rgba(8,145,178,.18)}.c-aqua .tool-icon{background:rgba(8,145,178,.15)}.c-aqua .tool-btn{background:rgba(8,145,178,.12);color:#22d3ee}.c-aqua .progress-bar{background:linear-gradient(90deg,#0e7490,#0891b2)}.c-aqua .dl-btn{background:linear-gradient(135deg,#0e7490,#0891b2)}.c-aqua .fmt{background:rgba(8,145,178,.1);color:#22d3ee;border-color:rgba(8,145,178,.2)}.c-aqua .drop-area{border-color:rgba(8,145,178,.35)}.c-aqua .drop-area:hover,.c-aqua .drop-area.drag-over{border-color:#0891b2;background:rgba(8,145,178,.07)}
 
+/* ── c-azure （直式轉橫式）── */
+.c-azure::before{background:linear-gradient(90deg,#1d4ed8,#60a5fa)}.c-azure:hover{box-shadow:0 0 24px rgba(59,130,246,.18)}.c-azure .tool-icon{background:rgba(59,130,246,.15)}.c-azure .tool-btn{background:rgba(59,130,246,.12);color:#93c5fd}.c-azure .progress-bar{background:linear-gradient(90deg,#1d4ed8,#60a5fa)}.c-azure .dl-btn{background:linear-gradient(135deg,#1d4ed8,#60a5fa)}.c-azure .fmt{background:rgba(59,130,246,.1);color:#93c5fd;border-color:rgba(59,130,246,.2)}.c-azure .drop-area{border-color:rgba(59,130,246,.35)}.c-azure .drop-area:hover,.c-azure .drop-area.drag-over{border-color:#60a5fa;background:rgba(59,130,246,.07)}
+
+/* ── 直式轉橫式（模糊背景）控制面板 ── */
+.bp-panel{display:none;margin-top:12px}
+.tool-card.has-file .bp-panel{display:block}
+.tool-card.processing .bp-panel,.tool-card.done .bp-panel{display:none}
+.bp-stage{position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000;border:1px solid var(--border)}
+.bp-canvas{width:100%;height:100%;display:block}
+.bp-stage-hint{position:absolute;left:8px;top:8px;padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.55);color:#cbd5e1;font-size:10.5px;letter-spacing:.02em;pointer-events:none}
+.bp-playbar{display:flex;align-items:center;gap:9px;margin-top:9px}
+.bp-play{width:30px;height:30px;flex-shrink:0;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.bp-play:hover{color:#93c5fd;border-color:#3b82f6}
+.bp-seek{flex:1;min-width:0}
+.bp-time{font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums;flex-shrink:0}
+.bp-ctrl{margin-top:11px}
+.bp-lab{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--text2);margin-bottom:5px}
+.bp-val{font-size:11.5px;color:#93c5fd;font-variant-numeric:tabular-nums}
+.bp-ctrl input[type=range]{width:100%;display:block}
+.bp-presets{display:flex;gap:7px;margin-top:12px}
+.bp-preset{flex:1;padding:7px 4px;font-size:11.5px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;transition:.15s}
+.bp-preset:hover{border-color:var(--border2);color:var(--text)}
+.bp-preset.active{border-color:#3b82f6;background:rgba(59,130,246,.14);color:#93c5fd}
+.bp-panel .fmt-select{margin-top:10px}
+.bp-warn{margin-top:10px;font-size:11px;line-height:1.6;color:var(--text3)}
+
 /* ── c-purple （音訊轉文字）── */
 .c-purple::before{background:linear-gradient(90deg,#7e22ce,#a855f7)}.c-purple:hover{box-shadow:0 0 24px rgba(168,85,247,.18)}.c-purple .tool-icon{background:rgba(168,85,247,.15)}.c-purple .tool-btn{background:rgba(168,85,247,.12);color:#c084fc}.c-purple .progress-bar{background:linear-gradient(90deg,#7e22ce,#a855f7)}.c-purple .dl-btn{background:linear-gradient(135deg,#7e22ce,#a855f7)}.c-purple .fmt{background:rgba(168,85,247,.1);color:#c084fc;border-color:rgba(168,85,247,.2)}.c-purple .drop-area{border-color:rgba(168,85,247,.35)}.c-purple .drop-area:hover,.c-purple .drop-area.drag-over{border-color:#a855f7;background:rgba(168,85,247,.07)}
 
@@ -762,6 +788,7 @@ if (!self.crossOriginIsolated) {
   <symbol id="ico-transcribe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></symbol>
   <symbol id="ico-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
   <symbol id="ico-denoise-audio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2"/><path d="M7 9v6"/><path d="M11 6v12"/><path d="M15 9v6"/><path d="M19 11v2"/><path d="M21 3l.5 1.5L23 5l-1.5.5L21 7l-.5-1.5L19 5l1.5-.5z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ico-blurpad" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="5" width="21" height="14" rx="2"/><rect x="9" y="2.5" width="6" height="19" rx="1.5" fill="currentColor" fill-opacity=".22"/><path d="M4.5 9.5h2.5M4.5 12.5h2.5M4.5 15.5h2.5M17 9.5h2.5M17 12.5h2.5M17 15.5h2.5" stroke-opacity=".5"/></symbol>
   <symbol id="ico-denoise-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M2 9h4M8 9h2M12 9h6M2 13h6M10 13h4M16 13h4"/><path d="M21 3l.5 1.5L23 5l-1.5.5L21 7l-.5-1.5L19 5l1.5-.5z" fill="currentColor" stroke="none"/></symbol>
 </svg>
 
@@ -833,6 +860,7 @@ if (!self.crossOriginIsolated) {
       <a class="guide-pill" data-guide="audioConvert"><span class="gp-dot gp-violet"></span>音訊轉換</a>
       <a class="guide-pill" data-guide="audioTrim"><span class="gp-dot" style="background:#eab308"></span>音訊裁切</a>
       <a class="guide-pill" data-guide="transcribe"><span class="gp-dot" style="background:#a855f7"></span>音訊轉文字</a>
+      <a class="guide-pill" data-guide="blurPad"><span class="gp-dot" style="background:#3b82f6"></span>直式轉橫式</a>
       <a class="guide-pill" data-guide="videoDenoise"><span class="gp-dot" style="background:#22c55e"></span>影片降噪</a>
       <a class="guide-pill" data-guide="audioDenoise"><span class="gp-dot" style="background:#0891b2"></span>音訊降噪</a>
     </div>
@@ -1432,6 +1460,74 @@ if (!self.crossOriginIsolated) {
       <div class="download-wrap">
         <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載降噪後影片</button>
         <button class="reset-btn">再次降噪</button>
+      </div>
+    </div>
+
+    <!-- 直式轉橫式（背景高斯模糊）-->
+    <div class="tool-card c-azure" data-tool="blurPad">
+      <input type="file" hidden accept="video/*,.mkv,.avi,.webm,.flv,.ts">
+      <div class="tool-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-blurpad"/></svg></div>
+      <div class="tool-name">直式轉橫式（公播用）</div>
+      <div class="tool-desc">9:16 直式短影音一鍵補成 16:9，左右用同一畫面的高斯模糊填滿。模糊程度與背景亮暗可即時預覽，輸出後直接丟公播電視輪播。</div>
+      <div class="tool-formats"><span class="fmt">即時預覽</span><span class="fmt">16:9 輸出</span><span class="fmt">免後製</span></div>
+      <div class="drop-area">
+        <div class="drop-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-folder"/></svg></div>
+        <div class="drop-area-text">拖曳直式影片到這裡，或點擊選取</div>
+        <div class="drop-area-sub">支援 MP4、MOV、AVI、MKV、WebM</div>
+      </div>
+      <div class="file-info">
+        <span class="file-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-file"/></svg></span>
+        <span class="file-info-name"></span><span class="file-info-size"></span>
+        <button class="file-clear"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-x"/></svg></button>
+      </div>
+
+      <div class="bp-panel">
+        <div class="bp-stage">
+          <canvas class="bp-canvas" width="640" height="360"></canvas>
+          <div class="bp-stage-hint">預覽（實際輸出畫質更好）</div>
+        </div>
+        <div class="bp-playbar">
+          <button type="button" class="bp-play" title="播放／暫停預覽">
+            <svg class="bp-ico-play" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-play"/></svg>
+            <svg class="bp-ico-pause" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><use href="#ico-pause"/></svg>
+          </button>
+          <input type="range" class="bp-seek" min="0" max="1000" value="0">
+          <span class="bp-time">00:00 / 00:00</span>
+        </div>
+
+        <div class="bp-ctrl">
+          <label class="bp-lab">背景模糊程度<span class="bp-val bp-blur-val">45</span></label>
+          <input type="range" class="bp-blur" min="0" max="100" step="1" value="45">
+        </div>
+        <div class="bp-ctrl">
+          <label class="bp-lab">背景亮暗度<span class="bp-val bp-bright-val">60%</span></label>
+          <input type="range" class="bp-bright" min="20" max="130" step="5" value="60">
+        </div>
+
+        <div class="bp-presets">
+          <button type="button" class="bp-preset" data-blur="25" data-bright="85">柔和</button>
+          <button type="button" class="bp-preset active" data-blur="45" data-bright="60">標準</button>
+          <button type="button" class="bp-preset" data-blur="75" data-bright="35">濃厚暗背景</button>
+        </div>
+
+        <select class="fmt-select bp-res" name="bpRes">
+          <option value="1920x1080" selected>輸出 1920×1080（Full HD，公播主流）</option>
+          <option value="1280x720">輸出 1280×720（HD，處理較快）</option>
+        </select>
+        <select class="fmt-select bp-quality" name="bpQuality">
+          <option value="20">高畫質（檔案較大）</option>
+          <option value="23" selected>標準畫質（推薦）</option>
+          <option value="28">快速輸出（畫質普通）</option>
+        </select>
+        <div class="bp-warn">整支影片會重新編碼，長片在瀏覽器內會跑很久，建議先用「影片裁剪」切成 3 分鐘內再轉。原本就是 16:9 的影片不需要用這個工具。</div>
+      </div>
+
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-bar"></div></div><div class="progress-text">合成 16:9 畫面中...</div></div>
+      <div class="error-msg"></div>
+      <button class="tool-btn start-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-bolt"/></svg>開始轉成 16:9</button>
+      <div class="download-wrap">
+        <button class="dl-btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ico-download"/></svg>下載 16:9 影片</button>
+        <button class="reset-btn">再轉一支</button>
       </div>
     </div>
 
@@ -2364,6 +2460,26 @@ window.dispatchEvent(new Event('transcription-ready'));
       var data = ff.FS('readFile', outN);
       fsClean(inN, outN);
       return { data: data, ext: 'mp4', filename: basename(file.name) + '_denoised.mp4' };
+    },
+    // ── 直式轉橫式：背景高斯模糊補滿 16:9 ──
+    // 背景先縮到 320 寬的代理圖再模糊、再放大，wasm 下才跑得動，
+    // 預覽 canvas 走同一套流程，所見即所得。
+    blurPad: async function(file, card) {
+      var geo = window.__bpGeometry(card);
+      var inN = 'in.' + getExt(file.name), outN = 'out.mp4';
+      ff.FS('writeFile', inN, await fetchFile(file));
+      await ff.run(
+        '-i', inN,
+        '-filter_complex', geo.filter,
+        '-map', '[v]', '-map', '0:a?',
+        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', geo.crf,
+        '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac', '-b:a', '128k',
+        '-max_muxing_queue_size', '1024', outN
+      );
+      var data = ff.FS('readFile', outN);
+      fsClean(inN, outN);
+      return { data: data, ext: 'mp4', filename: basename(file.name) + '_16x9.mp4' };
     },
     // ── 音訊降噪（anlmdn + 頻段過濾）──
     audioDenoise: async function(file, card) {
@@ -3729,6 +3845,235 @@ window.dispatchEvent(new Event('transcription-ready'));
     if (resetBtn) resetBtn.addEventListener('click', reset);
   }
 
+  // ── 直式轉橫式（背景高斯模糊）──
+  // 幾何 / 濾鏡參數集中在這裡算，FFmpeg 與 canvas 預覽共用同一份，避免兩邊算出來不一樣。
+  window.__bpGeometry = function(card) {
+    var res = ((card.querySelector('.bp-res') || {}).value || '1920x1080').split('x');
+    var W = parseInt(res[0], 10) || 1920;
+    var H = parseInt(res[1], 10) || 1080;
+    var crf = (card.querySelector('.bp-quality') || {}).value || '23';
+    var blurV = parseInt((card.querySelector('.bp-blur') || {}).value, 10);
+    var brightV = parseInt((card.querySelector('.bp-bright') || {}).value, 10);
+    if (isNaN(blurV)) blurV = 45;
+    if (isNaN(brightV)) brightV = 60;
+
+    // 模糊半徑用「輸出寬度的百分比」表示，換解析度時視覺一致
+    var rf = blurV * 0.000375;           // 100 → 輸出寬度的 3.75%
+    var PW = 320;                        // 背景代理圖寬度
+    var PH = Math.round(PW * H / W / 2) * 2;
+    var sigma = rf * PW;                 // 代理圖上的高斯 sigma
+    var m = brightV / 100;               // 亮度倍率
+
+    var vw = parseInt(card.dataset.bpVw, 10) || 0;
+    var vh = parseInt(card.dataset.bpVh, 10) || 0;
+
+    var fgFilter, overlay;
+    if (vw > 0 && vh > 0) {
+      // 已知原始尺寸就自己算，確保寬高為偶數（yuv420p 需要）
+      var k = Math.min(W / vw, H / vh);
+      var fw = Math.max(2, Math.round(vw * k / 2) * 2);
+      var fh = Math.max(2, Math.round(vh * k / 2) * 2);
+      fgFilter = 'scale=' + fw + ':' + fh;
+      overlay = (Math.round((W - fw) / 4) * 2) + ':' + (Math.round((H - fh) / 4) * 2);
+    } else {
+      fgFilter = 'scale=' + W + ':' + H + ':force_original_aspect_ratio=decrease';
+      overlay = '(W-w)/2:(H-h)/2';
+    }
+
+    var bg = 'scale=' + PW + ':' + PH + ':force_original_aspect_ratio=increase,crop=' + PW + ':' + PH;
+    if (sigma > 0.05) bg += ',gblur=sigma=' + sigma.toFixed(2);
+    if (Math.abs(m - 1) > 0.005) {
+      var mm = m.toFixed(3);
+      bg += ',colorchannelmixer=rr=' + mm + ':gg=' + mm + ':bb=' + mm;
+    }
+    bg += ',scale=' + W + ':' + H + ':flags=bicubic';
+
+    var filter = '[0:v]split=2[bg][fg];' +
+                 '[bg]' + bg + '[bgo];' +
+                 '[fg]' + fgFilter + '[fgo];' +
+                 '[bgo][fgo]overlay=' + overlay + ',format=yuv420p[v]';
+
+    return { W: W, H: H, PW: PW, PH: PH, sigma: sigma, m: m, crf: String(crf), filter: filter };
+  };
+
+  // 預覽：檔案／滑桿都掛在同一張卡上，setupCard 已處理選檔與轉檔，這裡只補畫面
+  function setupBlurPadPreview(card) {
+    var input = card.querySelector('input[type=file]');
+    var dropArea = card.querySelector('.drop-area');
+    var canvas = card.querySelector('.bp-canvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var proxy = document.createElement('canvas');
+    var pctx = proxy.getContext('2d');
+    var canFilter = ('filter' in ctx);
+
+    var video = document.createElement('video');
+    video.muted = true; video.playsInline = true; video.preload = 'auto';
+    video.setAttribute('playsinline', '');
+
+    var seek = card.querySelector('.bp-seek');
+    var timeEl = card.querySelector('.bp-time');
+    var playBtn = card.querySelector('.bp-play');
+    var icoPlay = card.querySelector('.bp-ico-play');
+    var icoPause = card.querySelector('.bp-ico-pause');
+    var blurSl = card.querySelector('.bp-blur');
+    var brightSl = card.querySelector('.bp-bright');
+    var blurVal = card.querySelector('.bp-blur-val');
+    var brightVal = card.querySelector('.bp-bright-val');
+    var rafId = null;
+
+    function fmtT(s) {
+      if (!isFinite(s)) s = 0;
+      var m = Math.floor(s / 60), sec = Math.floor(s % 60);
+      return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+    }
+
+    function draw() {
+      var vw = video.videoWidth, vh = video.videoHeight;
+      if (!vw || !vh) return;
+      var g = window.__bpGeometry(card);
+      var CW = canvas.width, CH = canvas.height;
+
+      // 1) 背景代理圖：等比放大後置中裁成輸出比例（等同 FFmpeg 的 scale+crop）
+      proxy.width = g.PW; proxy.height = g.PH;
+      pctx.filter = 'none';
+      pctx.clearRect(0, 0, g.PW, g.PH);
+      var cov = Math.max(g.PW / vw, g.PH / vh);
+      pctx.drawImage(video, (g.PW - vw * cov) / 2, (g.PH - vh * cov) / 2, vw * cov, vh * cov);
+
+      // 2) 放大到畫布並套模糊與亮度（sigma 依畫布寬度等比換算）
+      var blurPx = g.sigma * CW / g.PW;
+      var pad = Math.ceil(blurPx * 2) + 2;   // 外擴，避免模糊吃到畫布外的透明邊
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.filter = 'none';
+      ctx.clearRect(0, 0, CW, CH);
+      if (canFilter) {
+        ctx.filter = 'blur(' + blurPx.toFixed(2) + 'px) brightness(' + g.m.toFixed(3) + ')';
+      }
+      ctx.drawImage(proxy, -pad, -pad, CW + pad * 2, CH + pad * 2);
+      ctx.filter = 'none';
+      if (!canFilter && g.m < 1) {
+        ctx.fillStyle = 'rgba(0,0,0,' + (1 - g.m).toFixed(3) + ')';
+        ctx.fillRect(0, 0, CW, CH);
+      }
+
+      // 3) 原片置中貼合
+      var k = Math.min(CW / vw, CH / vh);
+      var fw = vw * k, fh = vh * k;
+      ctx.drawImage(video, (CW - fw) / 2, (CH - fh) / 2, fw, fh);
+    }
+
+    function loop() {
+      draw();
+      if (video.duration) {
+        seek.value = Math.round(video.currentTime / video.duration * 1000);
+        timeEl.textContent = fmtT(video.currentTime) + ' / ' + fmtT(video.duration);
+      }
+      rafId = requestAnimationFrame(loop);
+    }
+    function stopLoop() {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    }
+    function setPlayIcon(playing) {
+      if (icoPlay) icoPlay.style.display = playing ? 'none' : '';
+      if (icoPause) icoPause.style.display = playing ? '' : 'none';
+    }
+
+    function loadFile(f) {
+      if (!f) return;
+      pausePreview();
+      if (video.src) { try { URL.revokeObjectURL(video.src); } catch (e) {} }
+      card.dataset.bpVw = ''; card.dataset.bpVh = '';
+      video.src = URL.createObjectURL(f);
+      video.load();
+    }
+
+    function pausePreview() {
+      video.pause();
+      stopLoop();
+      setPlayIcon(false);
+    }
+
+    video.addEventListener('loadedmetadata', function() {
+      card.dataset.bpVw = String(video.videoWidth);
+      card.dataset.bpVh = String(video.videoHeight);
+      timeEl.textContent = '00:00 / ' + fmtT(video.duration);
+      // 跳到 10% 處，通常比第一幀（常是黑畫面）更有代表性
+      try { video.currentTime = Math.min(video.duration * 0.1, 3); } catch (e) {}
+    });
+    video.addEventListener('seeked', draw);
+    video.addEventListener('loadeddata', draw);
+    video.addEventListener('ended', pausePreview);
+
+    if (seek) {
+      seek.addEventListener('input', function() {
+        if (!video.duration) return;
+        pausePreview();
+        video.currentTime = video.duration * (parseInt(seek.value, 10) / 1000);
+        timeEl.textContent = fmtT(video.currentTime) + ' / ' + fmtT(video.duration);
+      });
+    }
+    if (playBtn) {
+      playBtn.addEventListener('click', function() {
+        if (!video.src) return;
+        if (video.paused) {
+          video.play().then(function() { setPlayIcon(true); stopLoop(); loop(); }).catch(function() {});
+        } else {
+          pausePreview();
+          draw();
+        }
+      });
+    }
+
+    function syncLabels() {
+      if (blurVal) blurVal.textContent = blurSl.value;
+      if (brightVal) brightVal.textContent = brightSl.value + '%';
+    }
+    [blurSl, brightSl].forEach(function(sl) {
+      if (!sl) return;
+      sl.addEventListener('input', function() {
+        syncLabels();
+        card.querySelectorAll('.bp-preset').forEach(function(b) { b.classList.remove('active'); });
+        draw();
+      });
+    });
+    card.querySelectorAll('.bp-preset').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        card.querySelectorAll('.bp-preset').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        if (blurSl) blurSl.value = btn.dataset.blur;
+        if (brightSl) brightSl.value = btn.dataset.bright;
+        syncLabels();
+        draw();
+      });
+    });
+    var resSel = card.querySelector('.bp-res');
+    if (resSel) resSel.addEventListener('change', draw);
+    syncLabels();
+
+    if (input) input.addEventListener('change', function() { loadFile(input.files[0]); });
+    if (dropArea) {
+      dropArea.addEventListener('drop', function(e) {
+        if (e.dataTransfer && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+      });
+    }
+    ['.file-clear', '.reset-btn'].forEach(function(sel) {
+      var b = card.querySelector(sel);
+      if (b) b.addEventListener('click', function() {
+        pausePreview();
+        if (video.src) { try { URL.revokeObjectURL(video.src); } catch (e) {} }
+        video.removeAttribute('src'); video.load();
+        card.dataset.bpVw = ''; card.dataset.bpVh = '';
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.filter = 'none';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (seek) seek.value = 0;
+        if (timeEl) timeEl.textContent = '00:00 / 00:00';
+      });
+    });
+    card.addEventListener('bp-stop', pausePreview);
+  }
+
   // ── Audio Trim Card (card-level only, modal is separate) ──
   function setupAudioTrimCard(card) {
     var input = card.querySelector('input[type=file]');
@@ -4602,6 +4947,7 @@ window.dispatchEvent(new Event('transcription-ready'));
   };
 
   document.querySelectorAll('.tool-card[data-tool]:not([data-tool="merge"]):not([data-tool="watermark"]):not([data-tool="faceBlur"]):not([data-tool="bgm"]):not([data-tool="subtitle"]):not([data-tool="snapshot"]):not([data-tool="audioTrim"]):not([data-tool="screenRecord"]):not([data-tool="audioRecord"]):not([data-tool="transcribe"]):not([data-tool="ytdl"])').forEach(setupCard);
+  document.querySelectorAll('.tool-card[data-tool="blurPad"]').forEach(setupBlurPadPreview);
   document.querySelectorAll('.tool-card[data-tool="watermark"]').forEach(setupWatermarkCard);
   document.querySelectorAll('.tool-card[data-tool="merge"]').forEach(setupMergeCard);
   document.querySelectorAll('.tool-card[data-tool="faceBlur"]').forEach(setupFaceBlurCard);
@@ -4655,7 +5001,7 @@ window.dispatchEvent(new Event('transcription-ready'));
     screenRecord: ['transcribe', 'trim', 'compress', 'faceBlur'],
     audioRecord:  ['transcribe', 'audioTrim', 'audioConvert'],
     transcribe:   ['subtitle'],
-    trim:         ['compress', 'faceBlur', 'subtitle', 'transcribe'],
+    trim:         ['compress', 'faceBlur', 'subtitle', 'transcribe', 'blurPad'],
     toAudio:      ['transcribe', 'audioTrim', 'audioConvert'],
     compress:     ['trim', 'faceBlur'],
     convert:      ['trim', 'compress', 'faceBlur'],
@@ -4669,6 +5015,7 @@ window.dispatchEvent(new Event('transcription-ready'));
     audioTrim:    ['transcribe', 'audioConvert', 'audioDenoise'],
     merge:        ['compress', 'trim', 'faceBlur'],
     videoDenoise: ['compress', 'trim', 'faceBlur'],
+    blurPad:      ['compress', 'watermark', 'subtitle'],
     audioDenoise: ['transcribe', 'audioTrim', 'audioConvert']
   };
 
@@ -4677,7 +5024,7 @@ window.dispatchEvent(new Event('transcription-ready'));
     'c-rose':'#f43f5e','c-orange':'#f97316','c-pink':'#ec4899','c-lime':'#84cc16',
     'c-cyan':'#22d3ee','c-fuchsia':'#d946ef','c-indigo':'#6366f1','c-violet':'#8b5cf6',
     'c-yellow':'#eab308','c-red':'#ef4444','c-blue':'#3b82f6','c-purple':'#a855f7',
-    'c-mint':'#22c55e','c-aqua':'#0891b2'
+    'c-mint':'#22c55e','c-aqua':'#0891b2','c-azure':'#3b82f6'
   };
   function _chainColor(card){
     var cs = card.className.split(' ');
@@ -4771,7 +5118,10 @@ window.dispatchEvent(new Event('transcription-ready'));
     function closeAll() {
       var openCard = document.querySelector('.tool-card.is-open');
       if (!canClose(openCard)) return;
-      if (openCard) openCard.classList.remove('is-open');
+      if (openCard) {
+        openCard.classList.remove('is-open');
+        openCard.dispatchEvent(new CustomEvent('bp-stop'));   // 關閉時停掉預覽播放
+      }
       backdrop.classList.remove('show');
       document.body.style.overflow = '';
     }
@@ -4850,7 +5200,7 @@ window.dispatchEvent(new Event('transcription-ready'));
       'c-rose':'#f43f5e','c-orange':'#f97316','c-pink':'#ec4899','c-lime':'#84cc16',
       'c-cyan':'#22d3ee','c-fuchsia':'#d946ef','c-indigo':'#6366f1','c-violet':'#8b5cf6',
       'c-yellow':'#eab308','c-red':'#ef4444','c-blue':'#3b82f6','c-purple':'#a855f7',
-      'c-mint':'#22c55e','c-aqua':'#0891b2'
+      'c-mint':'#22c55e','c-aqua':'#0891b2','c-azure':'#3b82f6'
     };
 
     function fmtBytes(b){ if(b<1024)return b+' B'; if(b<1048576)return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
@@ -6447,7 +6797,7 @@ window.addEventListener('resize', function() {
 .site-footer .ver-org{margin-top:6px;color:var(--text-muted)}
 </style>
 <footer class="site-footer">
-  <span class="ver">v1.12.1</span><span class="ver-date">更新於 2026-07-13 23:00</span>
+  <span class="ver">v1.12.1</span><span class="ver-date">更新於 2026-09-03 17:45</span>
   <div class="ver-org">光田綜合醫院 · 行銷企劃處　視覺多媒體設計組</div>
 </footer>
 
