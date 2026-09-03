@@ -432,7 +432,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.66 · 2026-09-03 11:23</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.67 · 2026-09-03 13:43</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -2033,13 +2033,15 @@ async function syncFromSheets(){
     // 保留本機軟刪除標記與 Sheets 端未支援的欄位（tags 等）
     const localMap=new Map(DATA.map(d=>[d.id,d]));
     DATA=r.videos.map(v=>{
+      if(v.tags!==undefined)v.tags=parseTags(v.tags);
       const row={...v,date:fixDate(v.date)};
       const local=localMap.get(v.id);
       if(local){
         // 保留軟刪除標記
         if(local.deleted_at&&!row.deleted_at){row.deleted_at=local.deleted_at;row.deleted_by=local.deleted_by;}
-        // 保留本機標籤（Sheets 端不一定存 tags）
-        if(local.tags&&(!row.tags||(Array.isArray(row.tags)&&row.tags.length===0))){row.tags=local.tags;}
+        // 雲端的 tags 是 JSON 字串；有值用雲端，沒值保留本機（GAS 尚未部署新版時的備援）
+        row.tags=parseTags(row.tags);
+        if(!row.tags.length&&Array.isArray(local.tags)&&local.tags.length){row.tags=local.tags;}
         // 保留本機系列（Sheets 端尚未有 series 欄時不要被清空）
         if(local.series&&!row.series){row.series=local.series;}
       }
@@ -2050,7 +2052,16 @@ async function syncFromSheets(){
   }
   return false;
 }
-async function pushToSheets(a,p){const r=await apiPost(a,p);return r&&r.success;}
+async function pushToSheets(a,p){
+  // 標籤在試算表存成 JSON 字串；這裡統一轉換，個別呼叫點不用各自處理
+  if(p&&p.data&&Array.isArray(p.data.tags))p={...p,data:{...p.data,tags:JSON.stringify(p.data.tags)}};
+  const r=await apiPost(a,p);return r&&r.success;
+}
+function parseTags(v){
+  if(Array.isArray(v))return v;
+  const s=String(v||'').trim();if(!s)return [];
+  try{const a=JSON.parse(s);return Array.isArray(a)?a:[];}catch(e){return s.split(/[,、]/).map(x=>x.trim()).filter(Boolean);}
+}
 async function syncConfigFromSheets(){const r=await apiGet('getConfig');if(r&&!r.error){CFG={...CFG,...r};localStorage.setItem('kt_yt_cfg',JSON.stringify(CFG));return true;}return false;}
 function fixDate(d){if(!d)return '';if(d.length===10)return d;try{const dt=new Date(d);const local=new Date(dt.getTime()+8*3600000);return local.toISOString().substring(0,10);}catch(e){return String(d).substring(0,10);}}
 async function syncIgFromSheets(){
@@ -2060,12 +2071,14 @@ async function syncIgFromSheets(){
     // 保留本機軟刪除標記與 Sheets 端未支援的欄位（tags 等）
     const localMap=new Map(IG_DATA.map(d=>[d.id,d]));
     IG_DATA=r.posts.map(p=>{
+      if(p.tags!==undefined)p.tags=parseTags(p.tags);
       const row={...p,date:fixDate(p.date)};
       const local=localMap.get(p.id);
       if(local){
         if(local.deleted_at&&!row.deleted_at){row.deleted_at=local.deleted_at;row.deleted_by=local.deleted_by;}
-        if(local.tags&&(!row.tags||(Array.isArray(row.tags)&&row.tags.length===0))){row.tags=local.tags;}
-        if(local.videoId&&!row.videoId){row.videoId=local.videoId;}   // 雲端沒這欄，本機的先留著
+        row.tags=parseTags(row.tags);
+        if(!row.tags.length&&Array.isArray(local.tags)&&local.tags.length){row.tags=local.tags;}
+        if(local.videoId&&!row.videoId){row.videoId=local.videoId;}   // GAS 未更新前的備援
       }
       return row;
     });
