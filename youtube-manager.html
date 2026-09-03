@@ -432,7 +432,7 @@ tr:hover td{background:rgba(52,211,153,.03);}
         <span class="icon" style="width:14px;height:14px;"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></span>工作進度控管
       </a>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;margin-top:4px;">
-        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.65 · 2026-08-27 16:40</span>
+        <span style="font-size:11px;color:var(--txt3);" title="此版本發佈時間，可用來確認是否為最新版">v2.66 · 2026-09-03 11:23</span>
         <button onclick="hardReload()" title="強制重新載入最新版頁面並同步雲端資料（等同 Cmd+Shift+R）— 開始編輯前建議按一下" style="display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>更新頁面
         </button>
@@ -2065,9 +2065,11 @@ async function syncIgFromSheets(){
       if(local){
         if(local.deleted_at&&!row.deleted_at){row.deleted_at=local.deleted_at;row.deleted_by=local.deleted_by;}
         if(local.tags&&(!row.tags||(Array.isArray(row.tags)&&row.tags.length===0))){row.tags=local.tags;}
+        if(local.videoId&&!row.videoId){row.videoId=local.videoId;}   // 雲端沒這欄，本機的先留著
       }
       return row;
     });
+    if(typeof relinkIgPosts==='function')relinkIgPosts();   // 換電腦或清快取時，用影片的 ig_url 對回來
     saveIgData();
     return true;
   }
@@ -5035,9 +5037,24 @@ function syncIgViewsToVideo(post){
   if(idx===-1)return;
   const sum=IG_DATA.filter(p=>p.videoId===post.videoId).reduce((s,p)=>s+(Number(p.views)||0),0);
   DATA[idx].ig_views=sum;
+  // 雲端 IG 表沒有 videoId 欄，對應關係要靠影片端的 ig_url 才能過夜；下次載入用連結反推
+  if(post.link&&!DATA[idx].ig_url)DATA[idx].ig_url=post.link;
   DATA[idx].updatedAt=new Date().toISOString();
   saveData();
   pushToSheets('updateVideo',{data:DATA[idx]});
+}
+// 從雲端同步回來後，IG 貼文的 videoId 是空的（雲端存不了），用影片的 ig_url 對回來
+function relinkIgPosts(){
+  if(!Array.isArray(IG_DATA)||!IG_DATA.length)return;
+  const key=u=>String(u||'').replace(/[?#].*$/,'').replace(/\/+$/,'').toLowerCase();
+  const byUrl={};DATA.forEach(v=>{if(v.ig_url)byUrl[key(v.ig_url)]=v.id;});
+  let n=0;
+  IG_DATA.forEach(p=>{
+    if(p.videoId&&DATA.some(v=>v.id===p.videoId))return;
+    const vid=p.link?byUrl[key(p.link)]:null;
+    if(vid){p.videoId=vid;n++;}
+  });
+  if(n)saveIgData&&saveIgData();
 }
 
 // 重建影片下拉選單（依日期由新到舊）
@@ -5716,7 +5733,10 @@ function openMonthlyReport(){
   const ym=`${yr}-${mo}`;
   const mData=(showVideo||showFb)?activeVideos().filter(d=>(d.date||'').substring(0,7)===ym).sort((a,b)=>(a.date||'').localeCompare(b.date||'')):[];
   const moLabel=`${yr} 年 ${parseInt(mo)} 月`;
-  const tv=mData.reduce((s,d)=>s+totalViews(d),0);
+  // YT 範圍的報表只算 YouTube 數字，不把 FB/IG 混進「全平台」
+  const ytOnly=scope==='youtube';
+  const pViews=ytOnly?(d=>Number(d.yt_views)||0):totalViews;
+  const tv=mData.reduce((s,d)=>s+pViews(d),0);
   const ytv=mData.reduce((s,d)=>s+(Number(d.yt_views)||0),0);
   const fbv=mData.reduce((s,d)=>s+(Number(d.fb_views)||0),0);
   const igv=mData.reduce((s,d)=>s+(Number(d.ig_views)||0),0);
@@ -5737,13 +5757,13 @@ function openMonthlyReport(){
   const medOf=a=>{const x=a.filter(v=>!isNaN(v)).sort((p,q)=>p-q);if(!x.length)return 0;const m=Math.floor(x.length/2);return Math.round(x.length%2?x[m]:(x[m-1]+x[m])/2);};
   const bShort=base.filter(d=>d.type==='short'),bLong=base.filter(d=>d.type!=='short');
   const sumOf=(a,f)=>a.reduce((s,d)=>s+(Number(f(d))||0),0);
-  const baseViews=sumOf(base,totalViews);
+  const baseViews=sumOf(base,pViews);
   // 上月比較（同樣以定案為準）
   const prevYm=(()=>{const d=new Date(parseInt(yr),parseInt(mo)-2,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;})();
   // 本月若沒有已定案資料會退回「全部」，上月也必須用同一把尺，否則會出現 +4000% 這種假成長
   const prevAll=activeVideos().filter(d=>(d.date||'').substring(0,7)===prevYm&&!isAd(d));
   const prevData=mLocked.length?prevAll.filter(d=>getVideoStatus(d)==='locked'):prevAll;
-  const prevViews=sumOf(prevData,totalViews);
+  const prevViews=sumOf(prevData,pViews);
   const momPct=prevViews>0?Math.round((baseViews-prevViews)/prevViews*100):null;
   // 近 6 個月趨勢
   const trend=[];
@@ -5751,7 +5771,7 @@ function openMonthlyReport(){
     const d=new Date(parseInt(yr),parseInt(mo)-1-i,1);
     const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
     const arr=activeVideos().filter(v=>(v.date||'').substring(0,7)===key&&!isAd(v));
-    trend.push({key,label:`${d.getMonth()+1}月`,v:sumOf(arr,totalViews),n:arr.length});
+    trend.push({key,label:`${d.getMonth()+1}月`,v:sumOf(arr,pViews),n:arr.length});
   }
   const trendMax=Math.max(...trend.map(t=>t.v),1);
   // 平台佔比與互動率
@@ -5765,8 +5785,8 @@ function openMonthlyReport(){
   const platC={YouTube:'#FF4444',Facebook:'#4C8BF5',Instagram:'#F472B6'};
   const domOf=d=>{const y=Number(d.yt_views)||0,f=Number(d.fb_views)||0,g=Number(d.ig_views)||0,t=y+f+g;if(!t)return null;const m=Math.max(y,f,g);return{k:m===y?'YT':m===g?'IG':'FB',p:Math.round(m/t*100)};};
   // 需檢討（觀看最低 3 支，排除統計中與廣告）
-  const worst=[...base].sort((a,b)=>totalViews(a)-totalViews(b)).slice(0,3);
-  const bestOne=[...base].sort((a,b)=>totalViews(b)-totalViews(a))[0];
+  const worst=[...base].sort((a,b)=>pViews(a)-pViews(b)).slice(0,3);
+  const bestOne=[...base].sort((a,b)=>pViews(b)-pViews(a))[0];
   // 行動建議
   const mTips=[];
   if(bShort.length&&bLong.length){
@@ -5812,7 +5832,7 @@ function openMonthlyReport(){
      hit:igSoloPost.filter(d=>_n(d.views)>=gP).length,goal:gP}]:[]),
     ...(rptNonVideo?[{name:'Threads',color:'#A78BFA',cnt:thPosts.length,views:SUM(thPosts,d=>_n(d.views)),
      eng:SUM(thPosts,d=>_n(d.likes)+_n(d.replies)+_n(d.reposts)),hit:0,goal:0}]:[])
-  ].filter(r=>r.cnt>0||r.views>0);
+  ].filter(r=>r.cnt>0||r.views>0).filter(r=>!ytOnly||r.name==='YouTube');
   const platTotalV=platRows.reduce((s,r)=>s+r.views,0)||1;
   const platTable=platRows.length?`<table><thead><tr><th>平台</th><th>則數</th><th>觀看</th><th>佔比</th><th>互動</th><th>互動率</th><th>達標</th></tr></thead><tbody>`
     +platRows.map(r=>`<tr><td style="font-weight:700;color:${r.color};">${r.name}</td><td>${r.cnt}</td><td>${r.views.toLocaleString()}</td>`
@@ -5881,12 +5901,12 @@ function openMonthlyReport(){
     <td>${d.type==='short'?'Short':'Long'}</td>
     <td>${d.cat||''}</td>
     <td>${(Number(d.yt_views)||0).toLocaleString()}</td>
-    <td>${(Number(d.fb_views)||0).toLocaleString()}</td>
+    ${ytOnly?'':`<td>${(Number(d.fb_views)||0).toLocaleString()}</td>
     <td>${(Number(d.ig_views)||0).toLocaleString()}</td>
-    <td style="font-weight:700;">${totalViews(d).toLocaleString()}</td>
+    <td style="font-weight:700;">${totalViews(d).toLocaleString()}</td>`}
   </tr>`).join(''):`<tr><td colspan="8" style="text-align:center;color:#aaa;padding:24px;">本月無影片資料</td></tr>`;
 
-  const top5=[...mData].sort((a,b)=>totalViews(b)-totalViews(a)).slice(0,5);
+  const top5=[...mData].sort((a,b)=>pViews(b)-pViews(a)).slice(0,5);
   const medalColors=['#F5A623','#9B9B9B','#C47D3E','#0F6E56','#0F6E56'];
   const top5rows=top5.length>0?top5.map((d,i)=>`<tr>
     <td style="text-align:center;"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:${i<3?medalColors[i]:'#E8F5F1'};color:${i<3?'#fff':'#0F6E56'};font-weight:900;font-size:12px;">${i+1}</span></td>
@@ -5894,9 +5914,9 @@ function openMonthlyReport(){
     <td>${d.type==='short'?'Short':'Long'}</td>
     <td>${d.cat||''}</td>
     <td>${(Number(d.yt_views)||0).toLocaleString()}</td>
-    <td>${(Number(d.fb_views)||0).toLocaleString()}</td>
+    ${ytOnly?'':`<td>${(Number(d.fb_views)||0).toLocaleString()}</td>
     <td>${(Number(d.ig_views)||0).toLocaleString()}</td>
-    <td style="font-weight:900;color:#0F6E56;">${totalViews(d).toLocaleString()}</td>
+    <td style="font-weight:900;color:#0F6E56;">${totalViews(d).toLocaleString()}</td>`}
   </tr>`).join(''):`<tr><td colspan="8" style="text-align:center;color:#aaa;padding:24px;">本月無影片資料</td></tr>`;
 
   const html=`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>${moLabel} 影片成效報告</title>
@@ -5956,8 +5976,8 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <div style="font-size:13px;line-height:2;color:#334155;">
       ${moLabel}共發布 <b>${cnt}</b> 支${mCollecting.length?`（已定案 <b>${mLocked.length}</b> 支、統計中 ${mCollecting.length} 支${mAds.length?`、廣告 ${mAds.length} 支已排除`:''}）`:''}。<br>
       ${usingLocked?'定案':'目前'}觀看合計 <b style="color:#0F6E56;font-size:15px;">${baseViews.toLocaleString()}</b>${momPct!==null?`，較上月（同樣以${usingLocked?'已定案':'全部'}計）<b style="color:${momPct>=0?'#0F6E56':'#C0313D'};">${momPct>=0?'+':''}${momPct}%</b>`:''}。<br>
-      Short <b>${bShort.length}</b> 支／中位數 <b>${medOf(bShort.map(totalViews)).toLocaleString()}</b>　·　Long <b>${bLong.length}</b> 支／中位數 <b>${medOf(bLong.map(totalViews)).toLocaleString()}</b><br>
-      ${bestOne?`最佳表現：<b>${(bestOne.title||'').slice(0,28)}</b> ${totalViews(bestOne).toLocaleString()} 觀看${domOf(bestOne)?`（${domOf(bestOne).k} 佔 ${domOf(bestOne).p}%）`:''}`:''}
+      Short <b>${bShort.length}</b> 支／中位數 <b>${medOf(bShort.map(pViews)).toLocaleString()}</b>　·　Long <b>${bLong.length}</b> 支／中位數 <b>${medOf(bLong.map(pViews)).toLocaleString()}</b><br>
+      ${bestOne?`最佳表現：<b>${(bestOne.title||'').slice(0,28)}</b> ${pViews(bestOne).toLocaleString()} 觀看${(!ytOnly&&domOf(bestOne))?`（${domOf(bestOne).k} 佔 ${domOf(bestOne).p}%）`:''}`:''}
     </div>
   </div>
 
@@ -5965,18 +5985,18 @@ tr:nth-child(even) td{background:#FAFAFA;}
   <div class="plat-row" style="grid-template-columns:1fr 1fr;">
     <div class="plat" style="border:2px solid #0F6E56;background:#F2FAF6;">
       <div style="font-size:11px;color:#0F6E56;font-weight:700;margin-bottom:4px;">SHORT 短影音 · 拓新主力</div>
-      <div class="val" style="color:#0F6E56;">${medOf(bShort.map(totalViews)).toLocaleString()}</div>
-      <div class="lbl">觀看中位數 · ${bShort.length} 支 · 合計 ${sumOf(bShort,totalViews).toLocaleString()}</div>
+      <div class="val" style="color:#0F6E56;">${medOf(bShort.map(pViews)).toLocaleString()}</div>
+      <div class="lbl">觀看中位數 · ${bShort.length} 支 · 合計 ${sumOf(bShort,pViews).toLocaleString()}</div>
     </div>
     <div class="plat" style="border:2px solid #94A3B8;background:#F8FAFC;">
       <div style="font-size:11px;color:#475569;font-weight:700;margin-bottom:4px;">LONG 長影片 · 存檔／搜尋</div>
-      <div class="val" style="color:#475569;">${medOf(bLong.map(totalViews)).toLocaleString()}</div>
-      <div class="lbl">觀看中位數 · ${bLong.length} 支 · 合計 ${sumOf(bLong,totalViews).toLocaleString()}</div>
+      <div class="val" style="color:#475569;">${medOf(bLong.map(pViews)).toLocaleString()}</div>
+      <div class="lbl">觀看中位數 · ${bLong.length} 支 · 合計 ${sumOf(bLong,pViews).toLocaleString()}</div>
     </div>
   </div>`:''}
   ${(showVideo||showFb)?`<div class="kpi-row">
     <div class="kpi"><div class="val">${cnt}</div><div class="lbl">本月上架影片（部）</div></div>
-    <div class="kpi"><div class="val">${tv.toLocaleString()}</div><div class="lbl">全平台總觀看</div></div>
+    <div class="kpi"><div class="val">${tv.toLocaleString()}</div><div class="lbl">${ytOnly?"YT 總觀看":"全平台總觀看"}</div></div>
     <div class="kpi"><div class="val" style="${vRate>=300?'font-size:26px;':''}">${vRate>=300?(tv/vGoal).toFixed(1)+' 倍':vRate+'%'}</div><div class="lbl">觀看目標達成（目標 ${vGoal.toLocaleString()}）${vRate>=300?'<br><span style="color:#EA580C;">目標偏低，建議上修</span>':''}</div></div>
     <div class="kpi"><div class="val" style="${cRate>=300?'font-size:26px;':''}">${cRate>=300?(cnt/cGoal).toFixed(1)+' 倍':cRate+'%'}</div><div class="lbl">上架數達成（目標 ${cGoal} 部）${cRate>=300?'<br><span style="color:#EA580C;">目標偏低，建議上修</span>':''}</div></div>
   </div>
@@ -5985,12 +6005,12 @@ tr:nth-child(even) td{background:#FAFAFA;}
   ${platTable?`<div class="sec-title">${rptNonVideo?"全平台成效總覽（含 IG 圖文與 Threads）":"影片成效總覽（YT／FB／IG 影片，IG 已去重）"}</div>${platTable}`:''}
 
   ${platRows.length?`<div class="sec-title">內容品質與風險指標　<span style="font-weight:400;color:#64748B;font-size:11px;">聲量之外，主管更該看的三件事</span></div>
-  <div class="plat-row" style="grid-template-columns:repeat(3,1fr);">
-    <div class="plat" style="border:2px solid ${concLevel.c};background:${concLevel.bg};">
+  <div class="plat-row" style="grid-template-columns:repeat(${ytOnly?2:3},1fr);">
+    ${ytOnly?'':`<div class="plat" style="border:2px solid ${concLevel.c};background:${concLevel.bg};">
       <div style="font-size:11px;font-weight:700;color:${concLevel.c};margin-bottom:4px;">平台集中度 · ${concLevel.t}</div>
       <div class="val" style="color:${concLevel.c};">${concShare.toFixed(0)}%</div>
       <div class="lbl">觀看集中於 ${concName}<br><span style="color:#64748B;">${concLevel.msg}</span></div>
-    </div>
+    </div>`}
     <div class="plat" style="border:2px solid #0F6E56;background:#F2FAF6;">
       <div style="font-size:11px;font-weight:700;color:#0F6E56;margin-bottom:4px;">內容留得住人嗎 · 完播率</div>
       <div class="val" style="color:#0F6E56;">${avgRatioR===null?'—':avgRatioR.toFixed(1)+'%'}</div>
@@ -6013,19 +6033,19 @@ tr:nth-child(even) td{background:#FAFAFA;}
   <div style="display:flex;gap:10px;margin-bottom:20px;">${trend.map(t=>`<div style="flex:1;text-align:center;font-size:10px;color:${t.key===ym?'#0F6E56':'#94A3B8'};font-weight:${t.key===ym?'700':'400'};">${t.label}<br><span style="color:#CBD5E1;">${t.n}支</span></div>`).join('')}</div>
 
   <!-- 平台佔比與互動率 -->
-  <div class="sec-title">各平台佔比與互動品質</div>
+  ${ytOnly?'':`<div class="sec-title">各平台佔比與互動品質</div>
   <div class="plat-row">
     ${['YouTube','Facebook','Instagram'].map(k=>`<div class="plat" style="border:1px solid ${platC[k]}59;">
       <div style="font-size:11px;font-weight:700;color:${platC[k]};margin-bottom:2px;">${k}</div>
       <div class="val" style="color:${platC[k]};">${pvAll?Math.round(pv[k]/pvAll*100):0}%</div>
       <div class="lbl">觀看 ${pv[k].toLocaleString()}　互動率 ${pEng[k].toFixed(1)}%</div>
     </div>`).join('')}
-  </div>`:''}
-  <div class="plat-row">
+  </div>`}`:''}
+  ${ytOnly?'':`<div class="plat-row">
     <div class="plat plat-yt"><div class="val">${ytv.toLocaleString()}</div><div class="lbl">YouTube</div></div>
     <div class="plat plat-fb"><div class="val">${fbv.toLocaleString()}</div><div class="lbl">Facebook</div></div>
     <div class="plat plat-ig"><div class="val">${igv.toLocaleString()}</div><div class="lbl">Instagram</div></div>
-  </div>
+  </div>`}
   ${showVideo&&(embedV>0||webPV>0)?`<div class="sec-title" style="border-color:#0F6E56;color:#0F6E56;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> 官網曝光（內部歸因 · 不計入 KPI 加總）</div>
   <div class="plat-row" style="grid-template-columns:repeat(3,1fr);">
     <div class="plat" style="border:1px solid #B8DFC9;background:#F2FAF6;"><div class="val" style="color:#0F6E56;">${embedV.toLocaleString()}</div><div class="lbl">YT 外部嵌入觀看</div></div>
@@ -6037,17 +6057,17 @@ tr:nth-child(even) td{background:#FAFAFA;}
     <div class="prog"><div class="prog-lbl"><span>上架目標（${cGoal} 部）</span><span>${cnt} / ${cGoal}</span></div><div class="prog-bg"><div class="prog-fill" style="width:${Math.min(100,cRate)}%"></div></div></div>
   </div>`:''}
   ${showVideo?`<div class="sec-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:2px;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> 本月觀看次數 TOP 5</div>
-  <table><thead><tr><th style="width:40px;">排名</th><th>影片標題</th><th>類型</th><th>類別</th><th>YT 觀看</th><th>FB 觀看</th><th>IG 觀看</th><th>全平台合計</th></tr></thead>
+  <table><thead><tr><th style="width:40px;">排名</th><th>影片標題</th><th>類型</th><th>類別</th><th>YT 觀看</th>${ytOnly?'':'<th>FB 觀看</th><th>IG 觀看</th><th>全平台合計</th>'}</tr></thead>
   <tbody>${top5rows}</tbody></table>`:''}
   ${showVideo&&worst.length?`<div class="sec-title" style="border-color:#C0313D;color:#C0313D;">需檢討的內容（觀看最低 ${worst.length} 支）</div>
-  <table><thead><tr style="background:#C0313D;"><th>發布日期</th><th>影片標題</th><th>格式</th><th>類別</th><th>全平台觀看</th><th>主導平台</th><th>YT CTR</th></tr></thead>
+  <table><thead><tr style="background:#C0313D;"><th>發布日期</th><th>影片標題</th><th>格式</th><th>類別</th><th>${ytOnly?'YT 觀看':'全平台觀看'}</th>${ytOnly?'':'<th>主導平台</th>'}<th>YT CTR</th></tr></thead>
   <tbody>${worst.map(d=>{const dm=domOf(d);return `<tr>
     <td>${(d.date||'').substring(0,10)}</td>
     <td style="text-align:left;max-width:240px;">${d.title||''}</td>
     <td>${d.type==='short'?'Short':'Long'}</td>
     <td>${d.cat||''}</td>
-    <td style="font-weight:700;color:#C0313D;">${totalViews(d).toLocaleString()}</td>
-    <td>${dm?dm.k+' '+dm.p+'%':'—'}</td>
+    <td style="font-weight:700;color:#C0313D;">${pViews(d).toLocaleString()}</td>
+    ${ytOnly?'':`<td>${dm?dm.k+' '+dm.p+'%':'—'}</td>`}
     <td>${((Number(d.yt_ctr)||0)*100).toFixed(1)}%</td>
   </tr>`;}).join('')}</tbody></table>`:''}
 
@@ -6057,7 +6077,7 @@ tr:nth-child(even) td{background:#FAFAFA;}
   </div>`:''}
 
   ${showVideo?`<div class="sec-title">本月影片清單（共 ${cnt} 部）</div>
-  <table><thead><tr><th>發布日期</th><th>影片標題</th><th>類型</th><th>類別</th><th>YT 觀看</th><th>FB 觀看</th><th>IG 觀看</th><th>全平台合計</th></tr></thead>
+  <table><thead><tr><th>發布日期</th><th>影片標題</th><th>類型</th><th>類別</th><th>YT 觀看</th>${ytOnly?'':'<th>FB 觀看</th><th>IG 觀看</th><th>全平台合計</th>'}</tr></thead>
   <tbody>${rows}</tbody></table>`:''}
 
   ${showVideo?`<div class="sec-title" style="border-color:#0F6E56;">下月行動建議　<span style="font-weight:400;color:#64748B;font-size:11px;">依本月數據自動導出，主管可據此裁示</span></div>
